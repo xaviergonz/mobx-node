@@ -1,0 +1,13 @@
+**/node_modules/**
+/.idea
+/*.log
+.turbo
+/**/.DS_Store
+
+.yarn/*
+!.yarn/patches
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
