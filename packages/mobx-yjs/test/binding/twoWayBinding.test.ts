@@ -73,18 +73,44 @@ test("object two-way binding", () => {
   expect(mobxObservable.nestedObj).toEqual({ numberProp: 300 })
 })
 
-test("array two-way binding", () => {
+test("array simple two-way binding", () => {
   const { mobxObservable, yjsObject } = createArrayTestbed<number[]>([0])
   const yjsArray = yjsObject as Y.Array<any>
 
+  // initial state
   expect(yjsArray.toJSON()).toEqual([0])
   expect(mobxObservable).toEqual([0])
 
+  // mobx to yjs
   runInAction(() => {
     mobxObservable[0] = 10
     mobxObservable.push(20)
   })
   expect(yjsArray.toJSON()).toEqual([10, 20])
+
+  // yjs to mobx
   yjsArray.push([30])
   expect(mobxObservable).toEqual([10, 20, 30])
+})
+
+test("array nested two-way binding", () => {
+  const { mobxObservable, yjsObject } = createArrayTestbed<{ n: number }[]>([{ n: 0 }])
+  const yjsArray = yjsObject as Y.Array<any>
+
+  // initial state
+  expect(yjsArray.toJSON()).toEqual([{ n: 0 }])
+  expect(mobxObservable).toEqual([{ n: 0 }])
+
+  // mobx to yjs
+  runInAction(() => {
+    mobxObservable[0].n = 10
+    mobxObservable.push({ n: 20 })
+  })
+  expect(yjsArray.toJSON()).toEqual([{ n: 10 }, { n: 20 }])
+
+  // yjs to mobx
+  const newN = new Y.Map()
+  newN.set("n", 30)
+  yjsArray.push([newN])
+  expect(mobxObservable).toEqual([{ n: 10 }, { n: 20 }, { n: 30 }])
 })
