@@ -1,9 +1,8 @@
 <p align="center">
-  <img src="./apps/site/static/img/logo.png" height="128" />
   <h1 align="center">mobx-yjs</h1>
 </p>
 <p align="center">
-  <i>Use Y.js state as if it was a plain MobX observable.</i>
+  <i>Create a MobX observable two-way bound to a Y.js state.</i>
 </p>
 
 <p align="center">
@@ -23,30 +22,86 @@
   <a aria-label="Codecov" href="https://codecov.io/gh/xaviergonz/mobx-yjs">
     <img src="https://img.shields.io/codecov/c/github/xaviergonz/mobx-yjs?token=6MLRFUBK8V&label=codecov&logo=codecov&style=for-the-badge&labelColor=333" />
   </a>
-  <a aria-label="Netlify Status" href="https://app.netlify.com/sites/mobx-yjs/deploys">
-    <img src="https://img.shields.io/netlify/c5f60bcb-c1ff-4d04-ad14-1fc34ddbb429?label=netlify&logo=netlify&style=for-the-badge&labelColor=333" />
-  </a>
 </p>
-
-> ### Full documentation can be found on the site:
->
-> ## [mobx-yjs.js.org](https://mobx-yjs.js.org)
-
-## Introduction
-
-`mobx-yjs` is...
-
-## Requirements
-
-This library requires a more or less modern JavaScript environment to work, namely one with support for:
-
-- MobX 6, 5, or 4 (with its gotchas)
-- Proxies
-
-In other words, it should work on mostly anything except _it won't work in Internet Explorer_.
 
 ## Installation
 
 > `npm install mobx-yjs`
 
 > `yarn add mobx-yjs`
+
+## Introduction
+
+`mobx-yjs` is a library that, given a Y.js state, creates a two-way bound MobX observable object/array.
+
+For example, say that you have an already existing Y.js state that represents the following state:
+
+```ts
+interface Todo {
+  done: boolean
+  text: string
+}
+
+interface TodoAppState {
+  todoList: Todo[]
+}
+```
+
+and that it is already prepopulated with some todos in the Y.js doc map named "todoState". All you need to do is:
+
+```ts
+const {
+  mobxObservable,
+  dispose
+} = bindYjsToMobxObservable<TodoAppState>({
+  yjsDoc,
+  yjsObject: yjsDoc.getMap("todoAppState"),
+})
+```
+
+and from then on you can read/write the state as if it were a MobX observable, this is:
+
+```ts
+// read
+const doneTodos = mobxObservable.todoList.filter(todo => todo.done)
+
+// write
+const toggleTodoDone = action((todo: Todo) => {
+  todo.done = !todo.done;
+})
+
+toggleTodoDone(mobxObservable.todoList[0])
+```
+
+and it will be kept in sync with the Y.js state.
+
+Note that this sync is two-way, so if Y.js state gets updated (manually or via an remote state update), the MobX observable will get updates as well. All that means that this:
+
+```ts
+yjsDoc.transact(() => {
+  const newTodo = new Y.Map()
+  newTodo.set("done", false)
+  newTodo.set("text", "buy milk")
+  yjsDoc.getMap("todoAppState").getArray("todoList").push([ newTodo ])
+})
+```
+
+will also result in a new todo getting added to `mobxObservable.todoList` after the transaction is finished.
+
+## What if I don't have an intial Y.js state yet?
+
+You can create one like this:
+
+```ts
+applyPlainObjectToYMap(
+  yjsDoc.getMap("todoAppState"),
+  {
+    todoList: []
+  }
+)
+```
+
+## Transaction notes
+
+- MobX observable changes are replicated to Y.js **after the outmost MobX action is finished**, so make sure you don't run any Y.js transactions until actions are finished. This should be easy, since MobX actions are sync.
+- Y.js changes are replicated to the the MobX observable **after all Y.js transactions are finished**, so make sure you don't run any MobX actions **that modify the bound object** in the middle of a Y.js transaction. This should be ease, since usually the only Y.js transaction you want to run manually is applying a remote update.

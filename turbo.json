@@ -1,27 +1,9 @@
 {
   "$schema": "https://turborepo.org/schema.json",
   "tasks": {
-    "mobx-yjs#build-docs": {
-      "dependsOn": ["build"],
-      "outputs": ["api-docs/**", "../../apps/site/copy-to-build/api/**"]
-    },
     "mobx-yjs#build": {
       "dependsOn": [],
       "outputs": ["dist/**"]
-    },
-    "site#build": {
-      "dependsOn": ["mobx-yjs#build", "mobx-yjs#build-docs"],
-      "outputs": ["build/**"]
-    },
-    "site#serve": {
-      "cache": false,
-      "dependsOn": ["build"],
-      "outputs": []
-    },
-    "site#start": {
-      "cache": false,
-      "dependsOn": ["mobx-yjs#build", "mobx-yjs#build-docs"],
-      "outputs": []
     },
     "mobx-yjs#test": {
       "dependsOn": [],

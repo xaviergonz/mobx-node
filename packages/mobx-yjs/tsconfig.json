@@ -24,9 +24,6 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "baseUrl": "./",
-    "paths": {
-      "*": ["src/*", "node_modules/*"]
-    },
     "jsx": "react",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": false,

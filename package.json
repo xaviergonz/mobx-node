@@ -5,14 +5,8 @@
   "license": "MIT",
   "scripts": {
     "lib:build": "turbo run mobx-yjs#build",
-    "lib:build-docs": "turbo run mobx-yjs#build-docs",
     "lib:test": "turbo run mobx-yjs#test",
     "lib:test:ci": "turbo run mobx-yjs#test:ci",
-    "site:start": "turbo run site#start",
-    "site:build": "turbo run site#build",
-    "site:serve": "turbo run site#serve",
-    "build-netlify": "yarn site:build",
-    "netlify-dev": "yarn build-netlify && netlify dev",
     "lint": "biome lint"
   },
   "workspaces": [
@@ -26,7 +20,6 @@
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "globals": "^15.14.0",
-    "netlify-cli": "^18.0.4",
     "turbo": "^2.4.0",
     "typescript": "^5.7.3"
   },

@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: "22.10.0"
+
+jobs:
+  lib-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "yarn"
+
+      - run: yarn install --immutable
+      - run: yarn lib:build
+
+  lib-test:
+    name: lib-test (${{ matrix.compiler }} - mobx${{ matrix.mobx-version }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        mobx-version:
+          - 6
+          - 5
+          - 4
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "yarn"
+
+      - run: yarn install --immutable
+      - run: yarn lib:test:ci
+        env:
+          MOBX_VERSION: ${{ matrix.mobx-version }}
+
+      - uses: codecov/codecov-action@v4
+        name: Upload codecov report
+        if: matrix.mobx-version == '6'
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ./packages/mobx-yjs/coverage
+          fail_ci_if_error: true
