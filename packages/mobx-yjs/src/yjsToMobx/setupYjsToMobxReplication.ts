@@ -75,11 +75,7 @@ export function setupYjsToMobxReplication({
 
             if (change.insert) {
               const newValues = Array.isArray(change.insert) ? change.insert : [change.insert]
-              mobxArray.splice(
-                retain,
-                0,
-                newValues.map((v) => yjsToPlainValue(v))
-              )
+              mobxArray.splice(retain, 0, ...newValues.map((v) => yjsToPlainValue(v)))
               retain += newValues.length
             }
           })

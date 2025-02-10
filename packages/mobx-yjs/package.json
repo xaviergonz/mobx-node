@@ -1,6 +1,6 @@
 {
   "name": "mobx-yjs",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Create a MobX observable two-way bound to a Y.js state",
   "keywords": [
     "mobx",

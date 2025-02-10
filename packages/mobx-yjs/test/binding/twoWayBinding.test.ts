@@ -1,9 +1,9 @@
 import * as Y from "yjs"
-import { createTestbed } from "../testbed"
+import { createArrayTestbed, createObjectTestbed } from "../testbed"
 import { runInAction } from "mobx"
 
-test("two-way binding", () => {
-  const { mobxObservable, yjsObject } = createTestbed<{
+test("object two-way binding", () => {
+  const { mobxObservable, yjsObject } = createObjectTestbed<{
     numberProp: number
     optionalStrProp?: string
     numberArray: number[]
@@ -71,4 +71,20 @@ test("two-way binding", () => {
 
   yjsMap.set("nestedObj", new Y.Map([["numberProp", 300]]))
   expect(mobxObservable.nestedObj).toEqual({ numberProp: 300 })
+})
+
+test("array two-way binding", () => {
+  const { mobxObservable, yjsObject } = createArrayTestbed<number[]>([0])
+  const yjsArray = yjsObject as Y.Array<any>
+
+  expect(yjsArray.toJSON()).toEqual([0])
+  expect(mobxObservable).toEqual([0])
+
+  runInAction(() => {
+    mobxObservable[0] = 10
+    mobxObservable.push(20)
+  })
+  expect(yjsArray.toJSON()).toEqual([10, 20])
+  yjsArray.push([30])
+  expect(mobxObservable).toEqual([10, 20, 30])
 })

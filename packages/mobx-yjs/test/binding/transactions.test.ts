@@ -1,9 +1,9 @@
 import * as Y from "yjs"
-import { createTestbed } from "../testbed"
+import { createObjectTestbed } from "../testbed"
 import { runInAction } from "mobx"
 
 test("transactions", () => {
-  const { mobxObservable, yjsObject, yjsDoc } = createTestbed<{
+  const { mobxObservable, yjsObject, yjsDoc } = createObjectTestbed<{
     numberProp: number
   }>({ numberProp: 0 })
   const yjsMap = yjsObject as Y.Map<any>
@@ -28,7 +28,7 @@ test("transactions", () => {
 })
 
 test("transaction edge-cases", () => {
-  const { mobxObservable, yjsObject, yjsDoc } = createTestbed<{
+  const { mobxObservable, yjsObject, yjsDoc } = createObjectTestbed<{
     numberArray?: number[]
   }>({})
   const yjsMap = yjsObject as Y.Map<any>
