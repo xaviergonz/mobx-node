@@ -11,11 +11,13 @@ export function setupMobxToYjsReplication({
   yjsDoc,
   yjsObject,
   yjsOrigin,
+  yjsReplicatingRef,
 }: {
   mobxObservable: PlainStructure
   yjsDoc: Y.Doc
   yjsObject: YjsStructure
   yjsOrigin: symbol
+  yjsReplicatingRef: { current: number }
 }) {
   let pendingMobxChanges: {
     change: IChange
@@ -24,6 +26,11 @@ export function setupMobxToYjsReplication({
   let mobxDeepChangesNestingLevel = 0
 
   const disposeMobxDeepObserve = mobxDeepObserve(mobxObservable, (change, path) => {
+    // if this comes from a yjs change, ignore it
+    if (yjsReplicatingRef.current > 0) {
+      return
+    }
+
     mobxDeepChangesNestingLevel++
     pendingMobxChanges.push({ change, path })
 

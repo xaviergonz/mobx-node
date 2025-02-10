@@ -43,10 +43,13 @@ export function bindYjsToMobxObservable<T extends PlainStructure>({
 
   const mobxObservable = createMobxObservableFromYjsObject<T>(yjsObject)
 
+  const yjsReplicatingRef = { current: 0 }
+
   const disposeYjsToMobxReplication = setupYjsToMobxReplication({
     mobxObservable,
     yjsObject,
     yjsOrigin,
+    yjsReplicatingRef,
   })
 
   const disposeMobxToYjsReplication = setupMobxToYjsReplication({
@@ -54,6 +57,7 @@ export function bindYjsToMobxObservable<T extends PlainStructure>({
     yjsDoc,
     yjsObject,
     yjsOrigin,
+    yjsReplicatingRef,
   })
 
   return {
