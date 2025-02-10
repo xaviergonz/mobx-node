@@ -75,7 +75,7 @@ toggleTodoDone(todoAppState.todoList[0])
 
 and it will be kept in sync with the Y.js state.
 
-Note that this sync is two-way, so if Y.js state gets updated (manually or via an remote state update), the MobX observable will get updates as well. All that means that this:
+Note that **the sync is two-way**, so if Y.js state gets updated (manually or via a remote state update), the MobX observable will get updates as well. All that means that this:
 
 ```ts
 yjsDoc.transact(() => {
