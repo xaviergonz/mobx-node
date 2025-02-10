@@ -47,11 +47,11 @@ interface TodoAppState {
 }
 ```
 
-and that it is already prepopulated with some todos in the Y.js doc map named "todoState". All you need to do is:
+and that it is already prepopulated with some todos in a Y.js doc map named "todoAppState". All you need to do is:
 
 ```ts
 const {
-  mobxObservable,
+  mobxObservable: todoAppState,
   dispose
 } = bindYjsToMobxObservable<TodoAppState>({
   yjsDoc,
@@ -63,14 +63,14 @@ and from then on you can read/write the state as if it were a MobX observable, t
 
 ```ts
 // read
-const doneTodos = mobxObservable.todoList.filter(todo => todo.done)
+const doneTodos = todoAppState.todoList.filter(todo => todo.done)
 
 // write
 const toggleTodoDone = action((todo: Todo) => {
   todo.done = !todo.done;
 })
 
-toggleTodoDone(mobxObservable.todoList[0])
+toggleTodoDone(todoAppState.todoList[0])
 ```
 
 and it will be kept in sync with the Y.js state.
@@ -86,7 +86,9 @@ yjsDoc.transact(() => {
 })
 ```
 
-will also result in a new todo getting added to `mobxObservable.todoList` after the transaction is finished.
+will also result in a new todo getting added to `todoAppState.todoList` after the transaction is finished.
+
+And of course, since this is a MobX observable in the end, you can use reaction, autorun, when, computed...
 
 ## What if I don't have an intial Y.js state yet?
 
