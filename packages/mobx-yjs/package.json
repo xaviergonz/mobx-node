@@ -16,7 +16,7 @@
   "bugs": {
     "url": "https://github.com/xaviergonz/mobx-yjs/issues"
   },
-  "homepage": "https://mobx-yjs.js.org",
+  "homepage": "https://github.com/xaviergonz/mobx-yjs",
   "license": "MIT",
   "author": "Javier González Garcés",
   "source": "./src/index.ts",
