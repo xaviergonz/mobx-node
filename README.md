@@ -32,9 +32,9 @@
 
 ## Introduction
 
-`mobx-yjs` is a library that, given a Y.js state, creates a two-way bound MobX observable object/array.
+`mobx-yjs` creates a MobX observable that stays in sync with a Y.js state in both directions.
 
-For example, say that you have an already existing Y.js state that represents the following state:
+For example, if you already have a Y.js state representing:
 
 ```ts
 interface Todo {
@@ -105,6 +105,6 @@ applyPlainObjectToYMap(
 
 ## Limits
 
-- MobX observable changes are replicated to Y.js **after the outmost MobX action is finished**, so make sure you don't run any Y.js transactions until actions are finished. This should be easy, since MobX actions are sync.
-- Y.js changes are replicated to the the MobX observable **after all Y.js transactions are finished**, so make sure you don't run any MobX actions **that modify the bound object** in the middle of a Y.js transaction. This should be ease, since usually the only Y.js transaction you want to run manually is applying a remote update.
-- An object that's already part of the observable tree cannot be reused in another part of the tree. Either remove it first from the tree before moving it or clone it using `toJS` from MobX.
+- Changes in the MobX observable are replicated to Y.js only after the outermost MobX action has completed. Therefore, avoid executing any Y.js transactions until MobX actions finish.
+- Y.js changes are merged into the MobX observable only after all Y.js transactions have concluded. Consequently, do not initiate MobX actions that modify the bound object during an ongoing Y.js transaction.
+- An object that is already part of the observable tree cannot be reused in another section of the tree. To move an object, first remove it from its current location or clone it using MobX's `toJS` function.
