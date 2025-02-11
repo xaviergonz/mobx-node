@@ -12,6 +12,7 @@ import {
   observe,
   values,
 } from "mobx"
+import { failure } from "../utils/failure"
 
 type IDisposer = () => void
 export type IChange = IObjectDidChange | IArrayDidChange | IMapDidChange
@@ -122,10 +123,12 @@ export function mobxDeepObserve<T = any>(
           // MWE: this constraint is artificial, and this tool could be made to work with cycles,
           // but it increases administration complexity, has tricky edge cases and the meaning of 'path'
           // would become less clear. So doesn't seem to be needed for now
-          throw new Error(
+          throw failure(
             `The same observable object cannot appear twice in the same tree,` +
               ` trying to assign it to '${buildPath(parent)}/${path}',` +
-              ` but it already exists at '${buildPath(entry.parent)}/${entry.path}'`
+              ` but it already exists at '${buildPath(entry.parent)}/${entry.path}'.` +
+              ` If you are moving the node then remove it from the tree first before moving it.` +
+              ` If you are copying the node then use toJS to make a clone first.`
           )
         }
       } else {

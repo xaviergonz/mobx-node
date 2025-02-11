@@ -103,7 +103,8 @@ applyPlainObjectToYMap(
 )
 ```
 
-## Transaction notes
+## Limits
 
 - MobX observable changes are replicated to Y.js **after the outmost MobX action is finished**, so make sure you don't run any Y.js transactions until actions are finished. This should be easy, since MobX actions are sync.
 - Y.js changes are replicated to the the MobX observable **after all Y.js transactions are finished**, so make sure you don't run any MobX actions **that modify the bound object** in the middle of a Y.js transaction. This should be ease, since usually the only Y.js transaction you want to run manually is applying a remote update.
+- An object that's already part of the observable tree cannot be reused in another part of the tree. Either remove it first from the tree before moving it or clone it using `toJS` from MobX.

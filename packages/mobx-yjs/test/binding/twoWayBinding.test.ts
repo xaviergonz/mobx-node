@@ -63,14 +63,17 @@ test("object two-way binding", () => {
   runInAction(() => {
     mobxObservable.nestedObj = { numberProp: 100 }
   })
+  const nestedObjRef = mobxObservable.nestedObj
   expect(yjsMap.get("nestedObj")).toBeInstanceOf(Y.Map)
   expect(yjsMap.get("nestedObj").get("numberProp")).toBe(100)
 
   yjsMap.get("nestedObj").set("numberProp", 200)
   expect(mobxObservable.nestedObj).toEqual({ numberProp: 200 })
+  expect(mobxObservable.nestedObj).toBe(nestedObjRef)
 
   yjsMap.set("nestedObj", new Y.Map([["numberProp", 300]]))
   expect(mobxObservable.nestedObj).toEqual({ numberProp: 300 })
+  expect(mobxObservable.nestedObj).not.toBe(nestedObjRef)
 })
 
 test("array simple two-way binding", () => {
