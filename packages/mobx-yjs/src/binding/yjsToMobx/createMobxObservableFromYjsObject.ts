@@ -1,7 +1,8 @@
 import { observable } from "mobx"
 import * as Y from "yjs"
-import { PlainStructure, YjsStructure } from "../types"
+import { PlainStructure } from "../../plainTypes/types"
 import { failure } from "../../utils/failure"
+import { YjsStructure } from "../../yjsTypes/types"
 
 export function createMobxObservableFromYjsObject<T extends PlainStructure>(
   yjsObject: YjsStructure

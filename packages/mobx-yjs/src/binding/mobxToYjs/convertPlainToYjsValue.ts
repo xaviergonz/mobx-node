@@ -1,19 +1,8 @@
 import * as Y from "yjs"
-import { PlainArray, PlainObject, PlainPrimitive, PlainValue, YjsValue } from "../types"
+import { PlainArray, PlainObject, PlainValue } from "../../plainTypes/types"
 import { failure } from "../../utils/failure"
-
-function isPlainPrimitive(v: unknown): v is PlainPrimitive {
-  const t = typeof v
-  return t === "string" || t === "number" || t === "boolean" || v === null || v === undefined
-}
-
-function isPlainArray(v: unknown): v is PlainArray {
-  return Array.isArray(v)
-}
-
-function isPlainObject(v: unknown): v is PlainObject {
-  return !isPlainArray(v) && typeof v === "object"
-}
+import { YjsValue } from "src/yjsTypes/types"
+import { isPlainArray, isPlainObject, isPlainPrimitive } from "../../plainTypes/assertions"
 
 /**
  * Converts a plain value to a Y.js value.

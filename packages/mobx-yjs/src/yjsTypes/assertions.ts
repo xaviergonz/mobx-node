@@ -1,6 +1,6 @@
 import * as Y from "yjs"
-import { YjsStructure } from "../types"
-import { failure } from "../../utils/failure"
+import { failure } from "../utils/failure"
+import { YjsStructure } from "./types"
 
 export function isYjsStructure(target: unknown): target is YjsStructure {
   return target instanceof Y.Map || target instanceof Y.Array

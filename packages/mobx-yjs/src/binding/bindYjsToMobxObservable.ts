@@ -1,9 +1,10 @@
 import * as Y from "yjs"
 import { setupMobxToYjsReplication } from "./mobxToYjs/setupMobxToYjsReplication"
-import { PlainStructure, YjsStructure } from "./types"
+import { PlainStructure } from "../plainTypes/types"
+import { YjsStructure } from "../yjsTypes/types"
 import { createMobxObservableFromYjsObject } from "./yjsToMobx/createMobxObservableFromYjsObject"
 import { setupYjsToMobxReplication } from "./yjsToMobx/setupYjsToMobxReplication"
-import { assertIsObservablePlainStructure } from "./yjsToMobx/assertions"
+import { assertIsObservablePlainStructure } from "../plainTypes/assertions"
 import { GetParentRef, registeredGetParentRefs } from "../utils/getParentRef"
 
 /**

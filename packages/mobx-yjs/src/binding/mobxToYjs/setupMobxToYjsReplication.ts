@@ -1,10 +1,11 @@
 import { when } from "mobx"
 import * as Y from "yjs"
-import { YjsStructure, PlainStructure } from "../types"
+import { PlainStructure } from "../../plainTypes/types"
 import { failure } from "../../utils/failure"
 import { FullPath, IChange, mobxDeepObserve } from "./mobxDeepObserve"
 import { resolveYjsStructurePath } from "./resolveYjsObjectPath"
 import { convertPlainToYjsValue } from "./convertPlainToYjsValue"
+import { YjsStructure } from "src/yjsTypes/types"
 
 export function setupMobxToYjsReplication({
   mobxObservable,

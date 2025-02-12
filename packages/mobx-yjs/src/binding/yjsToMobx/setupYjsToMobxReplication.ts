@@ -1,8 +1,9 @@
 import { isObservableArray, isObservableObject, remove, runInAction, set } from "mobx"
 import * as Y from "yjs"
-import { PlainStructure, PlainValue, YjsStructure, YjsValue } from "../types"
+import { PlainStructure, PlainValue } from "../../plainTypes/types"
 import { failure } from "../../utils/failure"
 import { resolveMobxObservablePath } from "./resolveMobxObservablePath"
+import { YjsStructure, YjsValue } from "../../yjsTypes/types"
 
 function yjsToPlainValue(v: YjsValue): PlainValue {
   if (v instanceof Y.Map || v instanceof Y.Array) {

@@ -1,4 +1,4 @@
-import { PlainStructure } from "../binding/types"
+import { PlainStructure } from "../plainTypes/types"
 
 export type ParentRef<TParent, TRoot> = { parent: TParent; parentPath: string; root: TRoot }
 
