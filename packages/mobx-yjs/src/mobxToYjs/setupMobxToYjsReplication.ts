@@ -107,7 +107,7 @@ export function setupMobxToYjsReplication({
   })
 
   return {
-    getParentNode: mobxDeepObserveAdmin.getParentNode,
+    getParentRef: mobxDeepObserveAdmin.getParentRef,
 
     dispose: () => {
       mobxDeepObserveAdmin.dispose()

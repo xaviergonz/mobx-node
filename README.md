@@ -103,6 +103,19 @@ applyPlainObjectToYMap(
 )
 ```
 
+## Getting parent nodes
+
+The `bindYjsToMobxObservable` function also returns a `getParentRef` method that can be used to get the parent ref (parent object and path) of any nodes inside the observable object:
+
+```ts
+const { mobxObservable, getParentRef } = bindYjsToMobxObservable(...)
+
+const { parent, parentPath } = getParentRef(mobxObservable.someChild);
+// { parent: mobxObservable, parentPath: 'someChild' }
+```
+
+If it is not in the tree of the mobxObservable it will return `undefined`.
+
 ## Limits
 
 - Changes in the MobX observable are replicated to Y.js only after the outermost MobX action has completed. Therefore, avoid executing any Y.js transactions until MobX actions finish.

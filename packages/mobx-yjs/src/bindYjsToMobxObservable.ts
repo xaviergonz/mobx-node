@@ -3,6 +3,9 @@ import { setupMobxToYjsReplication } from "./mobxToYjs/setupMobxToYjsReplication
 import { PlainStructure, YjsStructure } from "./types"
 import { createMobxObservableFromYjsObject } from "./yjsToMobx/createMobxObservableFromYjsObject"
 import { setupYjsToMobxReplication } from "./yjsToMobx/setupYjsToMobxReplication"
+import { assertIsObservablePlainStructure } from "./yjsToMobx/assertions"
+
+export type ParentRef<TParent> = { parent: TParent; parentPath: string }
 
 /**
  * Creates a MobX observable that is bound to a Y.js data structure.
@@ -35,11 +38,10 @@ export function bindYjsToMobxObservable<T extends PlainStructure>({
   mobxObservable: T
 
   /**
-   * Returns the parent array/object of the given array/object inside the observable tree.
+   * Returns the parent array/object of the given array/object inside the observable tree
+   * and the parentPath (property name).
    */
-  getParent: <TParent extends PlainStructure = never>(
-    struct: PlainStructure
-  ) => { parent: TParent; parentPath: string } | undefined
+  getParentRef: <TParent = unknown>(struct: PlainStructure) => ParentRef<TParent> | undefined
 
   /**
    * Disposes the binding.
@@ -70,14 +72,16 @@ export function bindYjsToMobxObservable<T extends PlainStructure>({
   return {
     mobxObservable,
 
-    getParent: <TParent extends PlainStructure = never>(struct: PlainStructure) => {
-      const parentNode = mobxToYjsReplicationAdmin.getParentNode(struct)
-      if (!parentNode) {
+    getParentRef: <TParent = unknown>(struct: PlainStructure) => {
+      assertIsObservablePlainStructure(struct)
+
+      const parentRef = mobxToYjsReplicationAdmin.getParentRef(struct)
+      if (!parentRef) {
         return undefined
       }
       return {
-        parent: parentNode.parent as TParent,
-        parentPath: parentNode.parentPath,
+        parent: parentRef.parent as TParent,
+        parentPath: parentRef.parentPath,
       }
     },
 

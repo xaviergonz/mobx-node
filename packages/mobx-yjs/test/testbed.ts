@@ -15,14 +15,14 @@ export function createObjectTestbed<T extends PlainObject>(initialData: T) {
   const yjsObject = yjsDoc.getMap("data") as Y.Map<YjsValue>
   applyPlainObjectToYMap(yjsObject, initialData)
 
-  const { mobxObservable, dispose } = bindYjsToMobxObservable<T>({
+  const { mobxObservable, dispose, getParentRef } = bindYjsToMobxObservable<T>({
     yjsDoc: yjsDoc,
     yjsObject: yjsObject,
   })
 
   disposers.push(dispose)
 
-  return { mobxObservable, yjsDoc, yjsObject }
+  return { mobxObservable, yjsDoc, yjsObject, getParentRef }
 }
 
 export function createArrayTestbed<T extends PlainArray>(initialData: T) {
@@ -30,14 +30,14 @@ export function createArrayTestbed<T extends PlainArray>(initialData: T) {
   const yjsObject = yjsDoc.getArray("data") as Y.Array<YjsValue>
   applyPlainArrayToYArray(yjsObject, initialData)
 
-  const { mobxObservable, dispose } = bindYjsToMobxObservable<T>({
+  const { mobxObservable, dispose, getParentRef } = bindYjsToMobxObservable<T>({
     yjsDoc: yjsDoc,
     yjsObject: yjsObject,
   })
 
   disposers.push(dispose)
 
-  return { mobxObservable, yjsDoc, yjsObject }
+  return { mobxObservable, getParentRef, yjsDoc, yjsObject }
 }
 
 afterEach(() => {

@@ -6,6 +6,7 @@ import {
   IAtom,
   IMapDidChange,
   IObjectDidChange,
+  action,
   createAtom,
   entries,
   isObservableArray,
@@ -18,14 +19,14 @@ import { failure } from "../utils/failure"
 
 type IDisposer = () => void
 
-type EntryParent = {
+type ParentRef = {
   entry: Entry
   object: unknown
   path: string
 }
 
 type Entry = {
-  parent: EntryParent | undefined
+  parentRef: ParentRef | undefined
   dispose: IDisposer
 }
 
@@ -33,9 +34,9 @@ export type FullPath = string[]
 
 function buildFullPath(entry: Entry | undefined, subPath?: string): FullPath {
   const fullPath: string[] = []
-  while (entry?.parent) {
-    fullPath.push(entry.parent.path)
-    entry = entry.parent.entry
+  while (entry?.parentRef) {
+    fullPath.push(entry.parentRef.path)
+    entry = entry.parentRef.entry
   }
   fullPath.reverse()
 
@@ -72,14 +73,9 @@ export function mobxDeepObserve<T = any>(
     return atom
   }
 
-  function emitChange(change: IChange) {
-    const entry = entrySet.get(change.object)!
-    processChange(change, entry)
-    onChange(change, buildFullPath(entry), target)
-  }
-
-  function processChange(change: IChange, parentEntry: Entry) {
+  const processChange = action((change: IChange) => {
     const changeTarget = change.object
+    const parentEntry = entrySet.get(changeTarget)!
 
     switch (change.type) {
       // object, map
@@ -125,8 +121,8 @@ export function mobxDeepObserve<T = any>(
           const value = change.object[i]
           if (isRecursivelyObservable(value)) {
             const entry = entrySet.get(value)
-            if (entry?.parent) {
-              entry.parent.path = "" + i
+            if (entry?.parentRef) {
+              entry.parentRef.path = "" + i
               getParentAtom(value)?.reportChanged()
             }
           }
@@ -137,24 +133,26 @@ export function mobxDeepObserve<T = any>(
       default:
         break
     }
-  }
 
-  function observeRecursively(thing: any, entryParent: EntryParent | undefined) {
+    onChange(change, buildFullPath(parentEntry), target)
+  })
+
+  const observeRecursively = action((thing: any, parentRef: ParentRef | undefined) => {
     if (isRecursivelyObservable(thing)) {
       const entry = entrySet.get(thing)
       if (entry) {
         // already attached to the tree
         if (
-          entry.parent?.entry !== entryParent?.entry ||
-          entry.parent?.path !== entryParent?.path
+          entry.parentRef?.entry !== parentRef?.entry ||
+          entry.parentRef?.path !== parentRef?.path
         ) {
           // MWE: this constraint is artificial, and this tool could be made to work with cycles,
           // but it increases administration complexity, has tricky edge cases and the meaning of 'path'
           // would become less clear. So doesn't seem to be needed for now
           throw failure(
             `The same observable object cannot appear twice in the same tree,` +
-              ` trying to assign it to ${JSON.stringify(buildFullPath(entryParent?.entry, entryParent?.path))},` +
-              ` but it already exists at ${JSON.stringify(buildFullPath(entry.parent?.entry, entry.parent?.path))}.` +
+              ` trying to assign it to ${JSON.stringify(buildFullPath(parentRef?.entry, parentRef?.path))},` +
+              ` but it already exists at ${JSON.stringify(buildFullPath(entry.parentRef?.entry, entry.parentRef?.path))}.` +
               ` If you are moving the node then remove it from the tree first before moving it.` +
               ` If you are copying the node then use toJS to make a clone first.`
           )
@@ -162,19 +160,19 @@ export function mobxDeepObserve<T = any>(
       } else {
         // just got attached to the tree
         const entry: Entry = {
-          parent: entryParent,
-          dispose: observe(thing, emitChange),
+          parentRef: parentRef,
+          dispose: observe(thing, processChange),
         }
         entrySet.set(thing, entry)
         entries(thing).forEach(([key, value]) =>
-          observeRecursively(value, { entry, object: thing, path: key })
+          observeRecursively(value, { entry, object: thing, path: "" + key })
         )
         getParentAtom(thing)?.reportChanged() // now part of the tree
       }
     }
-  }
+  })
 
-  function unobserveRecursively(thing: any) {
+  const unobserveRecursively = action((thing: any) => {
     if (isRecursivelyObservable(thing)) {
       const entry = entrySet.get(thing)
       if (entry) {
@@ -184,7 +182,7 @@ export function mobxDeepObserve<T = any>(
         getParentAtom(thing)?.reportChanged() // no longer part of the tree
       }
     }
-  }
+  })
 
   observeRecursively(target, undefined /* no parent */)
 
@@ -193,15 +191,16 @@ export function mobxDeepObserve<T = any>(
       unobserveRecursively(target)
     },
 
-    getParentNode(thing: any) {
+    getParentRef(thing: any) {
       getOrCreateParentAtom(thing).reportObserved()
+
       const entry = entrySet.get(thing)
-      if (!entry?.parent) {
+      if (!entry?.parentRef) {
         return undefined
       }
       return {
-        parent: entry.parent.object,
-        parentPath: entry.parent.path,
+        parent: entry.parentRef.object,
+        parentPath: entry.parentRef.path,
       }
     },
   }

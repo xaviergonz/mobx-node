@@ -46,15 +46,15 @@ test("object two-way binding", () => {
 
   // simple array
   expect(yjsMap.get("numberArray") instanceof Y.Array).toBe(true)
-  expect(yjsMap.get("numberArray").toJSON()).toEqual([1, 2])
-  expect(mobxObservable.numberArray).toEqual([1, 2])
+  expect(yjsMap.get("numberArray").toJSON()).toStrictEqual([1, 2])
+  expect(mobxObservable.numberArray).toStrictEqual([1, 2])
 
   runInAction(() => {
     mobxObservable.numberArray.splice(1, 1, 3, 4)
   })
-  expect(yjsMap.get("numberArray").toJSON()).toEqual([1, 3, 4])
+  expect(yjsMap.get("numberArray").toJSON()).toStrictEqual([1, 3, 4])
   ;(yjsMap.get("numberArray") as Y.Array<number>).delete(1, 1)
-  expect(mobxObservable.numberArray).toEqual([1, 4])
+  expect(mobxObservable.numberArray).toStrictEqual([1, 4])
 
   // nested object
   expect(yjsMap.get("nestedObj")).toBe(undefined)
@@ -68,11 +68,11 @@ test("object two-way binding", () => {
   expect(yjsMap.get("nestedObj").get("numberProp")).toBe(100)
 
   yjsMap.get("nestedObj").set("numberProp", 200)
-  expect(mobxObservable.nestedObj).toEqual({ numberProp: 200 })
+  expect(mobxObservable.nestedObj).toStrictEqual({ numberProp: 200 })
   expect(mobxObservable.nestedObj).toBe(nestedObjRef)
 
   yjsMap.set("nestedObj", new Y.Map([["numberProp", 300]]))
-  expect(mobxObservable.nestedObj).toEqual({ numberProp: 300 })
+  expect(mobxObservable.nestedObj).toStrictEqual({ numberProp: 300 })
   expect(mobxObservable.nestedObj).not.toBe(nestedObjRef)
 })
 
@@ -81,19 +81,19 @@ test("array simple two-way binding", () => {
   const yjsArray = yjsObject as Y.Array<any>
 
   // initial state
-  expect(yjsArray.toJSON()).toEqual([0])
-  expect(mobxObservable).toEqual([0])
+  expect(yjsArray.toJSON()).toStrictEqual([0])
+  expect(mobxObservable).toStrictEqual([0])
 
   // mobx to yjs
   runInAction(() => {
     mobxObservable[0] = 10
     mobxObservable.push(20)
   })
-  expect(yjsArray.toJSON()).toEqual([10, 20])
+  expect(yjsArray.toJSON()).toStrictEqual([10, 20])
 
   // yjs to mobx
   yjsArray.push([30])
-  expect(mobxObservable).toEqual([10, 20, 30])
+  expect(mobxObservable).toStrictEqual([10, 20, 30])
 })
 
 test("array with nested object two-way binding", () => {
@@ -101,22 +101,22 @@ test("array with nested object two-way binding", () => {
   const yjsArray = yjsObject as Y.Array<any>
 
   // initial state
-  expect(yjsArray.toJSON()).toEqual([{ n: 0 }])
-  expect(mobxObservable).toEqual([{ n: 0 }])
+  expect(yjsArray.toJSON()).toStrictEqual([{ n: 0 }])
+  expect(mobxObservable).toStrictEqual([{ n: 0 }])
 
   // mobx to yjs
   runInAction(() => {
     mobxObservable[0].n = 10
     mobxObservable.push({ n: 20 })
   })
-  expect(yjsArray.toJSON()).toEqual([{ n: 10 }, { n: 20 }])
+  expect(yjsArray.toJSON()).toStrictEqual([{ n: 10 }, { n: 20 }])
 
   // yjs to mobx
   const newN = new Y.Map()
   newN.set("n", 30)
   yjsArray.push([newN])
-  expect(yjsArray.toJSON()).toEqual([{ n: 10 }, { n: 20 }, { n: 30 }])
-  expect(mobxObservable).toEqual([{ n: 10 }, { n: 20 }, { n: 30 }])
+  expect(yjsArray.toJSON()).toStrictEqual([{ n: 10 }, { n: 20 }, { n: 30 }])
+  expect(mobxObservable).toStrictEqual([{ n: 10 }, { n: 20 }, { n: 30 }])
   newN.set("n", 40)
-  expect(mobxObservable).toEqual([{ n: 10 }, { n: 20 }, { n: 40 }])
+  expect(mobxObservable).toStrictEqual([{ n: 10 }, { n: 20 }, { n: 40 }])
 })

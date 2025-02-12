@@ -23,7 +23,7 @@ describe("convertPlainToYjsValue", () => {
     fixYjsStructure(result)
 
     expect(result).toBeInstanceOf(Y.Array)
-    expect((result as Y.Array<unknown>).toJSON()).toEqual(plainArray)
+    expect((result as Y.Array<unknown>).toJSON()).toStrictEqual(plainArray)
   })
 
   test("should convert a plain object to a Y.Map", () => {
@@ -37,7 +37,7 @@ describe("convertPlainToYjsValue", () => {
     expect(mapResult.get("b")).toBe("two")
     const arrayValue = mapResult.get("c")
     expect(arrayValue).toBeInstanceOf(Y.Array)
-    expect((arrayValue as Y.Array<unknown>).toArray()).toEqual([true, false])
+    expect((arrayValue as Y.Array<unknown>).toArray()).toStrictEqual([true, false])
   })
 
   test("should handle nested structures", () => {
@@ -63,6 +63,6 @@ describe("convertPlainToYjsValue", () => {
     expect(objValue).toBeInstanceOf(Y.Map)
     const nestedArr = (objValue as Y.Map<unknown>).get("nestedArr")
     expect(nestedArr).toBeInstanceOf(Y.Array)
-    expect((nestedArr as Y.Array<unknown>).toArray()).toEqual([1, 2, 3])
+    expect((nestedArr as Y.Array<unknown>).toArray()).toStrictEqual([1, 2, 3])
   })
 })

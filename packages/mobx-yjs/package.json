@@ -1,14 +1,8 @@
 {
   "name": "mobx-yjs",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Create a MobX observable two-way bound to a Y.js state",
-  "keywords": [
-    "mobx",
-    "mobx-yjs",
-    "Y.js",
-    "state management",
-    "observable"
-  ],
+  "keywords": ["mobx", "mobx-yjs", "Y.js", "state management", "observable"],
   "repository": {
     "type": "git",
     "url": "https://github.com/xaviergonz/mobx-yjs.git"
@@ -41,13 +35,7 @@
   "types": "./dist/types/index.d.ts",
   "typings": "./dist/types/index.d.ts",
   "sideEffects": false,
-  "files": [
-    "src",
-    "dist",
-    "LICENSE",
-    "CHANGELOG.md",
-    "README.md"
-  ],
+  "files": ["src", "dist", "LICENSE", "CHANGELOG.md", "README.md"],
   "scripts": {
     "quick-build": "tsc",
     "quick-build-tests": "tsc -p test",

@@ -48,7 +48,7 @@ test("transaction edge-cases", () => {
     mobxObservable.numberArray = [4, 5]
     expect(getNumberArray()).toBe(undefined) // not yet
   })
-  expect(getNumberArray()!.toJSON()).toEqual([4, 5])
+  expect(getNumberArray()!.toJSON()).toStrictEqual([4, 5])
 
   runInAction(() => {
     mobxObservable.numberArray = undefined
@@ -57,18 +57,18 @@ test("transaction edge-cases", () => {
   yjsDoc.transact(() => {
     const arr = new Y.Array()
     yjsMap.set("numberArray", arr)
-    expect(mobxObservable.numberArray).toEqual(undefined) // not yet
+    expect(mobxObservable.numberArray).toStrictEqual(undefined) // not yet
     arr.insert(0, [1, 2])
-    expect(mobxObservable.numberArray).toEqual(undefined) // not yet
+    expect(mobxObservable.numberArray).toStrictEqual(undefined) // not yet
     arr.push([3])
-    expect(mobxObservable.numberArray).toEqual(undefined) // not yet
+    expect(mobxObservable.numberArray).toStrictEqual(undefined) // not yet
     yjsMap.delete("numberArray")
-    expect(mobxObservable.numberArray).toEqual(undefined) // not yet
+    expect(mobxObservable.numberArray).toStrictEqual(undefined) // not yet
     const arr2 = new Y.Array()
     yjsMap.set("numberArray", arr2)
-    expect(mobxObservable.numberArray).toEqual(undefined) // not yet
+    expect(mobxObservable.numberArray).toStrictEqual(undefined) // not yet
     arr2.insert(0, [4, 5])
-    expect(mobxObservable.numberArray).toEqual(undefined) // not yet
+    expect(mobxObservable.numberArray).toStrictEqual(undefined) // not yet
   })
-  expect(mobxObservable.numberArray).toEqual([4, 5])
+  expect(mobxObservable.numberArray).toStrictEqual([4, 5])
 })
