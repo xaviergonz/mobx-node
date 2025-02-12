@@ -1,5 +1,5 @@
 import { reaction, runInAction } from "mobx"
-import { getParentRef, ParentRef } from "../../src/bindYjsToMobxObservable"
+import { getParentRef, ParentRef } from "../../src/getParentRef"
 import { createObjectTestbed } from "../testbed"
 
 test("simple getParentRef", () => {
