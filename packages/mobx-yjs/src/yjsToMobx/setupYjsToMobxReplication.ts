@@ -97,7 +97,9 @@ export function setupYjsToMobxReplication({
 
   yjsObject.observeDeep(yjsObserverCallback)
 
-  return () => {
-    yjsObject.unobserveDeep(yjsObserverCallback)
+  return {
+    dispose: () => {
+      yjsObject.unobserveDeep(yjsObserverCallback)
+    },
   }
 }

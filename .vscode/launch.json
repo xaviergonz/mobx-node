@@ -1,0 +1,19 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "mobx-yjs - Jest debug current file",
+      "program": "${workspaceFolder}/packages/mobx-yjs/node_modules/jest/bin/jest.js",
+      "args": ["--verbose", "-i", "--no-cache", "--testPathPattern", "${fileBasename}"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": ["${workspaceFolder}/**/node_modules/**/*.js", "<node_internals>/**/*.js"],
+      "cwd": "${workspaceFolder}/packages/mobx-yjs"
+    }
+  ]
+}

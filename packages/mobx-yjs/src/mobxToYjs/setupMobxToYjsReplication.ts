@@ -25,7 +25,7 @@ export function setupMobxToYjsReplication({
   }[] = []
   let mobxDeepChangesNestingLevel = 0
 
-  const disposeMobxDeepObserve = mobxDeepObserve(mobxObservable, (change, path) => {
+  const mobxDeepObserveAdmin = mobxDeepObserve(mobxObservable, (change, path) => {
     // if this comes from a yjs change, ignore it
     if (yjsReplicatingRef.current > 0) {
       return
@@ -106,5 +106,11 @@ export function setupMobxToYjsReplication({
     )
   })
 
-  return disposeMobxDeepObserve
+  return {
+    getParentNode: mobxDeepObserveAdmin.getParentNode,
+
+    dispose: () => {
+      mobxDeepObserveAdmin.dispose()
+    },
+  }
 }

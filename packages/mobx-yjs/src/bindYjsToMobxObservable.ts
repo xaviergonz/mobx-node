@@ -35,6 +35,13 @@ export function bindYjsToMobxObservable<T extends PlainStructure>({
   mobxObservable: T
 
   /**
+   * Returns the parent array/object of the given array/object inside the observable tree.
+   */
+  getParent: <TParent extends PlainStructure = never>(
+    struct: PlainStructure
+  ) => { parent: TParent; parentPath: string } | undefined
+
+  /**
    * Disposes the binding.
    */
   dispose: () => void
@@ -45,14 +52,14 @@ export function bindYjsToMobxObservable<T extends PlainStructure>({
 
   const yjsReplicatingRef = { current: 0 }
 
-  const disposeYjsToMobxReplication = setupYjsToMobxReplication({
+  const yjsToMobxReplicationAdmin = setupYjsToMobxReplication({
     mobxObservable,
     yjsObject,
     yjsOrigin,
     yjsReplicatingRef,
   })
 
-  const disposeMobxToYjsReplication = setupMobxToYjsReplication({
+  const mobxToYjsReplicationAdmin = setupMobxToYjsReplication({
     mobxObservable,
     yjsDoc,
     yjsObject,
@@ -63,9 +70,20 @@ export function bindYjsToMobxObservable<T extends PlainStructure>({
   return {
     mobxObservable,
 
+    getParent: <TParent extends PlainStructure = never>(struct: PlainStructure) => {
+      const parentNode = mobxToYjsReplicationAdmin.getParentNode(struct)
+      if (!parentNode) {
+        return undefined
+      }
+      return {
+        parent: parentNode.parent as TParent,
+        parentPath: parentNode.parentPath,
+      }
+    },
+
     dispose: () => {
-      disposeMobxToYjsReplication()
-      disposeYjsToMobxReplication()
+      mobxToYjsReplicationAdmin.dispose()
+      yjsToMobxReplicationAdmin.dispose()
     },
   }
 }

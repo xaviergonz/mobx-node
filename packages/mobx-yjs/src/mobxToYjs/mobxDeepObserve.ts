@@ -3,8 +3,10 @@
 
 import {
   IArrayDidChange,
+  IAtom,
   IMapDidChange,
   IObjectDidChange,
+  createAtom,
   entries,
   isObservableArray,
   isObservableMap,
@@ -15,130 +17,159 @@ import {
 import { failure } from "../utils/failure"
 
 type IDisposer = () => void
-export type IChange = IObjectDidChange | IArrayDidChange | IMapDidChange
-type ParentPath = string | undefined
-export type FullPath = string[]
 
-type Entry = {
-  dispose: IDisposer
-  path: ParentPath
-  parent: Entry | undefined
+type EntryParent = {
+  entry: Entry
+  object: unknown
+  path: string
 }
 
-function buildPath(entry: Entry | undefined): FullPath {
-  if (!entry) {
-    return []
+type Entry = {
+  parent: EntryParent | undefined
+  dispose: IDisposer
+}
+
+export type FullPath = string[]
+
+function buildFullPath(entry: Entry | undefined, subPath?: string): FullPath {
+  const fullPath: string[] = []
+  while (entry?.parent) {
+    fullPath.push(entry.parent.path)
+    entry = entry.parent.entry
   }
-  const fullPath: FullPath = []
-  while (entry.parent) {
-    if (entry.path !== undefined) {
-      fullPath.push(entry.path)
-    }
-    entry = entry.parent
+  fullPath.reverse()
+
+  if (subPath) {
+    fullPath.push(subPath)
   }
-  return fullPath.reverse()
+
+  return fullPath
 }
 
 function isRecursivelyObservable(thing: unknown): boolean {
   return isObservableObject(thing) || isObservableArray(thing) || isObservableMap(thing)
 }
 
-/**
- * Given an object, deeply observes the given object.
- * It is like `observe` from mobx, but applied recursively, including all future children.
- *
- * Note that the given object cannot ever contain cycles and should be a tree.
- *
- * As benefit: path and root will be provided in the callback, so the signature of the listener is
- * (change, path, root) => void
- *
- * The returned disposer can be invoked to clean up the listener
- *
- * deepObserve cannot be used on computed values.
- *
- * @example
- * const disposer = deepObserve(target, (change, path) => {
- *    console.dir(change)
- * })
- */
+export type IChange = IObjectDidChange | IArrayDidChange | IMapDidChange
+
 export function mobxDeepObserve<T = any>(
   target: T,
-  listener: (change: IChange, path: FullPath, root: T) => void
-): IDisposer {
+  onChange: (change: IChange, path: FullPath, root: T) => void
+) {
   const entrySet = new WeakMap<any, Entry>()
+  const parentAtoms = new WeakMap<any, IAtom>()
 
-  function genericListener(change: IChange) {
-    const entry = entrySet.get(change.object)!
-    processChange(change, entry)
-    listener(change, buildPath(entry), target)
+  const getParentAtom = (thing: any) => {
+    return parentAtoms.get(thing)
   }
 
-  function processChange(change: IChange, parent: Entry) {
+  const getOrCreateParentAtom = (thing: any) => {
+    let atom = parentAtoms.get(thing)
+    if (!atom) {
+      atom = createAtom("parent")
+      parentAtoms.set(thing, atom)
+    }
+    return atom
+  }
+
+  function emitChange(change: IChange) {
+    const entry = entrySet.get(change.object)!
+    processChange(change, entry)
+    onChange(change, buildFullPath(entry), target)
+  }
+
+  function processChange(change: IChange, parentEntry: Entry) {
+    const changeTarget = change.object
+
     switch (change.type) {
-      // Object changes
-      case "add": // also for map
-        observeRecursively(change.newValue, parent, change.name)
+      // object, map
+      case "add":
+        observeRecursively(change.newValue, {
+          entry: parentEntry,
+          object: changeTarget,
+          path: change.name,
+        })
         break
+
+      // object, array, map
       case "update": {
-        // also for array and map
         unobserveRecursively(change.oldValue)
-        observeRecursively(
-          change.newValue,
-          parent,
-          (change as IMapDidChange).name || "" + (change as IArrayDidChange).index
-        )
+        observeRecursively(change.newValue, {
+          entry: parentEntry,
+          object: changeTarget,
+          path: (change as IMapDidChange).name || "" + (change as IArrayDidChange).index,
+        })
         break
       }
-      case "remove": // object
-      case "delete": // map
+
+      // object
+      case "remove":
+
+      // map
+      case "delete":
         unobserveRecursively(change.oldValue)
         break
-      // Array changes
+
+      // array
       case "splice": {
         change.removed.map(unobserveRecursively)
         change.added.forEach((value, idx) =>
-          observeRecursively(value, parent, "" + (change.index + idx))
+          observeRecursively(value, {
+            entry: parentEntry,
+            object: changeTarget,
+            path: "" + (change.index + idx),
+          })
         )
         // update paths
         for (let i = change.index + change.addedCount; i < change.object.length; i++) {
-          if (isRecursivelyObservable(change.object[i])) {
-            const entry = entrySet.get(change.object[i])
-            if (entry) {
-              entry.path = "" + i
+          const value = change.object[i]
+          if (isRecursivelyObservable(value)) {
+            const entry = entrySet.get(value)
+            if (entry?.parent) {
+              entry.parent.path = "" + i
+              getParentAtom(value)?.reportChanged()
             }
           }
         }
         break
       }
+
       default:
         break
     }
   }
 
-  function observeRecursively(thing: any, parent: Entry | undefined, path: ParentPath) {
+  function observeRecursively(thing: any, entryParent: EntryParent | undefined) {
     if (isRecursivelyObservable(thing)) {
       const entry = entrySet.get(thing)
       if (entry) {
-        if (entry.parent !== parent || entry.path !== path) {
+        // already attached to the tree
+        if (
+          entry.parent?.entry !== entryParent?.entry ||
+          entry.parent?.path !== entryParent?.path
+        ) {
           // MWE: this constraint is artificial, and this tool could be made to work with cycles,
           // but it increases administration complexity, has tricky edge cases and the meaning of 'path'
           // would become less clear. So doesn't seem to be needed for now
           throw failure(
             `The same observable object cannot appear twice in the same tree,` +
-              ` trying to assign it to '${buildPath(parent)}/${path}',` +
-              ` but it already exists at '${buildPath(entry.parent)}/${entry.path}'.` +
+              ` trying to assign it to ${JSON.stringify(buildFullPath(entryParent?.entry, entryParent?.path))},` +
+              ` but it already exists at ${JSON.stringify(buildFullPath(entry.parent?.entry, entry.parent?.path))}.` +
               ` If you are moving the node then remove it from the tree first before moving it.` +
               ` If you are copying the node then use toJS to make a clone first.`
           )
         }
       } else {
-        const entry = {
-          parent,
-          path,
-          dispose: observe(thing, genericListener),
+        // just got attached to the tree
+        const entry: Entry = {
+          parent: entryParent,
+          dispose: observe(thing, emitChange),
         }
         entrySet.set(thing, entry)
-        entries(thing).forEach(([key, value]) => observeRecursively(value, entry, key))
+        entries(thing).forEach(([key, value]) =>
+          observeRecursively(value, { entry, object: thing, path: key })
+        )
+        getParentAtom(thing)?.reportChanged() // now part of the tree
       }
     }
   }
@@ -146,18 +177,32 @@ export function mobxDeepObserve<T = any>(
   function unobserveRecursively(thing: any) {
     if (isRecursivelyObservable(thing)) {
       const entry = entrySet.get(thing)
-      if (!entry) {
-        return
+      if (entry) {
+        entrySet.delete(thing)
+        entry.dispose()
+        values(thing).forEach(unobserveRecursively)
+        getParentAtom(thing)?.reportChanged() // no longer part of the tree
       }
-      entrySet.delete(thing)
-      entry.dispose()
-      values(thing).forEach(unobserveRecursively)
     }
   }
 
-  observeRecursively(target, undefined, undefined)
+  observeRecursively(target, undefined /* no parent */)
 
-  return () => {
-    unobserveRecursively(target)
+  return {
+    dispose: () => {
+      unobserveRecursively(target)
+    },
+
+    getParentNode(thing: any) {
+      getOrCreateParentAtom(thing).reportObserved()
+      const entry = entrySet.get(thing)
+      if (!entry?.parent) {
+        return undefined
+      }
+      return {
+        parent: entry.parent.object,
+        parentPath: entry.parent.path,
+      }
+    },
   }
 }
