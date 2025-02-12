@@ -1,19 +1,20 @@
 import { reaction, runInAction } from "mobx"
-import { ParentRef } from "../../src/bindYjsToMobxObservable"
+import { getParentRef, ParentRef } from "../../src/bindYjsToMobxObservable"
 import { createObjectTestbed } from "../testbed"
 
 test("simple getParentRef", () => {
-  const { mobxObservable, getParentRef } = createObjectTestbed<{
+  const { mobxObservable } = createObjectTestbed<{
     nestedObj1?: {}
   }>({ nestedObj1: {} })
   const nestedObj1 = mobxObservable.nestedObj1!
   expect(getParentRef(nestedObj1)).toStrictEqual({
     parent: mobxObservable,
     parentPath: "nestedObj1",
-  } satisfies ParentRef<unknown>)
+    root: mobxObservable,
+  } satisfies ParentRef<unknown, unknown>)
 
-  const pathValues: (ParentRef<unknown> | undefined)[] = []
-  const checkPathValues = (expected: (ParentRef<unknown> | undefined)[]) => {
+  const pathValues: (ParentRef<unknown, unknown> | undefined)[] = []
+  const checkPathValues = (expected: (ParentRef<unknown, unknown> | undefined)[]) => {
     expect(pathValues).toStrictEqual(expected)
     pathValues.length = 0
   }
@@ -37,11 +38,12 @@ test("simple getParentRef", () => {
   expect(getParentRef(newNestedObj1)).toStrictEqual({
     parent: mobxObservable,
     parentPath: "nestedObj1",
-  } satisfies ParentRef<unknown>)
+    root: mobxObservable,
+  } satisfies ParentRef<unknown, unknown>)
 })
 
 test("complex getParentRef", () => {
-  const { mobxObservable, getParentRef } = createObjectTestbed<{
+  const { mobxObservable } = createObjectTestbed<{
     nestedObj1?: {
       nestedObj2?: {
         array: {
@@ -59,31 +61,36 @@ test("complex getParentRef", () => {
   expect(getParentRef(mobxObservable.nestedObj1!)).toStrictEqual({
     parent: mobxObservable,
     parentPath: "nestedObj1",
-  } satisfies ParentRef<unknown>)
+    root: mobxObservable,
+  } satisfies ParentRef<unknown, unknown>)
 
   expect(getParentRef(mobxObservable.nestedObj1!.nestedObj2!)).toStrictEqual({
     parent: mobxObservable.nestedObj1,
     parentPath: "nestedObj2",
-  } satisfies ParentRef<unknown>)
+    root: mobxObservable,
+  } satisfies ParentRef<unknown, unknown>)
 
   expect(getParentRef(mobxObservable.nestedObj1!.nestedObj2!.array)).toStrictEqual({
     parent: mobxObservable.nestedObj1!.nestedObj2,
     parentPath: "array",
-  } satisfies ParentRef<unknown>)
+    root: mobxObservable,
+  } satisfies ParentRef<unknown, unknown>)
 
   expect(getParentRef(mobxObservable.nestedObj1!.nestedObj2!.array[0])).toStrictEqual({
     parent: mobxObservable.nestedObj1!.nestedObj2!.array,
     parentPath: "0",
-  } satisfies ParentRef<unknown>)
+    root: mobxObservable,
+  } satisfies ParentRef<unknown, unknown>)
 
   expect(getParentRef(mobxObservable.nestedObj1!.nestedObj2!.array[0].nestedObj3!)).toStrictEqual({
     parent: mobxObservable.nestedObj1!.nestedObj2!.array[0],
     parentPath: "nestedObj3",
-  } satisfies ParentRef<unknown>)
+    root: mobxObservable,
+  } satisfies ParentRef<unknown, unknown>)
 
   // test reactiveness
-  const pathValues: (ParentRef<unknown> | undefined)[] = []
-  const checkPathValues = (expected: (ParentRef<unknown> | undefined)[]) => {
+  const pathValues: (ParentRef<unknown, unknown> | undefined)[] = []
+  const checkPathValues = (expected: (ParentRef<unknown, unknown> | undefined)[]) => {
     expect(pathValues).toStrictEqual(expected)
     pathValues.length = 0
   }

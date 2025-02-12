@@ -5,7 +5,27 @@ import { createMobxObservableFromYjsObject } from "./yjsToMobx/createMobxObserva
 import { setupYjsToMobxReplication } from "./yjsToMobx/setupYjsToMobxReplication"
 import { assertIsObservablePlainStructure } from "./yjsToMobx/assertions"
 
-export type ParentRef<TParent> = { parent: TParent; parentPath: string }
+export type ParentRef<TParent, TRoot> = { parent: TParent; parentPath: string; root: TRoot }
+type GetParentRef = <TParent = unknown, TRoot = unknown>(
+  struct: PlainStructure
+) => ParentRef<TParent, TRoot> | undefined
+
+const getParentRefs = new Set<GetParentRef>()
+
+/**
+ * Returns the parent array/object of the given array/object inside the observable tree
+ * and the parentPath (property name).
+ */
+export const getParentRef: GetParentRef = (struct) => {
+  for (const get of getParentRefs) {
+    const parentRef = get(struct)
+    if (parentRef) {
+      return parentRef as ParentRef<any, any>
+    }
+  }
+
+  return undefined
+}
 
 /**
  * Creates a MobX observable that is bound to a Y.js data structure.
@@ -38,12 +58,6 @@ export function bindYjsToMobxObservable<T extends PlainStructure>({
   mobxObservable: T
 
   /**
-   * Returns the parent array/object of the given array/object inside the observable tree
-   * and the parentPath (property name).
-   */
-  getParentRef: <TParent = unknown>(struct: PlainStructure) => ParentRef<TParent> | undefined
-
-  /**
    * Disposes the binding.
    */
   dispose: () => void
@@ -69,23 +83,27 @@ export function bindYjsToMobxObservable<T extends PlainStructure>({
     yjsReplicatingRef,
   })
 
+  const getParentRef: GetParentRef = (struct) => {
+    assertIsObservablePlainStructure(struct)
+
+    const parentRef = mobxToYjsReplicationAdmin.getParentRef(struct)
+    if (!parentRef) {
+      return undefined
+    }
+    return {
+      parent: parentRef.parent as any,
+      parentPath: parentRef.parentPath,
+      root: mobxObservable as any,
+    }
+  }
+
+  getParentRefs.add(getParentRef)
+
   return {
     mobxObservable,
 
-    getParentRef: <TParent = unknown>(struct: PlainStructure) => {
-      assertIsObservablePlainStructure(struct)
-
-      const parentRef = mobxToYjsReplicationAdmin.getParentRef(struct)
-      if (!parentRef) {
-        return undefined
-      }
-      return {
-        parent: parentRef.parent as TParent,
-        parentPath: parentRef.parentPath,
-      }
-    },
-
     dispose: () => {
+      getParentRefs.delete(getParentRef)
       mobxToYjsReplicationAdmin.dispose()
       yjsToMobxReplicationAdmin.dispose()
     },

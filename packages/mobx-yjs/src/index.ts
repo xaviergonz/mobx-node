@@ -1,4 +1,4 @@
-export { bindYjsToMobxObservable } from "./bindYjsToMobxObservable"
+export { bindYjsToMobxObservable, getParentRef } from "./bindYjsToMobxObservable"
 export {
   applyPlainArrayToYArray,
   applyPlainObjectToYMap,
