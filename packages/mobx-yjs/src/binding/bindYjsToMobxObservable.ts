@@ -4,7 +4,7 @@ import { PlainStructure, YjsStructure } from "./types"
 import { createMobxObservableFromYjsObject } from "./yjsToMobx/createMobxObservableFromYjsObject"
 import { setupYjsToMobxReplication } from "./yjsToMobx/setupYjsToMobxReplication"
 import { assertIsObservablePlainStructure } from "./yjsToMobx/assertions"
-import { GetParentRef, registeredGetParentRefs } from "./getParentRef"
+import { GetParentRef, registeredGetParentRefs } from "../utils/getParentRef"
 
 /**
  * Creates a MobX observable that is bound to a Y.js data structure.

@@ -1,6 +1,6 @@
 import { isObservableArray, isObservableObject } from "mobx"
 import { PlainStructure } from "../types"
-import { failure } from "../utils/failure"
+import { failure } from "../../utils/failure"
 
 export function isObservablePlainStructure(target: unknown): target is PlainStructure {
   return isObservableObject(target) || isObservableArray(target)

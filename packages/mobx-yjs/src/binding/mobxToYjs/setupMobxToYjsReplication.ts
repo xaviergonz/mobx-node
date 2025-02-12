@@ -1,7 +1,7 @@
 import { when } from "mobx"
 import * as Y from "yjs"
 import { YjsStructure, PlainStructure } from "../types"
-import { failure } from "../utils/failure"
+import { failure } from "../../utils/failure"
 import { FullPath, IChange, mobxDeepObserve } from "./mobxDeepObserve"
 import { resolveYjsStructurePath } from "./resolveYjsObjectPath"
 import { convertPlainToYjsValue } from "./convertPlainToYjsValue"

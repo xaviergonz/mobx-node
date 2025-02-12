@@ -1,6 +1,6 @@
 import { isObservableArray, isObservableObject } from "mobx"
 import { PlainObject, PlainStructure } from "../types"
-import { failure } from "../utils/failure"
+import { failure } from "../../utils/failure"
 import { assertIsObservablePlainStructure } from "./assertions"
 
 export function resolveMobxObservablePath(

@@ -15,7 +15,7 @@ import {
   observe,
   values,
 } from "mobx"
-import { failure } from "../utils/failure"
+import { failure } from "../../utils/failure"
 
 type IDisposer = () => void
 

@@ -1,7 +1,7 @@
 import { isObservableArray, isObservableObject, remove, runInAction, set } from "mobx"
 import * as Y from "yjs"
 import { PlainStructure, PlainValue, YjsStructure, YjsValue } from "../types"
-import { failure } from "../utils/failure"
+import { failure } from "../../utils/failure"
 import { resolveMobxObservablePath } from "./resolveMobxObservablePath"
 
 function yjsToPlainValue(v: YjsValue): PlainValue {

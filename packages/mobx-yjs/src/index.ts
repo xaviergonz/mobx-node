@@ -1,9 +1,9 @@
-export { bindYjsToMobxObservable } from "./bindYjsToMobxObservable"
-export { getParentRef } from "./getParentRef"
-export type { ParentRef } from "./getParentRef"
+export { bindYjsToMobxObservable } from "./binding/bindYjsToMobxObservable"
+export { getParentRef } from "./utils/getParentRef"
+export type { ParentRef } from "./utils/getParentRef"
 export {
   applyPlainArrayToYArray,
   applyPlainObjectToYMap,
   convertPlainToYjsValue,
-} from "./mobxToYjs/convertPlainToYjsValue"
-export * from "./types"
+} from "./binding/mobxToYjs/convertPlainToYjsValue"
+export * from "./binding/types"

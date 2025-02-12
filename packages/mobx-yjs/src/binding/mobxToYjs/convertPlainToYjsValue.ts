@@ -1,6 +1,6 @@
 import * as Y from "yjs"
 import { PlainArray, PlainObject, PlainPrimitive, PlainValue, YjsValue } from "../types"
-import { failure } from "../utils/failure"
+import { failure } from "../../utils/failure"
 
 function isPlainPrimitive(v: unknown): v is PlainPrimitive {
   const t = typeof v
