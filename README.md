@@ -103,7 +103,39 @@ applyPlainObjectToYMap(
 )
 ```
 
-## Getting parent nodes
+## Using computeds in the bound observable tree
+
+While declaring actions that affect the bound observable tree is easy (see for example `toggleTodoDone` in the example above), using computed values might not seem as straightforward. While in "classical" MobX you'd generate the computed values as a getter for the object, that's not a possibility here (since the object is auto-generated). In order to overcome this limitation this library offers a function called `computedProp`, which allows you to declare functional getters, this is, getters that take the object as argument.
+
+In other words, where you would usually have this in "classical" MobX:
+
+```ts
+const myName = observable({
+  firstName: "John",
+  lastName: "Doe",
+  get fullName() {
+    return `${this.firstName} ${this.lastName}`
+  }
+})
+
+const fullName = myName.fullName
+```
+
+you can now use this for bound auto-generated observables:
+
+```ts
+type Name = { firstName: string, lastName: string }
+
+const getFullName = computedProp((name: Name) => {
+  return `${name.firstName} ${name.lastName}`
+})
+
+const fullName = getFullName(myName)
+```
+
+## Traversing the observable tree
+
+### Getting parent nodes
 
 The `getParentRef` function that can be used to get the parent ref (parent object and path) of any nodes inside the observable object:
 
