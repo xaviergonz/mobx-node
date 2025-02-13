@@ -16,6 +16,7 @@ import {
   values,
 } from "mobx"
 import { failure } from "../../utils/failure"
+import { invalidateSnapshotTreeToRoot } from "../../utils/getSnapshot"
 
 type IDisposer = () => void
 
@@ -116,6 +117,7 @@ export function mobxDeepObserve<T = any>(
             path: "" + (change.index + idx),
           })
         )
+
         // update paths
         for (let i = change.index + change.addedCount; i < change.object.length; i++) {
           const value = change.object[i]
@@ -134,6 +136,8 @@ export function mobxDeepObserve<T = any>(
         break
     }
 
+    invalidateSnapshotTreeToRoot(changeTarget)
+
     onChange(change, buildFullPath(parentEntry), target)
   })
 
@@ -141,11 +145,13 @@ export function mobxDeepObserve<T = any>(
     if (isRecursivelyObservable(thing)) {
       const entry = entrySet.get(thing)
       if (entry) {
-        // already attached to the tree
+        // already attached to the tree, probably getting moved around
         if (
           entry.parentRef?.entry !== parentRef?.entry ||
           entry.parentRef?.path !== parentRef?.path
         ) {
+          // getting moved around without being removed first
+
           // MWE: this constraint is artificial, and this tool could be made to work with cycles,
           // but it increases administration complexity, has tricky edge cases and the meaning of 'path'
           // would become less clear. So doesn't seem to be needed for now
@@ -180,6 +186,8 @@ export function mobxDeepObserve<T = any>(
         entry.dispose()
         values(thing).forEach(unobserveRecursively)
         getParentAtom(thing)?.reportChanged() // no longer part of the tree
+
+        invalidateSnapshotTreeToRoot(thing)
       }
     }
   })

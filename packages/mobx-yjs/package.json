@@ -1,7 +1,7 @@
 {
   "name": "mobx-yjs",
   "version": "1.2.0",
-  "description": "Create a MobX observable two-way bound to a Y.js state",
+  "description": "Create a MobX observable data tree two-way bound to a Y.js state",
   "keywords": ["mobx", "mobx-yjs", "Y.js", "state management", "observable"],
   "repository": {
     "type": "git",

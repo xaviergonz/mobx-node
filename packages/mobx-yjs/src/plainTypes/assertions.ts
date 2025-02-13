@@ -24,6 +24,6 @@ export function assertIsObservablePlainStructure(
 ): asserts target is PlainStructure {
   const valid = isObservablePlainStructure(target)
   if (!valid) {
-    throw failure("target is not a bindable mobx observable")
+    throw failure("target is not an observable object or array")
   }
 }

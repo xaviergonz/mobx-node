@@ -7,7 +7,7 @@ import { setupYjsToMobxReplication } from "./yjsToMobx/setupYjsToMobxReplication
 import { GetParentRef, registeredGetParentRefs } from "../utils/getParentRef"
 
 /**
- * Creates a MobX observable that is bound to a Y.js data structure.
+ * Creates a MobX observable data tree that is bound to a Y.js data structure.
  * Y.js Map and Array instances are bound to MobX objects and arrays, respectively.
  */
 export function bindYjsToMobxObservable<T extends PlainStructure>({
@@ -32,7 +32,7 @@ export function bindYjsToMobxObservable<T extends PlainStructure>({
   yjsOrigin?: symbol
 }): {
   /**
-   * The bound mobx observable instance.
+   * The bound mobx observable data.
    */
   mobxObservable: T
 

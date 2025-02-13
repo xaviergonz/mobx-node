@@ -49,7 +49,9 @@ test("simple getParentRef", () => {
 })
 
 test("getParentRef errors", () => {
-  expect(() => getParentRef(undefined as any)).toThrow("target is not a bindable mobx observable")
+  expect(() => getParentRef(undefined as any)).toThrow(
+    "target is not an observable object or array"
+  )
 })
 
 test("complex getParentRef", () => {

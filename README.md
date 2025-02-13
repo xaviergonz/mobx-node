@@ -2,7 +2,7 @@
   <h1 align="center">mobx-yjs</h1>
 </p>
 <p align="center">
-  <i>Create a MobX observable two-way bound to a Y.js state.</i>
+  <i>Create a MobX observable data tree two-way bound to a Y.js state.</i>
 </p>
 
 <p align="center">
@@ -103,9 +103,9 @@ applyPlainObjectToYMap(
 )
 ```
 
-## Using computeds in the bound observable tree
+## Using computeds in the observable data tree
 
-While declaring actions that affect the bound observable tree is easy (see for example `toggleTodoDone` in the example above), using computed values might not seem as straightforward. While in "classical" MobX you'd generate the computed values as a getter for the object, that's not a possibility here (since the object is auto-generated). In order to overcome this limitation this library offers a function called `computedProp`, which allows you to declare functional getters, this is, getters that take the object as argument.
+While declaring actions that affect the observable data tree is easy (see for example `toggleTodoDone` in the example above), using computed values might not seem as straightforward. While in "classical" MobX you'd generate the computed values as a getter for the object, that's not a possibility here (since the object is auto-generated). In order to overcome this limitation this library offers a function called `computedProp`, which allows you to declare functional getters, this is, getters that take the object as argument.
 
 In other words, where you would usually have this in "classical" MobX:
 
@@ -121,7 +121,7 @@ const myName = observable({
 const fullName = myName.fullName
 ```
 
-you can now use this for bound auto-generated observables:
+you can now use this for the observable objects:
 
 ```ts
 type Name = { firstName: string, lastName: string }
@@ -132,6 +132,33 @@ const getFullName = computedProp((name: Name) => {
 
 const fullName = getFullName(myName)
 ```
+
+## Getting immutable snapshots of a data tree node
+
+The function `getSnapshot` creates a deep, immutable copy of a node in the observable data tree. This snapshot provides a plain JavaScript representation of the state at the time of calling, ensuring that further changes to the observable do not affect the snapshot.
+
+Note that snapshots maintain referential integrity: when you update a primitive in the root node, only the top-level reference is replaced. In contrast, if you update a primitive inside a nested child node, the reference of that child and each of its parent nodes (up to the root) will be updated. This behavior guarantees that changes are accurately tracked at the proper hierarchical level.
+
+Using `getSnapshot` can be useful when you need a consistent view of the state for debugging, logging, or diffing purposes.
+
+Note: `getSnapshot` only works for nodes that are currently part of the data tree. If a node is not part of the data tree the returned snapshot will be `undefined`.
+
+For example, you can capture the current state of your application like this:
+
+```ts
+const currentState = getSnapshot(todoAppState);
+```
+
+The `currentState` will be a plain JavaScript object containing the data from `todoAppState`, and any changes made afterwards to `todoAppState` will not impact `currentState`.
+
+You can also capture a snapshot of any nested node in your observable tree:
+
+```ts
+const firstTodoSnapshot = getSnapshot(todoAppState.todoList[0]);
+```
+
+This produces an immutable copy of the todo item.
+
 
 ## Traversing the observable tree
 
@@ -147,7 +174,7 @@ const { parent, parentPath } = getParentRef(mobxObservable); // root node
 // { parent: undefined, parentPath: undefined, root: mobxObservable }
 ```
 
-If it is not in the tree of any of the bound mobx observables it will return `undefined`.
+If it is not in the data tree of any of the bound mobx observables it will return `undefined`.
 
 ## Limits
 

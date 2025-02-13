@@ -2,6 +2,7 @@
 
 ## 1.2.0
 
+- Added `getSnapshot` to be able to get snapshots of nodes part of the bound data tree.
 - `getParentRef` will now return `{ parent: undefined, parentPath: undefined, root: obj }` for root objects.
 
 ## 1.1.0
