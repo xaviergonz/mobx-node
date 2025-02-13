@@ -1,9 +1,8 @@
 # Change Log
 
-## 1.2.0
+## 2.0.0 (unreleased)
 
-- Added `getSnapshot` to be able to get snapshots of nodes part of the bound data tree.
-- `getParentRef` will now return `{ parent: undefined, parentPath: undefined, root: obj }` for root objects.
+- Migrated to the the mobx-node package instead
 
 ## 1.1.0
 

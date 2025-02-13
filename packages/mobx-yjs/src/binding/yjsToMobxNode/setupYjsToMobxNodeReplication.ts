@@ -1,8 +1,9 @@
 import { isObservableArray, isObservableObject, remove, runInAction, set } from "mobx"
 import * as Y from "yjs"
-import { PlainStructure, PlainValue } from "../../plainTypes/types"
-import { failure } from "../../utils/failure"
-import { resolveMobxObservablePath } from "./resolveMobxObservablePath"
+import { failure } from "../../error/failure"
+import { Node } from "../../node/node"
+import { resolveNodePath } from "../../node/resolveNodePath"
+import { PlainValue } from "../../plainTypes/types"
 import { YjsStructure, YjsValue } from "../../yjsTypes/types"
 
 function yjsToPlainValue(v: YjsValue): PlainValue {
@@ -13,13 +14,13 @@ function yjsToPlainValue(v: YjsValue): PlainValue {
   }
 }
 
-export function setupYjsToMobxReplication({
-  mobxObservable,
+export function setupYjsToMobxNodeReplication({
+  mobxNode,
   yjsObject,
   yjsOrigin,
   yjsReplicatingRef,
 }: {
-  mobxObservable: PlainStructure
+  mobxNode: Node
   yjsObject: YjsStructure
   yjsOrigin: symbol
   yjsReplicatingRef: { current: number }
@@ -35,7 +36,7 @@ export function setupYjsToMobxReplication({
     try {
       runInAction(() => {
         events.forEach((event) => {
-          const mobxTarget = resolveMobxObservablePath(mobxObservable, event.path)
+          const mobxTarget = resolveNodePath(mobxNode, event.path)
 
           // now y.js and mobx should be in the same target
 
@@ -44,7 +45,7 @@ export function setupYjsToMobxReplication({
               throw failure("mobx target was expected to be an object")
             }
 
-            const mobxObject = mobxTarget
+            const mobxObject = mobxTarget as Node
             const yjsMap = event.target
 
             event.changes.keys.forEach((change, key) => {

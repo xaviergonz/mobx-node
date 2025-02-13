@@ -1,18 +1,19 @@
-import { reaction, runInAction } from "mobx"
-import { getSnapshot } from "../../src/utils/getSnapshot"
-import { createObjectTestbed } from "../testbed"
+import { isObservable, reaction, runInAction } from "mobx"
+import { getNodeSnapshot, isNode, node } from "../../src"
 
 it("throws if an unsupported type is passed", () => {
-  expect(() => getSnapshot(undefined as any)).toThrow("target is not an observable object or array")
+  expect(() => getNodeSnapshot(undefined as any)).toThrow("node expected")
 })
 
 it("referencial integrity", () => {
-  const { mobxObservable } = createObjectTestbed<{
+  const mobxObservable = node<{
     nestedObj1?: { n: number }
     number: number
   }>({ nestedObj1: { n: 0 }, number: 1 })
 
-  const rootSn = getSnapshot(mobxObservable)
+  const rootSn = getNodeSnapshot(mobxObservable)
+  expect(isNode(rootSn)).toBe(false)
+  expect(isObservable(rootSn)).toBe(false)
   expect(rootSn).toMatchInlineSnapshot(`
 {
   "nestedObj1": {
@@ -22,9 +23,9 @@ it("referencial integrity", () => {
 }
 `)
   // no changes should result in the same snapshot
-  expect(getSnapshot(mobxObservable)).toBe(rootSn)
+  expect(getNodeSnapshot(mobxObservable)).toBe(rootSn)
 
-  const nestedObj1Sn = getSnapshot(mobxObservable.nestedObj1!)
+  const nestedObj1Sn = getNodeSnapshot(mobxObservable.nestedObj1!)
   expect(nestedObj1Sn).toMatchInlineSnapshot(`
 {
   "n": 0,
@@ -32,14 +33,14 @@ it("referencial integrity", () => {
 `)
   expect(rootSn?.nestedObj1).toBe(nestedObj1Sn)
   // no changes should result in the same snapshot
-  expect(getSnapshot(mobxObservable.nestedObj1!)).toBe(nestedObj1Sn)
+  expect(getNodeSnapshot(mobxObservable.nestedObj1!)).toBe(nestedObj1Sn)
 
   // change child
   runInAction(() => {
     mobxObservable.nestedObj1!.n++
   })
   // nestedObj1Sn should have changed
-  const newNestedObj1Sn = getSnapshot(mobxObservable.nestedObj1!)
+  const newNestedObj1Sn = getNodeSnapshot(mobxObservable.nestedObj1!)
   expect(newNestedObj1Sn).toMatchInlineSnapshot(`
 {
   "n": 1,
@@ -48,7 +49,7 @@ it("referencial integrity", () => {
   expect(newNestedObj1Sn).not.toBe(nestedObj1Sn)
 
   // rootSn should have changed
-  const newRootSn = getSnapshot(mobxObservable)
+  const newRootSn = getNodeSnapshot(mobxObservable)
   expect(newRootSn).toMatchInlineSnapshot(`
 {
   "nestedObj1": {
@@ -65,7 +66,7 @@ it("referencial integrity", () => {
     mobxObservable.number++
   })
   // rootSn should have changed
-  const newRootSn2 = getSnapshot(mobxObservable)
+  const newRootSn2 = getNodeSnapshot(mobxObservable)
   expect(newRootSn2).toMatchInlineSnapshot(`
 {
   "nestedObj1": {
@@ -78,19 +79,20 @@ it("referencial integrity", () => {
 
   // nestedObj1Sn should NOT have changed
   expect(newRootSn2!.nestedObj1).toBe(newNestedObj1Sn)
-  expect(getSnapshot(mobxObservable.nestedObj1!)).toBe(newNestedObj1Sn)
+  expect(getNodeSnapshot(mobxObservable.nestedObj1!)).toBe(newNestedObj1Sn)
 
   // detach child
   const oldNestedObj1 = mobxObservable.nestedObj1!
+  const oldNestedObj1Sn = getNodeSnapshot(oldNestedObj1)
   runInAction(() => {
     mobxObservable.nestedObj1 = undefined
   })
 
-  // detached, so should be undefined
-  expect(getSnapshot(oldNestedObj1)).toBe(undefined)
+  // detached, so should keep the same snapshot
+  expect(getNodeSnapshot(oldNestedObj1)).toBe(oldNestedObj1Sn)
 
   // rootSn should have changed
-  const newRootSn3 = getSnapshot(mobxObservable)
+  const newRootSn3 = getNodeSnapshot(mobxObservable)
   expect(newRootSn3).toMatchInlineSnapshot(`
 {
   "nestedObj1": undefined,
@@ -104,17 +106,11 @@ it("referencial integrity", () => {
     mobxObservable.nestedObj1 = oldNestedObj1
   })
 
-  // nestedObj1Sn should have changed
-  const newNestedObj1Sn2 = getSnapshot(mobxObservable.nestedObj1!)
-  expect(newNestedObj1Sn2).toMatchInlineSnapshot(`
-{
-  "n": 1,
-}
-`)
-  expect(newNestedObj1Sn2).not.toBe(newNestedObj1Sn)
+  // nestedObj1Sn should not have changed
+  expect(getNodeSnapshot(mobxObservable.nestedObj1!)).toBe(newNestedObj1Sn)
 
   // rootSn should have changed
-  const newRootSn4 = getSnapshot(mobxObservable)
+  const newRootSn4 = getNodeSnapshot(mobxObservable)
   expect(newRootSn4).toMatchInlineSnapshot(`
 {
   "nestedObj1": {
@@ -124,25 +120,25 @@ it("referencial integrity", () => {
 }
 `)
   expect(newRootSn4).not.toBe(newRootSn3)
-  expect(newRootSn4!.nestedObj1).toBe(newNestedObj1Sn2)
+  expect(newRootSn4!.nestedObj1).toBe(newNestedObj1Sn)
 })
 
 it("should trigger mobx reactions when snapshots change", () => {
-  const { mobxObservable } = createObjectTestbed<{
+  const mobxObservable = node<{
     nestedObj1?: { n: number }
     number: number
   }>({ nestedObj1: { n: 0 }, number: 1 })
 
   const snapshots: any[] = []
   reaction(
-    () => getSnapshot(mobxObservable),
+    () => getNodeSnapshot(mobxObservable),
     (snapshot) => {
       snapshots.push({ rootSn: snapshot })
     }
   )
   const nestedObj1 = mobxObservable.nestedObj1!
   reaction(
-    () => getSnapshot(nestedObj1),
+    () => getNodeSnapshot(nestedObj1),
     (snapshot) => {
       snapshots.push({ nestedObj1Sn: snapshot })
     }
@@ -201,9 +197,6 @@ it("should trigger mobx reactions when snapshots change", () => {
       "number": 2,
     },
   },
-  {
-    "nestedObj1Sn": undefined,
-  },
 ]
 `)
   snapshots.length = 0
@@ -220,11 +213,6 @@ it("should trigger mobx reactions when snapshots change", () => {
         "n": 1,
       },
       "number": 2,
-    },
-  },
-  {
-    "nestedObj1Sn": {
-      "n": 1,
     },
   },
 ]

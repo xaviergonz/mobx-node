@@ -1,5 +1,5 @@
 import * as Y from "yjs"
-import { convertPlainToYjsValue } from "../../../src/binding/mobxToYjs/convertPlainToYjsValue"
+import { convertPlainToYjsValue } from "../../../src/binding/mobxNodeToYjs/convertPlainToYjsValue"
 import { YjsValue } from "../../../src/yjsTypes/types"
 
 describe("convertPlainToYjsValue", () => {

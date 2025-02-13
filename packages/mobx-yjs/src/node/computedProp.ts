@@ -1,6 +1,6 @@
 import { computed, IComputedValue, IComputedValueOptions } from "mobx"
 import { PlainObject } from "../plainTypes/types"
-import { assertIsObservablePlainStructure } from "../plainTypes/assertions"
+import { assertIsObservablePlainStructure } from "../plainTypes/checks"
 
 /**
  * Create a computed property on an object that is used as a function

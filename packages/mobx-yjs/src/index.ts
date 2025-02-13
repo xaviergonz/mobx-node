@@ -1,11 +1,19 @@
-export { bindYjsToMobxObservable } from "./binding/bindYjsToMobxObservable"
+// mobx-node
+export { computedProp } from "./node/computedProp"
+export { getNodeSnapshot } from "./node/getNodeSnapshot"
+export { getParentNode } from "./node/getParentNode"
+export type { ParentNode } from "./node/getParentNode"
+export { getRootNode } from "./node/getRootNode"
+export { assertIsNode, isNode, node } from "./node/node"
+export type { Node } from "./node/node"
+export { resolveNodePath } from "./node/resolveNodePath"
+export * from "./plainTypes/types"
+
+// mobx-node-yjs
+export { bindYjsToMobxNode } from "./binding/bindYjsToMobxNode"
 export {
   applyPlainArrayToYArray,
   applyPlainObjectToYMap,
   convertPlainToYjsValue,
-} from "./binding/mobxToYjs/convertPlainToYjsValue"
-export * from "./plainTypes/types"
-export { getParentRef } from "./utils/getParentRef"
-export type { ParentRef } from "./utils/getParentRef"
+} from "./binding/mobxNodeToYjs/convertPlainToYjsValue"
 export * from "./yjsTypes/types"
-export { getSnapshot } from "./utils/getSnapshot"

@@ -5,7 +5,7 @@ import {
   YjsValue,
   applyPlainArrayToYArray,
   applyPlainObjectToYMap,
-  bindYjsToMobxObservable,
+  bindYjsToMobxNode,
 } from "../src"
 
 const disposers: (() => void)[] = []
@@ -15,7 +15,7 @@ export function createObjectTestbed<T extends PlainObject>(initialData: T) {
   const yjsObject = yjsDoc.getMap("data") as Y.Map<YjsValue>
   applyPlainObjectToYMap(yjsObject, initialData)
 
-  const { mobxObservable, dispose } = bindYjsToMobxObservable<T>({
+  const { mobxNode: mobxObservable, dispose } = bindYjsToMobxNode<T>({
     yjsDoc: yjsDoc,
     yjsObject: yjsObject,
   })
@@ -30,7 +30,7 @@ export function createArrayTestbed<T extends PlainArray>(initialData: T) {
   const yjsObject = yjsDoc.getArray("data") as Y.Array<YjsValue>
   applyPlainArrayToYArray(yjsObject, initialData)
 
-  const { mobxObservable, dispose } = bindYjsToMobxObservable<T>({
+  const { mobxNode: mobxObservable, dispose } = bindYjsToMobxNode<T>({
     yjsDoc: yjsDoc,
     yjsObject: yjsObject,
   })

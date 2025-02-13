@@ -1,7 +1,7 @@
 import * as Y from "yjs"
 import { YjsStructure } from "../../yjsTypes/types"
-import { failure } from "../../utils/failure"
-import { assertIsYjsStructure } from "../../yjsTypes/assertions"
+import { failure } from "../../error/failure"
+import { assertIsYjsStructure } from "../../yjsTypes/checks"
 
 export function resolveYjsStructurePath(
   yjsObject: YjsStructure,

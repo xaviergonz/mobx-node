@@ -1,5 +1,5 @@
 import * as Y from "yjs"
-import { failure } from "../utils/failure"
+import { failure } from "../error/failure"
 import { YjsStructure } from "./types"
 
 export function isYjsStructure(target: unknown): target is YjsStructure {

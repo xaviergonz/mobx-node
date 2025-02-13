@@ -1,6 +1,6 @@
 import { isObservableArray, isObservableObject } from "mobx"
 import { PlainArray, PlainObject, PlainPrimitive, PlainStructure } from "./types"
-import { failure } from "../utils/failure"
+import { failure } from "../error/failure"
 
 export function isPlainPrimitive(v: unknown): v is PlainPrimitive {
   const t = typeof v

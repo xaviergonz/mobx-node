@@ -15,7 +15,7 @@ test("reassign an already added object to another part of the tree should fail",
       mobxObservable.nestedObj2 = mobxObservable.nestedObj1
     })
   }).toThrow(
-    `The same observable object cannot appear twice in the same tree, trying to assign it to ["nestedObj2"], but it already exists at ["nestedObj1"]`
+    `The same node cannot appear twice in the same or different trees, trying to assign it to ["nestedObj2"], but it already exists at ["nestedObj1"]`
   )
 })
 

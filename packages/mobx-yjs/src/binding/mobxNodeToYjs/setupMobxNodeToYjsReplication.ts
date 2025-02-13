@@ -1,20 +1,21 @@
 import { when } from "mobx"
 import * as Y from "yjs"
-import { PlainStructure } from "../../plainTypes/types"
-import { failure } from "../../utils/failure"
-import { FullPath, IChange, mobxDeepObserve } from "./mobxDeepObserve"
-import { resolveYjsStructurePath } from "./resolveYjsObjectPath"
+import { failure } from "../../error/failure"
+import { IChange, mobxDeepObserve } from "./mobxDeepObserve"
+import { resolveYjsStructurePath } from "./resolveYjsStructurePath"
 import { convertPlainToYjsValue } from "./convertPlainToYjsValue"
 import { YjsStructure } from "src/yjsTypes/types"
+import { buildNodeFullPath } from "../../node/utils/buildNodeFullPath"
+import { Node } from "../../node/node"
 
-export function setupMobxToYjsReplication({
-  mobxObservable,
+export function setupMobxNodeToYjsReplication({
+  mobxNode,
   yjsDoc,
   yjsObject,
   yjsOrigin,
   yjsReplicatingRef,
 }: {
-  mobxObservable: PlainStructure
+  mobxNode: Node
   yjsDoc: Y.Doc
   yjsObject: YjsStructure
   yjsOrigin: symbol
@@ -22,17 +23,18 @@ export function setupMobxToYjsReplication({
 }) {
   let pendingMobxChanges: {
     change: IChange
-    path: FullPath
+    path: string[]
   }[] = []
   let mobxDeepChangesNestingLevel = 0
 
-  const mobxDeepObserveAdmin = mobxDeepObserve(mobxObservable, (change, path) => {
+  const mobxDeepObserveAdmin = mobxDeepObserve(mobxNode, (change) => {
     // if this comes from a yjs change, ignore it
     if (yjsReplicatingRef.current > 0) {
       return
     }
 
     mobxDeepChangesNestingLevel++
+    const path = buildNodeFullPath(change.object)
     pendingMobxChanges.push({ change, path })
 
     // hack to apply pending mobx changes once all actions and reactions are finished
@@ -108,8 +110,6 @@ export function setupMobxToYjsReplication({
   })
 
   return {
-    getParentRef: mobxDeepObserveAdmin.getParentRef,
-
     dispose: () => {
       mobxDeepObserveAdmin.dispose()
     },

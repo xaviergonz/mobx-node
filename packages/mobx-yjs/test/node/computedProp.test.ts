@@ -1,11 +1,8 @@
-import { isComputed, reaction, runInAction } from "mobx"
-import { computedProp } from "../../src/utils/computedProp"
-import { createObjectTestbed } from "../testbed"
+import { isComputed, observable, reaction, runInAction } from "mobx"
+import { computedProp } from "../../src"
 
 it("computedProp", () => {
-  const { mobxObservable: obj } = createObjectTestbed<{
-    a: number
-  }>({ a: 5 })
+  const obj = observable({ a: 5 })
 
   const getDouble = computedProp((o: typeof obj) => [o.a * 2] as const)
 
