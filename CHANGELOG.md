@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.2.0
+
+- `getParentRef` will now return `{ parent: undefined, parentPath: undefined, root: obj }` for root objects.
+
 ## 1.1.0
 
 - Added `getParentRef` to be able to get the parent of nodes.

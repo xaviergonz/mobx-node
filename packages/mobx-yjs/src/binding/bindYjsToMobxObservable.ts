@@ -4,7 +4,6 @@ import { PlainStructure } from "../plainTypes/types"
 import { YjsStructure } from "../yjsTypes/types"
 import { createMobxObservableFromYjsObject } from "./yjsToMobx/createMobxObservableFromYjsObject"
 import { setupYjsToMobxReplication } from "./yjsToMobx/setupYjsToMobxReplication"
-import { assertIsObservablePlainStructure } from "../plainTypes/assertions"
 import { GetParentRef, registeredGetParentRefs } from "../utils/getParentRef"
 
 /**
@@ -64,17 +63,22 @@ export function bindYjsToMobxObservable<T extends PlainStructure>({
   })
 
   const getParentRef: GetParentRef = (struct) => {
-    assertIsObservablePlainStructure(struct)
+    if (struct === mobxObservable) {
+      return {
+        parent: undefined,
+        parentPath: undefined,
+        root: mobxObservable as any,
+      }
+    }
 
     const parentRef = mobxToYjsReplicationAdmin.getParentRef(struct)
-    if (!parentRef) {
-      return undefined
-    }
-    return {
-      parent: parentRef.parent as any,
-      parentPath: parentRef.parentPath,
-      root: mobxObservable as any,
-    }
+    return parentRef
+      ? {
+          parent: parentRef.parent as any,
+          parentPath: parentRef.parentPath,
+          root: mobxObservable as any,
+        }
+      : undefined
   }
 
   registeredGetParentRefs.add(getParentRef)

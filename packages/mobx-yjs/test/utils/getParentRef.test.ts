@@ -6,6 +6,12 @@ test("simple getParentRef", () => {
   const { mobxObservable } = createObjectTestbed<{
     nestedObj1?: {}
   }>({ nestedObj1: {} })
+  expect(getParentRef(mobxObservable)).toStrictEqual({
+    parent: undefined,
+    parentPath: undefined,
+    root: mobxObservable,
+  } satisfies ParentRef<unknown, unknown>)
+
   const nestedObj1 = mobxObservable.nestedObj1!
   expect(getParentRef(nestedObj1)).toStrictEqual({
     parent: mobxObservable,
@@ -42,6 +48,10 @@ test("simple getParentRef", () => {
   } satisfies ParentRef<unknown, unknown>)
 })
 
+test("getParentRef errors", () => {
+  expect(() => getParentRef(undefined as any)).toThrow("target is not a bindable mobx observable")
+})
+
 test("complex getParentRef", () => {
   const { mobxObservable } = createObjectTestbed<{
     nestedObj1?: {
@@ -54,9 +64,6 @@ test("complex getParentRef", () => {
       }
     }
   }>({ nestedObj1: { nestedObj2: { array: [{ nestedObj3: { numberProp: 0 } }] } } })
-  expect(() => getParentRef(undefined as any)).toThrow("target is not a bindable mobx observable")
-
-  expect(getParentRef(mobxObservable)).toBe(undefined)
 
   expect(getParentRef(mobxObservable.nestedObj1!)).toStrictEqual({
     parent: mobxObservable,

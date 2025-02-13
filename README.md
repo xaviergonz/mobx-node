@@ -142,6 +142,9 @@ The `getParentRef` function that can be used to get the parent ref (parent objec
 ```ts
 const { parent, parentPath } = getParentRef(mobxObservable.someChild);
 // { parent: mobxObservable, parentPath: 'someChild', root: mobxObservable }
+
+const { parent, parentPath } = getParentRef(mobxObservable); // root node
+// { parent: undefined, parentPath: undefined, root: mobxObservable }
 ```
 
 If it is not in the tree of any of the bound mobx observables it will return `undefined`.
