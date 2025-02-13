@@ -85,8 +85,8 @@
       "apps/site/src/**/*.tsx",
       "apps/site/docs/**/*.ts",
       "apps/site/docs/**/*.tsx",
-      "packages/mobx-yjs/src/**/*.ts",
-      "packages/mobx-yjs/test/**/*.ts"
+      "packages/mobx-node/src/**/*.ts",
+      "packages/mobx-node/test/**/*.ts"
     ]
   },
   "javascript": {

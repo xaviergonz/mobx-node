@@ -1,6 +1,6 @@
 # Contributor Guide
 
-Welcome to a community of developers just like you, striving to create the best experience around mobx-yjs. We welcome anyone who wants to contribute or provide constructive feedback, no matter the age or level of experience.
+Welcome to a community of developers just like you, striving to create the best experience around mobx-node. We welcome anyone who wants to contribute or provide constructive feedback, no matter the age or level of experience.
 
 Here are some ways to contribute to the project, from easiest to most difficult:
 

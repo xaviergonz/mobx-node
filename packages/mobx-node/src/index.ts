@@ -9,7 +9,7 @@ export type { Node } from "./node/node"
 export { resolveNodePath } from "./node/resolveNodePath"
 export * from "./plainTypes/types"
 
-// mobx-node-yjs
+// Y.js bindings
 export { bindYjsToMobxNode } from "./binding/bindYjsToMobxNode"
 export {
   applyPlainArrayToYArray,

@@ -40,7 +40,7 @@ export function bindYjsToMobxNode<T extends PlainStructure>({
    */
   dispose: () => void
 } {
-  yjsOrigin = yjsOrigin ?? Symbol("mobx-yjs-origin")
+  yjsOrigin = yjsOrigin ?? Symbol("mobx-node-yjs-origin")
 
   const mobxNode = createMobxNodeFromYjsObject<T>(yjsObject)
 

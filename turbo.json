@@ -1,16 +1,16 @@
 {
   "$schema": "https://turborepo.org/schema.json",
   "tasks": {
-    "mobx-yjs#build": {
+    "mobx-node#build": {
       "dependsOn": [],
       "outputs": ["dist/**"]
     },
-    "mobx-yjs#test": {
+    "mobx-node#test": {
       "dependsOn": [],
       "outputs": [],
       "env": ["MOBX-VERSION"]
     },
-    "mobx-yjs#test:ci": {
+    "mobx-node#test:ci": {
       "dependsOn": [],
       "outputs": [],
       "env": ["MOBX-VERSION"]

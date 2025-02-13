@@ -1,15 +1,15 @@
-import path from "path";
-import typescript2 from "rollup-plugin-typescript2";
-import { defineConfig } from "vite";
+import path from "path"
+import typescript2 from "rollup-plugin-typescript2"
+import { defineConfig } from "vite"
 
-const resolvePath = (str: string) => path.resolve(__dirname, str);
+const resolvePath = (str: string) => path.resolve(__dirname, str)
 
 export default defineConfig({
   build: {
     target: "node10",
     lib: {
       entry: resolvePath("./src/index.ts"),
-      name: "mobx-yjs",
+      name: "mobx-node",
     },
     sourcemap: "inline",
     minify: false,
@@ -20,10 +20,10 @@ export default defineConfig({
       output: [
         {
           format: "esm",
-          entryFileNames: "mobx-yjs.esm.mjs",
+          entryFileNames: "mobx-node.esm.mjs",
         },
         {
-          name: "mobx-yjs",
+          name: "mobx-node",
           format: "umd",
           globals: {
             mobx: "mobx",
@@ -40,4 +40,4 @@ export default defineConfig({
       enforce: "pre",
     },
   ],
-});
+})

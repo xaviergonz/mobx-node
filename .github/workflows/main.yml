@@ -58,5 +58,5 @@ jobs:
         if: matrix.mobx-version == '6'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          directory: ./packages/mobx-yjs/coverage
+          directory: ./packages/mobx-node/coverage
           fail_ci_if_error: true

@@ -1,16 +1,24 @@
 {
-  "name": "mobx-yjs",
-  "version": "2.0.0",
-  "description": "Create a MobX observable data tree two-way bound to a Y.js state",
-  "keywords": ["mobx", "mobx-yjs", "Y.js", "state management", "observable"],
+  "name": "mobx-node",
+  "version": "1.0.0",
+  "description": "A lightweight alternative to MobX-State-Tree + Y.js two way binding",
+  "keywords": [
+    "mobx",
+    "mobx-node",
+    "Y.js",
+    "state management",
+    "observable",
+    "mobx-state-tree",
+    "mobx-keystone"
+  ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/xaviergonz/mobx-yjs.git"
+    "url": "https://github.com/xaviergonz/mobx-node.git"
   },
   "bugs": {
-    "url": "https://github.com/xaviergonz/mobx-yjs/issues"
+    "url": "https://github.com/xaviergonz/mobx-node/issues"
   },
-  "homepage": "https://github.com/xaviergonz/mobx-yjs",
+  "homepage": "https://github.com/xaviergonz/mobx-node",
   "license": "MIT",
   "author": "Javier González Garcés",
   "source": "./src/index.ts",
@@ -18,29 +26,35 @@
     "./package.json": "./package.json",
     ".": {
       "types": "./dist/types/index.d.ts",
-      "script": "./dist/mobx-yjs.umd.js",
-      "import": "./dist/mobx-yjs.esm.mjs",
-      "require": "./dist/mobx-yjs.umd.js",
-      "default": "./dist/mobx-yjs.esm.mjs"
+      "script": "./dist/mobx-node.umd.js",
+      "import": "./dist/mobx-node.esm.mjs",
+      "require": "./dist/mobx-node.umd.js",
+      "default": "./dist/mobx-node.esm.mjs"
     }
   },
-  "esmodule": "./dist/mobx-yjs.esm.js",
-  "module": "./dist/mobx-yjs.esm.js",
-  "jsnext:main": "./dist/mobx-yjs.esm.js",
-  "react-native": "./dist/mobx-yjs.umd.js",
-  "umd:main": "./dist/mobx-yjs.umd.js",
-  "unpkg": "./dist/mobx-yjs.umd.js",
-  "jsdelivr": "./dist/mobx-yjs.umd.js",
-  "main": "./dist/mobx-yjs.umd.js",
+  "esmodule": "./dist/mobx-node.esm.js",
+  "module": "./dist/mobx-node.esm.js",
+  "jsnext:main": "./dist/mobx-node.esm.js",
+  "react-native": "./dist/mobx-node.umd.js",
+  "umd:main": "./dist/mobx-node.umd.js",
+  "unpkg": "./dist/mobx-node.umd.js",
+  "jsdelivr": "./dist/mobx-node.umd.js",
+  "main": "./dist/mobx-node.umd.js",
   "types": "./dist/types/index.d.ts",
   "typings": "./dist/types/index.d.ts",
   "sideEffects": false,
-  "files": ["src", "dist", "LICENSE", "CHANGELOG.md", "README.md"],
+  "files": [
+    "src",
+    "dist",
+    "LICENSE",
+    "CHANGELOG.md",
+    "README.md"
+  ],
   "scripts": {
     "quick-build": "tsc",
     "quick-build-tests": "tsc -p test",
     "copy-root-files": "shx cp ../../README.md . && shx cp ../../LICENSE . && shx cp ../../CHANGELOG.md .",
-    "build": "yarn quick-build && yarn copy-root-files && shx rm -rf dist && vite build && shx cp dist/mobx-yjs.esm.mjs dist/mobx-yjs.esm.js",
+    "build": "yarn quick-build && yarn copy-root-files && shx rm -rf dist && vite build && shx cp dist/mobx-node.esm.mjs dist/mobx-node.esm.js",
     "test": "jest",
     "test:ci": "yarn test -i --coverage",
     "build-docs": "shx rm -rf api-docs && typedoc --options ./typedocconfig.js src/index.ts && shx rm -rf ../../apps/site/copy-to-build/api && shx mkdir -p ../../apps/site/copy-to-build/api && shx cp -R ./api-docs/* ../../apps/site/copy-to-build/api"

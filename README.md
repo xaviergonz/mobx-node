@@ -1,38 +1,38 @@
 <p align="center">
-  <h1 align="center">mobx-yjs</h1>
+  <h1 align="center">mobx-node</h1>
 </p>
 <p align="center">
-  <i>Create a MobX observable data tree two-way bound to a Y.js state.</i>
+  <i>A lightweight alternative to MobX-State-Tree + Y.js two-way binding</i>
 </p>
 
 <p align="center">
-  <a aria-label="NPM version" href="https://www.npmjs.com/package/mobx-yjs">
-    <img src="https://img.shields.io/npm/v/mobx-yjs.svg?style=for-the-badge&logo=npm&labelColor=333" />
+  <a aria-label="NPM version" href="https://www.npmjs.com/package/mobx-node">
+    <img src="https://img.shields.io/npm/v/mobx-node.svg?style=for-the-badge&logo=npm&labelColor=333" />
   </a>
   <a aria-label="License" href="./LICENSE">
-    <img src="https://img.shields.io/npm/l/mobx-yjs.svg?style=for-the-badge&labelColor=333" />
+    <img src="https://img.shields.io/npm/l/mobx-node.svg?style=for-the-badge&labelColor=333" />
   </a>
   <a aria-label="Types" href="./packages/lib/tsconfig.json">
-    <img src="https://img.shields.io/npm/types/mobx-yjs.svg?style=for-the-badge&logo=typescript&labelColor=333" />
+    <img src="https://img.shields.io/npm/types/mobx-node.svg?style=for-the-badge&logo=typescript&labelColor=333" />
   </a>
   <br />
-  <a aria-label="CI" href="https://github.com/xaviergonz/mobx-yjs/actions/workflows/main.yml">
-    <img src="https://img.shields.io/github/actions/workflow/status/xaviergonz/mobx-yjs/main.yml?branch=master&label=CI&logo=github&style=for-the-badge&labelColor=333" />
+  <a aria-label="CI" href="https://github.com/xaviergonz/mobx-node/actions/workflows/main.yml">
+    <img src="https://img.shields.io/github/actions/workflow/status/xaviergonz/mobx-node/main.yml?branch=master&label=CI&logo=github&style=for-the-badge&labelColor=333" />
   </a>
-  <a aria-label="Codecov" href="https://codecov.io/gh/xaviergonz/mobx-yjs">
-    <img src="https://img.shields.io/codecov/c/github/xaviergonz/mobx-yjs?token=6MLRFUBK8V&label=codecov&logo=codecov&style=for-the-badge&labelColor=333" />
+  <a aria-label="Codecov" href="https://codecov.io/gh/xaviergonz/mobx-node">
+    <img src="https://img.shields.io/codecov/c/github/xaviergonz/mobx-node?token=6MLRFUBK8V&label=codecov&logo=codecov&style=for-the-badge&labelColor=333" />
   </a>
 </p>
 
 ## Installation
 
-> `npm install mobx-yjs`
+> `npm install mobx-node`
 
-> `yarn add mobx-yjs`
+> `yarn add mobx-node`
 
 ## Introduction
 
-`mobx-yjs` creates a MobX observable that stays in sync with a Y.js state in both directions.
+`mobx-node` creates a MobX observable that stays in sync with a Y.js state in both directions.
 
 For example, if you already have a Y.js state representing:
 

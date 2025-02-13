@@ -3425,23 +3425,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mobx-v4@npm:mobx@^4.15.7":
-  version: 4.15.7
-  resolution: "mobx@npm:4.15.7"
-  checksum: 10c0/f0cef42f1359f3c5a043c16155647e54bc3c2d1c718435cb2f56d6afe3279aa58076bb50445d11e2eead5c40acb654ce550d69e6ce568ed7a1c3a059db43c227
-  languageName: node
-  linkType: hard
-
-"mobx-v5@npm:mobx@^5.15.7":
-  version: 5.15.7
-  resolution: "mobx@npm:5.15.7"
-  checksum: 10c0/ff493828f21e92470e21e294b8d3e5663d030cde78c10cd99e1d5f9154eeecd1e37b15b3fa377ea44ac3d81009fcaf6d48210a016c268a6cfc52399f4e1fd026
-  languageName: node
-  linkType: hard
-
-"mobx-yjs@workspace:packages/mobx-yjs":
+"mobx-node@workspace:packages/mobx-node":
   version: 0.0.0-use.local
-  resolution: "mobx-yjs@workspace:packages/mobx-yjs"
+  resolution: "mobx-node@workspace:packages/mobx-node"
   dependencies:
     "@types/jest": "npm:^29.5.14"
     "@types/node": "npm:^22.13.1"
@@ -3461,6 +3447,20 @@ __metadata:
     yjs: ^13.0.0
   languageName: unknown
   linkType: soft
+
+"mobx-v4@npm:mobx@^4.15.7":
+  version: 4.15.7
+  resolution: "mobx@npm:4.15.7"
+  checksum: 10c0/f0cef42f1359f3c5a043c16155647e54bc3c2d1c718435cb2f56d6afe3279aa58076bb50445d11e2eead5c40acb654ce550d69e6ce568ed7a1c3a059db43c227
+  languageName: node
+  linkType: hard
+
+"mobx-v5@npm:mobx@^5.15.7":
+  version: 5.15.7
+  resolution: "mobx@npm:5.15.7"
+  checksum: 10c0/ff493828f21e92470e21e294b8d3e5663d030cde78c10cd99e1d5f9154eeecd1e37b15b3fa377ea44ac3d81009fcaf6d48210a016c268a6cfc52399f4e1fd026
+  languageName: node
+  linkType: hard
 
 "mobx@npm:^6.13.6":
   version: 6.13.6
