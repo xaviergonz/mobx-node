@@ -2,7 +2,7 @@
   <h1 align="center">mobx-node</h1>
 </p>
 <p align="center">
-  <i>A lightweight alternative to MobX-State-Tree + Y.js two-way binding</i>
+  <i>A fast lightweight alternative to MobX-State-Tree + Y.js two-way binding</i>
 </p>
 
 <p align="center">
@@ -23,6 +23,18 @@
     <img src="https://img.shields.io/codecov/c/github/xaviergonz/mobx-node?token=6MLRFUBK8V&label=codecov&logo=codecov&style=for-the-badge&labelColor=333" />
   </a>
 </p>
+
+## Introduction
+
+A fast lightweight alternative to `mobx-state-tree` that combines the simplicity of plain data with the power of MobX reactivity. Unlike `mobx-state-tree`, tree nodes in `mobx-node` are always plain data objects with no embedded methods, getters, or setters. Instead, all interactions are managed via external functions—getters and MobX actions like embracing a more functional approach, thus improving performance and memory usage. Your application state remains a simple, observable plain object. Instead of modifying the nodes directly with object methods, you work with pure functions that inspect or update the state, ensuring clarity and reproducibility.
+
+By using `mobx-node`, you get:
+
+- **Lightweight and fast:** Optimized for performance while consuming less memory.
+- **Functional accessors:** Interaction is achieved through pure functions, keeping state manipulation decoupled from the data structure.
+- **Immutable snapshots:** Effortlessly capture a stable state of your tree at any point.
+- **MobX Integration:** Since `mobx-node` uses MobX behind the scenes, it integrates seamlessly with [`mobx`](https://mobx.js.org) and [`mobx-react`](https://github.com/mobxjs/mobx-react).
+- **Seamless Y.js bindings:** Two-way binding between `Y.js` state trees and `mobx-node` reactive trees included.
 
 ### Installation
 
