@@ -89,7 +89,7 @@ function emitChangeToRoot(eventTarget: MobxNode, change: IObjectDidChange | IArr
 }
 
 /**
- * Registers a change listener on the provided node.
+ * Registers a deep change listener on the provided node.
  *
  * The listener is invoked whenever the node undergoes a change, such as additions,
  * updates, or removals within its observable structure. This includes receiving
@@ -103,7 +103,7 @@ function emitChangeToRoot(eventTarget: MobxNode, change: IObjectDidChange | IArr
  *
  * @returns A disposer function that, when invoked, unregisters the listener.
  */
-export function addNodeChangeListener(node: MobxNode, listener: MobxNodeChangeListener) {
+export function onDeepChange(node: MobxNode, listener: MobxNodeChangeListener) {
   const changeListeners = getNodeData(node).onChangeListeners
   changeListeners.push(listener)
 

@@ -4,7 +4,7 @@ import { failure } from "../../error/failure"
 import { resolveYjsStructurePath } from "./resolveYjsStructurePath"
 import { convertPlainToYjsValue } from "./convertPlainToYjsValue"
 import { buildNodeFullPath } from "../../node/utils/buildNodeFullPath"
-import { addNodeChangeListener, MobxNode, MobxNodeChange } from "../../node/node"
+import { onDeepChange, MobxNode, MobxNodeChange } from "../../node/node"
 import { YjsStructure } from "../yjsTypes/types"
 
 /**
@@ -29,7 +29,7 @@ export function setupMobxNodeToYjsReplication({
   }[] = []
   let mobxDeepChangesNestingLevel = 0
 
-  const disposeNodeListener = addNodeChangeListener(mobxNode, (change) => {
+  const disposeOnDeepChange = onDeepChange(mobxNode, (change) => {
     // if this comes from a yjs change, ignore it
     if (yjsReplicatingRef.current > 0) {
       return
@@ -113,7 +113,7 @@ export function setupMobxNodeToYjsReplication({
 
   return {
     dispose: () => {
-      disposeNodeListener()
+      disposeOnDeepChange()
     },
   }
 }

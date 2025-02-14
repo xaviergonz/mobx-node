@@ -1,11 +1,11 @@
-import { node, addNodeChangeListener, MobxNodeChange } from "../../src"
+import { node, onDeepChange, MobxNodeChange } from "../../src"
 import { runInAction } from "mobx"
 
 it("should notify listener on object property changes", () => {
   const testNode = node<{ a: number; arr: number[] }>({ a: 1, arr: [] })
   const events: MobxNodeChange[] = []
 
-  const dispose = addNodeChangeListener(testNode, (change) => {
+  const dispose = onDeepChange(testNode, (change) => {
     events.push(change)
   })
 

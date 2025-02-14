@@ -23,7 +23,12 @@ export { walkTree, WalkTreeMode } from "./node/tree/walkTree"
 export { clone } from "./node/clone"
 export { computedProp } from "./node/computedProp"
 export { getSnapshot } from "./node/getSnapshot"
-export { addNodeChangeListener, assertIsNode, isNode, node } from "./node/node"
+export {
+  onDeepChange,
+  assertIsNode,
+  isNode,
+  node,
+} from "./node/node"
 export type { MobxNode, MobxNodeChangeListener, MobxNodeChange } from "./node/node"
 
 export * from "./plainTypes/types"
