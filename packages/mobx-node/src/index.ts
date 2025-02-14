@@ -32,6 +32,7 @@ export {
   node,
 } from "./node/node"
 export type { MobxNode, MobxNodeChangeListener, MobxNodeChange } from "./node/node"
+export { volatileProp } from "./node/volatileProp"
 
 export * from "./plainTypes/types"
 
