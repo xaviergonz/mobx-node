@@ -1,12 +1,17 @@
 // mobx-node
 export { computedProp } from "./node/computedProp"
-export { getNodeSnapshot } from "./node/getNodeSnapshot"
-export { getParentNode } from "./node/getParentNode"
-export type { ParentNode } from "./node/getParentNode"
-export { getRootNode } from "./node/getRootNode"
+export { getSnapshot } from "./node/getSnapshot"
 export { assertIsNode, isNode, node } from "./node/node"
 export type { Node } from "./node/node"
-export { resolveNodePath } from "./node/resolveNodePath"
+export { getParent } from "./node/path/getParent"
+export { getParentPath } from "./node/path/getParentPath"
+export { getRoot } from "./node/path/getRoot"
+export { getRootPath } from "./node/path/getRootPath"
+export { isRoot } from "./node/path/isRoot"
+export type * from "./node/path/ParentPath"
+export type * from "./node/path/pathTypes"
+export { resolvePath } from "./node/path/resolvePath"
+export type * from "./node/path/RootPath"
 export * from "./plainTypes/types"
 
 // Y.js bindings

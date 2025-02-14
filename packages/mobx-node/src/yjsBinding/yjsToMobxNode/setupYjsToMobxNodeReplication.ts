@@ -1,8 +1,8 @@
 import { isObservableArray, isObservableObject, remove, runInAction, set } from "mobx"
 import * as Y from "yjs"
 import { failure } from "../../error/failure"
-import { Node } from "../../node/node"
-import { resolveNodePath } from "../../node/resolveNodePath"
+import { assertIsNode, Node } from "../../node/node"
+import { resolvePath } from "../../node/path/resolvePath"
 import { PlainValue } from "../../plainTypes/types"
 import { YjsStructure, YjsValue } from "../yjsTypes/types"
 
@@ -36,7 +36,14 @@ export function setupYjsToMobxNodeReplication({
     try {
       runInAction(() => {
         events.forEach((event) => {
-          const mobxTarget = resolveNodePath(mobxNode, event.path)
+          const resolutionResult = resolvePath<Node>(mobxNode, event.path)
+          if (!resolutionResult.resolved) {
+            throw failure(
+              `failed to resolve mobx node path for yjs event: ${JSON.stringify(event.path)}`
+            )
+          }
+          const mobxTarget = resolutionResult.value
+          assertIsNode(mobxTarget)
 
           // now y.js and mobx should be in the same target
 

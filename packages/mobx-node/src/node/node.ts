@@ -2,7 +2,7 @@ import { IAtom, createAtom, observable, observe } from "mobx"
 import { isObservablePlainStructure, isPlainPrimitive } from "../plainTypes/checks"
 import { PlainStructure } from "../plainTypes/types"
 import { failure } from "../error/failure"
-import { invalidateSnapshotTreeToRoot } from "./getNodeSnapshot"
+import { invalidateSnapshotTreeToRoot } from "./getSnapshot"
 import { buildNodeFullPath } from "./utils/buildNodeFullPath"
 
 type ParentNode = {

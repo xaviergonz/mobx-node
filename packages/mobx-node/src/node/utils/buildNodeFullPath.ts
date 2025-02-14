@@ -1,4 +1,4 @@
-import { getParentNode } from "../getParentNode"
+import { getParentPath } from "../path/getParentPath"
 import { Node } from "../node"
 
 /**
@@ -9,9 +9,9 @@ export function buildNodeFullPath(node: Node | undefined, subPath?: string): str
 
   let current: Node | undefined = node
   while (current) {
-    const parent = getParentNode(current)
+    const parent = getParentPath(current)
     if (parent) {
-      fullPath.push(parent.parentPath)
+      fullPath.push(parent.path)
     }
     current = parent?.parent as Node | undefined
   }

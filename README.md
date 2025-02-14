@@ -24,86 +24,13 @@
   </a>
 </p>
 
-## Installation
+### Installation
 
 > `npm install mobx-node`
 
 > `yarn add mobx-node`
 
-## Introduction
-
-`mobx-node` creates a MobX observable that stays in sync with a Y.js state in both directions.
-
-For example, if you already have a Y.js state representing:
-
-```ts
-interface Todo {
-  done: boolean
-  text: string
-}
-
-interface TodoAppState {
-  todoList: Todo[]
-}
-```
-
-and that it is already prepopulated with some todos in a Y.js doc map named "todoAppState". All you need to do is:
-
-```ts
-const {
-  mobxObservable: todoAppState,
-  dispose
-} = bindYjsToMobxObservable<TodoAppState>({
-  yjsDoc,
-  yjsObject: yjsDoc.getMap("todoAppState"),
-})
-```
-
-and from then on you can read/write the state as if it were a MobX observable, this is:
-
-```ts
-// read
-const doneTodos = todoAppState.todoList.filter(todo => todo.done)
-
-// write
-const toggleTodoDone = action((todo: Todo) => {
-  todo.done = !todo.done;
-})
-
-toggleTodoDone(todoAppState.todoList[0])
-```
-
-and it will be kept in sync with the Y.js state.
-
-Note that **the sync is two-way**, so if Y.js state gets updated (manually or via a remote state update), the MobX observable will get updates as well. All that means that this:
-
-```ts
-yjsDoc.transact(() => {
-  const newTodo = new Y.Map()
-  newTodo.set("done", false)
-  newTodo.set("text", "buy milk")
-  yjsDoc.getMap("todoAppState").getArray("todoList").push([ newTodo ])
-})
-```
-
-will also result in a new todo getting added to `todoAppState.todoList` after the transaction is finished.
-
-And of course, since this is a MobX observable in the end, you can use reaction, autorun, when, computed...
-
-## What if I don't have an intial Y.js state yet?
-
-You can create one like this:
-
-```ts
-applyPlainObjectToYMap(
-  yjsDoc.getMap("todoAppState"),
-  {
-    todoList: []
-  }
-)
-```
-
-## Using computeds in the observable data tree
+### Using computeds with nodes
 
 While declaring actions that affect the observable data tree is easy (see for example `toggleTodoDone` in the example above), using computed values might not seem as straightforward. While in "classical" MobX you'd generate the computed values as a getter for the object, that's not a possibility here (since the object is auto-generated). In order to overcome this limitation this library offers a function called `computedProp`, which allows you to declare functional getters, this is, getters that take the object as argument.
 
@@ -133,7 +60,7 @@ const getFullName = computedProp((name: Name) => {
 const fullName = getFullName(myName)
 ```
 
-## Getting immutable snapshots of a data tree node
+### Getting immutable snapshots of a data tree node
 
 The function `getSnapshot` creates a deep, immutable copy of a node in the observable data tree. This snapshot provides a plain JavaScript representation of the state at the time of calling, ensuring that further changes to the observable do not affect the snapshot.
 
@@ -176,8 +103,84 @@ const { parent, parentPath } = getParentRef(mobxObservable); // root node
 
 If it is not in the data tree of any of the bound mobx observables it will return `undefined`.
 
-## Limits
+### Node limits
+
+- A node that is already part of a tree cannot be reused in another tree or another section of the same tree. To move an object, first remove it from its current location or clone it using the `clone` function.
+
+## Y.js two-way data binding
+
+`mobx-node` includes a binding with Y.js that creates a node that stays in sync with a Y.js state in both directions.
+
+For example, if you already have a Y.js state representing:
+
+```ts
+interface Todo {
+  done: boolean
+  text: string
+}
+
+interface TodoAppState {
+  todoList: Todo[]
+}
+```
+
+and that it is already prepopulated with some todos in a Y.js doc map named "todoAppState". All you need to do is:
+
+```ts
+const {
+  mobxNode: todoAppState,
+  dispose
+} = bindYjsToMobxNode<TodoAppState>({
+  yjsDoc,
+  yjsObject: yjsDoc.getMap("todoAppState"),
+})
+```
+
+and from then on you can read/write the state as if it were a MobX observable, this is:
+
+```ts
+// read
+const doneTodos = todoAppState.todoList.filter(todo => todo.done)
+
+// write
+const toggleTodoDone = action((todo: Todo) => {
+  todo.done = !todo.done;
+})
+
+toggleTodoDone(todoAppState.todoList[0])
+```
+
+and it will be kept in sync with the Y.js state.
+
+Note that **the sync is two-way**, so if Y.js state gets updated (manually or via a remote state update), the node will get updates as well. All that means that this:
+
+```ts
+yjsDoc.transact(() => {
+  const newTodo = new Y.Map()
+  newTodo.set("done", false)
+  newTodo.set("text", "buy milk")
+  yjsDoc.getMap("todoAppState").getArray("todoList").push([ newTodo ])
+})
+```
+
+will also result in a new todo getting added to `todoAppState.todoList` after the transaction is finished.
+
+And of course, since this is a `mobx-node` enhanced MobX observable in the end, you can use reaction, autorun, when, computed, getParent, getSnapshot...
+
+### What if I don't have an intial Y.js state yet?
+
+You can create one like this:
+
+```ts
+applyPlainObjectToYMap(
+  yjsDoc.getMap("todoAppState"),
+  {
+    todoList: []
+  }
+)
+```
+
+### Y.js binding limits
 
 - Changes in the MobX observable are replicated to Y.js only after the outermost MobX action has completed. Therefore, avoid executing any Y.js transactions until MobX actions finish.
 - Y.js changes are merged into the MobX observable only after all Y.js transactions have concluded. Consequently, do not initiate MobX actions that modify the bound object during an ongoing Y.js transaction.
-- An object that is already part of the observable tree cannot be reused in another section of the tree. To move an object, first remove it from its current location or clone it using MobX's `toJS` function.

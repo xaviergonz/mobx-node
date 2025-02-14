@@ -1,8 +1,8 @@
 import { PlainStructure } from "../plainTypes/types"
-import { createAtom, IAtom, isObservableArray, isObservableObject } from "mobx"
+import { action, createAtom, IAtom, isObservableArray, isObservableObject } from "mobx"
 import { isPlainPrimitive } from "../plainTypes/checks"
 import { failure } from "../error/failure"
-import { getParentNode } from "./getParentNode"
+import { getParentPath } from "./path/getParentPath"
 import { assertIsNode, Node } from "./node"
 
 const snapshots = new WeakMap<Node, PlainStructure>()
@@ -11,18 +11,18 @@ const snapshotAtoms = new WeakMap<Node, IAtom>()
 /**
  * @internal
  */
-export function invalidateSnapshotTreeToRoot(node: Node): void {
+export const invalidateSnapshotTreeToRoot = action((node: Node): void => {
   assertIsNode(node)
 
   let current: Node | undefined = node
   while (current) {
     snapshots.delete(current)
     snapshotAtoms.get(current)?.reportChanged()
-    current = getParentNode(current)?.parent as Node | undefined
+    current = getParentPath(current)?.parent as Node | undefined
   }
-}
+})
 
-function createNodeSnapshot<T extends Node>(node: T): T {
+const createSnapshot = action(<T extends Node>(node: T): T => {
   assertIsNode(node)
 
   if (isObservableArray(node)) {
@@ -38,7 +38,7 @@ function createNodeSnapshot<T extends Node>(node: T): T {
   }
 
   throw failure(`only observable objects, observable arrays and primitives are supported`)
-}
+})
 
 function getSnapshotOrPrimitive<T>(value: T, acceptPrimitives: boolean): T {
   if (acceptPrimitives && isPlainPrimitive(value)) {
@@ -50,7 +50,7 @@ function getSnapshotOrPrimitive<T>(value: T, acceptPrimitives: boolean): T {
 
   let existingSnapshot = snapshots.get(node)
   if (!existingSnapshot) {
-    existingSnapshot = createNodeSnapshot(node)
+    existingSnapshot = createSnapshot(node)
     snapshots.set(node, existingSnapshot)
   }
 
@@ -75,6 +75,6 @@ function getSnapshotOrPrimitive<T>(value: T, acceptPrimitives: boolean): T {
  * @param node - The node to snapshot.
  * @returns A snapshot of the node.
  */
-export function getNodeSnapshot<T extends Node>(node: T): T {
+export function getSnapshot<T extends Node>(node: T): T {
   return getSnapshotOrPrimitive(node, false)
 }
