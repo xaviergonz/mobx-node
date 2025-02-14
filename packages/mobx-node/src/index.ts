@@ -23,6 +23,7 @@ export { walkTree, WalkTreeMode } from "./node/tree/walkTree"
 export { clone } from "./node/clone"
 export { computedProp } from "./node/computedProp"
 export { getSnapshot } from "./node/getSnapshot"
+export { onSnapshot } from "./node/onSnapshot"
 export {
   onDeepChange,
   assertIsNode,
