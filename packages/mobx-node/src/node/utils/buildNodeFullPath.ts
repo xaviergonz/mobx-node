@@ -1,4 +1,4 @@
-import { getParentPath } from "../path/getParentPath"
+import { getParentPath } from "../tree/getParentPath"
 import { Node } from "../node"
 
 /**

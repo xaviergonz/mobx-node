@@ -2,7 +2,7 @@ import { isObservableArray, isObservableObject, remove, runInAction, set } from 
 import * as Y from "yjs"
 import { failure } from "../../error/failure"
 import { assertIsNode, Node } from "../../node/node"
-import { resolvePath } from "../../node/path/resolvePath"
+import { resolvePath } from "../../node/tree/resolvePath"
 import { PlainValue } from "../../plainTypes/types"
 import { YjsStructure, YjsValue } from "../yjsTypes/types"
 

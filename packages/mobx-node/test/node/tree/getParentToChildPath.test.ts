@@ -1,5 +1,5 @@
 import { node } from "../../../src"
-import { getParentToChildPath } from "../../../src/node/path/getParentToChildPath"
+import { getParentToChildPath } from "../../../src/node/tree/getParentToChildPath"
 
 it("should return an empty array when parent and child are the same", () => {
   const root = node({ a: 1 })

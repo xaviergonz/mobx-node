@@ -2,7 +2,7 @@ import { PlainStructure } from "../plainTypes/types"
 import { action, createAtom, IAtom, isObservableArray, isObservableObject } from "mobx"
 import { isPlainPrimitive } from "../plainTypes/checks"
 import { failure } from "../error/failure"
-import { getParentPath } from "./path/getParentPath"
+import { getParentPath } from "./tree/getParentPath"
 import { assertIsNode, Node } from "./node"
 
 const snapshots = new WeakMap<Node, PlainStructure>()
