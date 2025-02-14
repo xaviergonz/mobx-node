@@ -10,6 +10,6 @@ import { getRootPath } from "./getRootPath"
  * @param node Node to get the root from.
  * @returns Root object.
  */
-export function getRoot<TRoot = unknown>(node: Node): TRoot {
+export function getRoot<TRoot extends Node>(node: Node): TRoot {
   return getRootPath(node).root as TRoot
 }

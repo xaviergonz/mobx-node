@@ -1,6 +1,5 @@
 import { runInAction } from "mobx"
-import { node } from "../../src/node/node"
-import { clone } from "../../src/node/clone"
+import { clone, node } from "../../src"
 
 it("should create a clone that is deeply equal but not the same reference", () => {
   const original = node({ a: 1, b: { c: 2 } })

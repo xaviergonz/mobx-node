@@ -5,5 +5,7 @@
   "search.exclude": {
     "**/.yarn": true,
     "**/.pnp.*": true
-  }
+  },
+  "javascript.preferences.importModuleSpecifier": "relative",
+  "typescript.preferences.importModuleSpecifier": "relative"
 }

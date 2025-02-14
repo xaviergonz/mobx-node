@@ -1,4 +1,5 @@
 import { PathElement } from "./pathTypes"
+import { Node } from "../node"
 
 /**
  * Path from an object to its immediate parent.
@@ -6,7 +7,7 @@ import { PathElement } from "./pathTypes"
  * @typeparam T Parent object type.
  */
 
-export interface ParentPath<T> {
+export interface ParentPath<T extends Node> {
   /**
    * Parent object.
    */

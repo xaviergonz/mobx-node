@@ -10,6 +10,6 @@ import { getParentPath } from "./getParentPath"
  * @param node Node to get the parent path from.
  * @returns
  */
-export function getParent<TParent = unknown>(value: Node): TParent | undefined {
+export function getParent<TParent extends Node>(value: Node): TParent | undefined {
   return getParentPath(value)?.parent as TParent | undefined
 }

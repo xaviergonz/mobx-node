@@ -1,4 +1,5 @@
 import { Path } from "./pathTypes"
+import { Node } from "../node"
 
 /**
  * Path from an object to its root.
@@ -6,7 +7,7 @@ import { Path } from "./pathTypes"
  * @typeparam T Root object type.
  */
 
-export interface RootPath<T> {
+export interface RootPath<T extends Node> {
   /**
    * Root object.
    */

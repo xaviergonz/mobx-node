@@ -10,7 +10,7 @@ const unresolved = { resolved: false } as const
  * @param path Path as an string or number array.
  * @returns An object with `{ resolved: true, value: T }` or `{ resolved: false }`.
  */
-export function resolvePath<T = unknown>(
+export function resolvePath<T extends Node>(
   pathRootNode: Node,
   path: readonly (string | number)[] // accepts number paths too just for convenience
 ):

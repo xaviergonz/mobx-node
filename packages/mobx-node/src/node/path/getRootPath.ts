@@ -13,7 +13,7 @@ import { RootPath } from "./RootPath"
  * @param value Target object.
  * @returns
  */
-export function getRootPath<T = unknown>(node: Node): RootPath<T> {
+export function getRootPath<T extends Node>(node: Node): RootPath<T> {
   assertIsNode(node)
 
   let root = node
