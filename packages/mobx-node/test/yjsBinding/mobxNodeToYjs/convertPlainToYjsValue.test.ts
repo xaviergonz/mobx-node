@@ -1,6 +1,6 @@
 import * as Y from "yjs"
-import { convertPlainToYjsValue } from "../../../src/binding/mobxNodeToYjs/convertPlainToYjsValue"
-import { YjsValue } from "../../../src/yjsTypes/types"
+import { convertPlainToYjsValue } from "../../../src/yjsBinding/mobxNodeToYjs/convertPlainToYjsValue"
+import { YjsValue } from "../../../src"
 
 describe("convertPlainToYjsValue", () => {
   // Y.js structures need to be wrapped in a Y.Doc before they can be read

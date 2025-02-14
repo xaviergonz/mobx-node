@@ -1,9 +1,9 @@
 import * as Y from "yjs"
-import { setupMobxNodeToYjsReplication } from "./mobxNodeToYjs/setupMobxNodeToYjsReplication"
 import { PlainStructure } from "../plainTypes/types"
-import { YjsStructure } from "../yjsTypes/types"
+import { setupMobxNodeToYjsReplication } from "./mobxNodeToYjs/setupMobxNodeToYjsReplication"
 import { createMobxNodeFromYjsObject } from "./yjsToMobxNode/createMobxNodeFromYjsObject"
 import { setupYjsToMobxNodeReplication } from "./yjsToMobxNode/setupYjsToMobxNodeReplication"
+import { YjsStructure } from "./yjsTypes/types"
 
 /**
  * Creates a MobX node that is bound to a Y.js data structure.

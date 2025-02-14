@@ -4,9 +4,9 @@ import { failure } from "../../error/failure"
 import { IChange, mobxDeepObserve } from "./mobxDeepObserve"
 import { resolveYjsStructurePath } from "./resolveYjsStructurePath"
 import { convertPlainToYjsValue } from "./convertPlainToYjsValue"
-import { YjsStructure } from "src/yjsTypes/types"
 import { buildNodeFullPath } from "../../node/utils/buildNodeFullPath"
 import { Node } from "../../node/node"
+import { YjsStructure } from "../yjsTypes/types"
 
 export function setupMobxNodeToYjsReplication({
   mobxNode,

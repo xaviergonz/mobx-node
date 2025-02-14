@@ -1,8 +1,8 @@
 import * as Y from "yjs"
 import { PlainArray, PlainObject, PlainValue } from "../../plainTypes/types"
 import { failure } from "../../error/failure"
-import { YjsValue } from "src/yjsTypes/types"
 import { isPlainArray, isPlainObject, isPlainPrimitive } from "../../plainTypes/checks"
+import { YjsValue } from "../yjsTypes/types"
 
 /**
  * Converts a plain value to a Y.js value.

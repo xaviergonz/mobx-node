@@ -1,7 +1,7 @@
 import * as Y from "yjs"
 import { failure } from "../../error/failure"
-import { YjsStructure } from "../../yjsTypes/types"
 import { node } from "../../node/node"
+import { YjsStructure } from "../yjsTypes/types"
 
 export function createMobxNodeFromYjsObject<T = unknown>(yjsObject: YjsStructure): T {
   if (yjsObject instanceof Y.Map || yjsObject instanceof Y.Array) {

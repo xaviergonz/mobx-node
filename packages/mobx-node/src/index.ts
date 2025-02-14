@@ -10,10 +10,10 @@ export { resolveNodePath } from "./node/resolveNodePath"
 export * from "./plainTypes/types"
 
 // Y.js bindings
-export { bindYjsToMobxNode } from "./binding/bindYjsToMobxNode"
+export { bindYjsToMobxNode } from "./yjsBinding/bindYjsToMobxNode"
 export {
   applyPlainArrayToYArray,
   applyPlainObjectToYMap,
   convertPlainToYjsValue,
-} from "./binding/mobxNodeToYjs/convertPlainToYjsValue"
-export * from "./yjsTypes/types"
+} from "./yjsBinding/mobxNodeToYjs/convertPlainToYjsValue"
+export * from "./yjsBinding/yjsTypes/types"

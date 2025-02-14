@@ -1,5 +1,5 @@
 import * as Y from "yjs"
-import { PlainPrimitive } from "../plainTypes/types"
+import { PlainPrimitive } from "../../plainTypes/types"
 
 export type YjsStructure = Y.Map<YjsValue> | Y.Array<YjsValue>
 

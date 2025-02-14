@@ -4,7 +4,7 @@ import { failure } from "../../error/failure"
 import { Node } from "../../node/node"
 import { resolveNodePath } from "../../node/resolveNodePath"
 import { PlainValue } from "../../plainTypes/types"
-import { YjsStructure, YjsValue } from "../../yjsTypes/types"
+import { YjsStructure, YjsValue } from "../yjsTypes/types"
 
 function yjsToPlainValue(v: YjsValue): PlainValue {
   if (v instanceof Y.Map || v instanceof Y.Array) {
