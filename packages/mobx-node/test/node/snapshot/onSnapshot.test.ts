@@ -1,4 +1,4 @@
-import { node, onSnapshot } from "../../src"
+import { node, onSnapshot } from "../../../src"
 import { runInAction } from "mobx"
 
 it("should register snapshots on changes", () => {

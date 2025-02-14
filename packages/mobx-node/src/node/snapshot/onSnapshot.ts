@@ -1,6 +1,6 @@
 import { reaction } from "mobx"
 import { getSnapshot } from "./getSnapshot"
-import { assertIsNode, MobxNode } from "./node"
+import { assertIsNode, MobxNode } from "../node"
 
 /**
  * Listener function for onSnapshot.

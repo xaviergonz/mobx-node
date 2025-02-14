@@ -1,4 +1,4 @@
-import { getSnapshot } from "./getSnapshot"
+import { getSnapshot } from "./snapshot/getSnapshot"
 import { node, MobxNode } from "./node"
 
 /**

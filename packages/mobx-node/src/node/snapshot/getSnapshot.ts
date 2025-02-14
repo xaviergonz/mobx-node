@@ -1,9 +1,9 @@
-import { PlainStructure } from "../plainTypes/types"
-import { action, createAtom, IAtom, isObservableArray, isObservableObject } from "mobx"
-import { isPlainPrimitive } from "../plainTypes/checks"
-import { failure } from "../error/failure"
-import { getParentPath } from "./tree/getParentPath"
-import { assertIsNode, MobxNode } from "./node"
+import { IAtom, action, createAtom, isObservableArray, isObservableObject } from "mobx"
+import { failure } from "../../error/failure"
+import { isPlainPrimitive } from "../../plainTypes/checks"
+import { PlainStructure } from "../../plainTypes/types"
+import { MobxNode, assertIsNode } from "../node"
+import { getParentPath } from "../tree/getParentPath"
 
 const snapshots = new WeakMap<MobxNode, PlainStructure>()
 const snapshotAtoms = new WeakMap<MobxNode, IAtom>()

@@ -20,10 +20,11 @@ export { resolvePath } from "./node/tree/resolvePath"
 export type * from "./node/tree/RootPath"
 export { walkTree, WalkTreeMode } from "./node/tree/walkTree"
 
+export { getSnapshot } from "./node/snapshot/getSnapshot"
+export { onSnapshot } from "./node/snapshot/onSnapshot"
+
 export { clone } from "./node/clone"
 export { computedProp } from "./node/computedProp"
-export { getSnapshot } from "./node/getSnapshot"
-export { onSnapshot } from "./node/onSnapshot"
 export {
   onDeepChange,
   assertIsNode,

@@ -10,7 +10,7 @@ import {
 import { isObservablePlainStructure, isPlainPrimitive } from "../plainTypes/checks"
 import { PlainStructure } from "../plainTypes/types"
 import { failure } from "../error/failure"
-import { invalidateSnapshotTreeToRoot } from "./getSnapshot"
+import { invalidateSnapshotTreeToRoot } from "./snapshot/getSnapshot"
 import { buildNodeFullPath } from "./utils/buildNodeFullPath"
 import { getParent } from "./tree/getParent"
 
