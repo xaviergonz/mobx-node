@@ -36,6 +36,8 @@ export { volatileProp } from "./node/volatileProp"
 
 export * from "./plainTypes/types"
 
+export { deepEquals } from "./utils/deepEquals"
+
 // yjsBinding
 export {
   applyPlainArrayToYArray,
