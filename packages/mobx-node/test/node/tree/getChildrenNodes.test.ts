@@ -59,6 +59,7 @@ it("should react when a child is added/removed", () => {
     },
     { fireImmediately: true }
   )
+
   // Initially, one child exists.
   expect(children).toMatchInlineSnapshot(`
 [
@@ -104,6 +105,25 @@ it("should react when a child is added/removed", () => {
 ]
 `)
   children.length = 0
+
+  disposer()
+})
+
+it("should keep refs unstable if not observed / stable if observed", () => {
+  const root = node<{ child1?: { a: number }; child2?: { b: number } }>({ child1: { a: 1 } })
+
+  // reference should NOT be stable when no changes and NOT observed
+  expect(getChildrenNodes(root, { deep: false })).not.toBe(getChildrenNodes(root, { deep: false }))
+  expect(getChildrenNodes(root, { deep: true })).not.toBe(getChildrenNodes(root, { deep: true }))
+
+  const disposer = reaction(
+    () => [getChildrenNodes(root, { deep: false }), getChildrenNodes(root, { deep: true })],
+    () => {}
+  )
+
+  // reference should be stable when no changes and observed
+  expect(getChildrenNodes(root, { deep: false })).toBe(getChildrenNodes(root, { deep: false }))
+  expect(getChildrenNodes(root, { deep: true })).toBe(getChildrenNodes(root, { deep: true }))
 
   disposer()
 })

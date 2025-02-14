@@ -1,5 +1,5 @@
 import { computed, IComputedValue, IComputedValueOptions } from "mobx"
-import { PlainObject } from "../plainTypes/types"
+import { PlainStructure } from "../plainTypes/types"
 import { assertIsObservablePlainStructure } from "../plainTypes/checks"
 
 /**
@@ -23,7 +23,7 @@ import { assertIsObservablePlainStructure } from "../plainTypes/checks"
  * If you ever need to get the actual computed used for the computed property
  * you can access it through the `getComputedFor` property of the returned function.
  */
-export function computedProp<T extends PlainObject, R>(
+export function computedProp<T extends PlainStructure, R>(
   fn: (obj: T) => R,
   options?: IComputedValueOptions<R>
 ) {

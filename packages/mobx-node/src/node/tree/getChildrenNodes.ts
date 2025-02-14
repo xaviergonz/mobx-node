@@ -2,6 +2,7 @@ import { values } from "mobx"
 import { isPlainPrimitive } from "../../plainTypes/checks"
 import { PlainValue } from "../../plainTypes/types"
 import { assertIsNode, isNode, MobxNode } from "../node"
+import { computedProp } from "../computedProp"
 
 export function getChildrenNodesWithTargetSet(
   node: MobxNode,
@@ -16,12 +17,26 @@ export function getChildrenNodesWithTargetSet(
   ;(values(node) as PlainValue[]).forEach((child) => {
     if (!isPlainPrimitive(child) && isNode(child)) {
       targetSet.add(child)
+
       if (deep) {
-        getChildrenNodesWithTargetSet(child, targetSet, options)
+        const deepChildren = getComputedDeepChildren(child)
+        deepChildren.forEach((deepChild) => targetSet.add(deepChild))
       }
     }
   })
 }
+
+const getComputedShallowChildren = computedProp((node: MobxNode): ReadonlySet<MobxNode> => {
+  const children = new Set<MobxNode>()
+  getChildrenNodesWithTargetSet(node, children, { deep: false })
+  return children
+})
+
+const getComputedDeepChildren = computedProp((node: MobxNode): ReadonlySet<MobxNode> => {
+  const children = new Set<MobxNode>()
+  getChildrenNodesWithTargetSet(node, children, { deep: true })
+  return children
+})
 
 /**
  * Returns all the children nodes (this is, excluding primitives) of a node.
@@ -37,7 +52,5 @@ export function getChildrenNodes(
     deep?: boolean
   }
 ): ReadonlySet<MobxNode> {
-  const children = new Set<MobxNode>()
-  getChildrenNodesWithTargetSet(node, children, options)
-  return children
+  return options?.deep ? getComputedDeepChildren(node) : getComputedShallowChildren(node)
 }
