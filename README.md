@@ -1,4 +1,5 @@
 <p align="center">
+  <img src="./logo.png" height="128" />
   <h1 align="center">mobx-node</h1>
 </p>
 <p align="center">
