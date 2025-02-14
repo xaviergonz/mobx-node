@@ -1,4 +1,4 @@
-import { reaction } from "mobx"
+import { action, reaction, runInAction } from "mobx"
 import { assertIsFunction } from "../../plainTypes/checks"
 import { assertIsNode, MobxNode } from "../node"
 import { getChildrenNodes } from "./getChildrenNodes"
@@ -17,20 +17,20 @@ import { getChildrenNodes } from "./getChildrenNodes"
  * callbacks should be run or false otherwise.
  *
  * @param target Function that returns the node whose children should be tracked.
- * @param fn Callback called when a child is attached to the target node.
+ * @param onChildAttached Callback called when a child is attached to the target node.
  * @param options Optional options object.
  * @returns A disposer function.
  */
 export function onChildAttachedTo(
   target: () => MobxNode,
-  fn: (child: MobxNode) => (() => void) | void,
+  onChildAttached: (child: MobxNode) => (() => void) | void,
   options?: {
     deep?: boolean
     fireForCurrentChildren?: boolean
   }
 ): (runDetachDisposers: boolean) => void {
   assertIsFunction(target, "target")
-  assertIsFunction(fn, "fn")
+  assertIsFunction(onChildAttached, "onChildAttached")
 
   const opts = {
     deep: false,
@@ -50,7 +50,7 @@ export function onChildAttachedTo(
 
   const addDetachDisposer = (n: object, disposer: (() => void) | void) => {
     if (disposer) {
-      detachDisposers.set(n, disposer)
+      detachDisposers.set(n, action(disposer))
     }
   }
 
@@ -109,7 +109,8 @@ export function onChildAttachedTo(
         if (!currentChildren.has(n)) {
           currentChildren.add(n)
 
-          addDetachDisposer(n, fn(n))
+          const detachAction = runInAction(() => onChildAttached(n))
+          addDetachDisposer(n, detachAction)
         }
 
         newChildrenCur = newChildrenIter.next()

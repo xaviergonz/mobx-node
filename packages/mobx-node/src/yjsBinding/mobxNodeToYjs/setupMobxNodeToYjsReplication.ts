@@ -1,11 +1,10 @@
 import { when } from "mobx"
 import * as Y from "yjs"
 import { failure } from "../../error/failure"
-import { IChange, mobxDeepObserve } from "./mobxDeepObserve"
 import { resolveYjsStructurePath } from "./resolveYjsStructurePath"
 import { convertPlainToYjsValue } from "./convertPlainToYjsValue"
 import { buildNodeFullPath } from "../../node/utils/buildNodeFullPath"
-import { MobxNode } from "../../node/node"
+import { addNodeChangeListener, MobxNode, MobxNodeChange } from "../../node/node"
 import { YjsStructure } from "../yjsTypes/types"
 
 /**
@@ -25,12 +24,12 @@ export function setupMobxNodeToYjsReplication({
   yjsReplicatingRef: { current: number }
 }) {
   let pendingMobxChanges: {
-    change: IChange
+    change: MobxNodeChange
     path: string[]
   }[] = []
   let mobxDeepChangesNestingLevel = 0
 
-  const mobxDeepObserveAdmin = mobxDeepObserve(mobxNode, (change) => {
+  const disposeNodeListener = addNodeChangeListener(mobxNode, (change) => {
     // if this comes from a yjs change, ignore it
     if (yjsReplicatingRef.current > 0) {
       return
@@ -103,7 +102,7 @@ export function setupMobxNodeToYjsReplication({
                 }
 
                 default:
-                  throw failure(`unsupported mobx change observable kind: ${change.observableKind}`)
+                  throw failure(`unsupported mobx change`)
               }
             })
           }, yjsOrigin)
@@ -114,7 +113,7 @@ export function setupMobxNodeToYjsReplication({
 
   return {
     dispose: () => {
-      mobxDeepObserveAdmin.dispose()
+      disposeNodeListener()
     },
   }
 }

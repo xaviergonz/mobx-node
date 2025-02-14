@@ -1,4 +1,4 @@
-import { observable, runInAction } from "mobx"
+import { isObservable, observable, runInAction } from "mobx"
 import { node, isNode } from "../../src"
 
 it("should convert a plain object into a node", () => {
@@ -59,6 +59,7 @@ it("should convert a plain object assigned as a child into a node (changing the 
   runInAction(() => {
     parent.child = plainChild // assign a plain object
   })
+  expect(isObservable(parent.child!)).toBe(true)
   expect(isNode(parent.child!)).toBe(true)
   expect(parent.child).not.toBe(plainChild)
 })

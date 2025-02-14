@@ -1,18 +1,32 @@
-import { IAtom, createAtom, observable, observe, set } from "mobx"
+import {
+  IArrayDidChange,
+  IAtom,
+  IObjectDidChange,
+  createAtom,
+  observable,
+  observe,
+  set,
+} from "mobx"
 import { isObservablePlainStructure, isPlainPrimitive } from "../plainTypes/checks"
 import { PlainStructure } from "../plainTypes/types"
 import { failure } from "../error/failure"
 import { invalidateSnapshotTreeToRoot } from "./getSnapshot"
 import { buildNodeFullPath } from "./utils/buildNodeFullPath"
+import { getParent } from "./tree/getParent"
 
 type ParentNode = {
   object: unknown
   path: string
 }
 
-type NodeData = {
+export type MobxNodeChange = IObjectDidChange | IArrayDidChange
+
+export type MobxNodeChangeListener = (change: MobxNodeChange) => void
+
+type MobxNodeData = {
   parent: ParentNode | undefined
   parentAtom: IAtom | undefined
+  onChangeListeners: MobxNodeChangeListener[]
 }
 
 export type MobxNode = PlainStructure
@@ -20,7 +34,7 @@ export type MobxNode = PlainStructure
 /**
  * @internal
  */
-export function getNodeData(node: MobxNode): NodeData {
+export function getNodeData(node: MobxNode): MobxNodeData {
   assertIsNode(node, "node")
   return nodes.get(node)!
 }
@@ -36,9 +50,9 @@ export function reportNodeParentObserved(node: MobxNode): void {
   data.parentAtom.reportObserved()
 }
 
-const nodes = new WeakMap<MobxNode, NodeData>()
+const nodes = new WeakMap<MobxNode, MobxNodeData>()
 
-function mergeNodeData(node: MobxNode, newData: Partial<NodeData>): void {
+function mergeNodeData(node: MobxNode, newData: Partial<MobxNodeData>): void {
   const nodeData = getNodeData(node)
   Object.assign(nodeData, newData)
 
@@ -54,6 +68,50 @@ export function isNode(struct: unknown): struct is PlainStructure {
 export function assertIsNode(node: unknown, argName: string): asserts node is MobxNode {
   if (!isNode(node)) {
     throw failure(`${argName} must be a mobx-node node`)
+  }
+}
+
+function emitChange(eventTarget: MobxNode, change: IObjectDidChange | IArrayDidChange) {
+  const changeListeners = getNodeData(eventTarget).onChangeListeners
+  if (changeListeners.length > 0) {
+    changeListeners.forEach((listener) => {
+      listener(change)
+    })
+  }
+}
+
+function emitChangeToRoot(eventTarget: MobxNode, change: IObjectDidChange | IArrayDidChange) {
+  let currentTarget: MobxNode | undefined = eventTarget
+  while (currentTarget) {
+    emitChange(currentTarget, change)
+    currentTarget = getParent(currentTarget)
+  }
+}
+
+/**
+ * Registers a change listener on the provided node.
+ *
+ * The listener is invoked whenever the node undergoes a change, such as additions,
+ * updates, or removals within its observable structure. This includes receiving
+ * events from both object and array mutations.
+ *
+ * @param node - The node to attach the change listener to.
+ * @param listener - The callback function that is called when a change occurs.
+ *   The listener receives two parameters:
+ *   - changeTarget: The node where the change occurred.
+ *   - change: The change event, which is either a MobxNodeChange.
+ *
+ * @returns A disposer function that, when invoked, unregisters the listener.
+ */
+export function addNodeChangeListener(node: MobxNode, listener: MobxNodeChangeListener) {
+  const changeListeners = getNodeData(node).onChangeListeners
+  changeListeners.push(listener)
+
+  return () => {
+    const index = changeListeners.indexOf(listener)
+    if (index !== -1) {
+      changeListeners.splice(index, 1)
+    }
   }
 }
 
@@ -73,10 +131,13 @@ export function node<T extends PlainStructure>(struct: T): T {
       : observable.object(struct, undefined, { deep: true })
   })()
 
-  nodes.set(observableStruct, {
+  const nodeData: MobxNodeData = {
     parent: undefined,
     parentAtom: undefined,
-  })
+    onChangeListeners: [],
+  }
+
+  nodes.set(observableStruct, nodeData)
 
   const attachAsChildNode = (v: any, path: string, set?: (n: PlainStructure) => void) => {
     if (isPlainPrimitive(v)) {
@@ -183,11 +244,12 @@ export function node<T extends PlainStructure>(struct: T): T {
       }
 
       invalidateSnapshotTreeToRoot(observableStruct)
+      emitChangeToRoot(observableStruct, change)
     })
   } else {
     observe(observableStruct, (change) => {
       if (typeof change.name === "symbol") {
-        throw failure("symbol keys are not supported")
+        throw failure("symbol keys are not supported on a mobx-node node")
       }
 
       switch (change.type) {
@@ -212,6 +274,7 @@ export function node<T extends PlainStructure>(struct: T): T {
       }
 
       invalidateSnapshotTreeToRoot(observableStruct)
+      emitChangeToRoot(observableStruct, change)
     })
   }
 
