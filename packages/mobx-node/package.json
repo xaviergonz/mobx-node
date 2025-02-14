@@ -1,6 +1,6 @@
 {
   "name": "mobx-node",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A fast lightweight alternative to MobX-State-Tree + Y.js two-way binding",
   "keywords": [
     "mobx",
@@ -18,7 +18,7 @@
   "bugs": {
     "url": "https://github.com/xaviergonz/mobx-node/issues"
   },
-  "homepage": "https://github.com/xaviergonz/mobx-node",
+  "homepage": "https://github.com/xaviergonz/mobx-node/wiki/Introduction",
   "license": "MIT",
   "author": "Javier González Garcés",
   "source": "./src/index.ts",
