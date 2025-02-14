@@ -1,4 +1,4 @@
-import { IAtom, createAtom, observable, observe } from "mobx"
+import { IAtom, createAtom, observable, observe, set } from "mobx"
 import { isObservablePlainStructure, isPlainPrimitive } from "../plainTypes/checks"
 import { PlainStructure } from "../plainTypes/types"
 import { failure } from "../error/failure"
@@ -134,14 +134,14 @@ export function node<T extends PlainStructure>(struct: T): T {
     const array = observableStruct
     array.forEach((v, i) => {
       attachAsChildNode(v, i.toString(), (n) => {
-        array[i] = n
+        set(array, i, n)
       })
     })
   } else {
     const object = observableStruct as any
     Object.entries(object).forEach(([key, v]) => {
       attachAsChildNode(v, key, (n) => {
-        object[key] = n
+        set(object, key, n)
       })
     })
   }
