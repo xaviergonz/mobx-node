@@ -1,6 +1,6 @@
 {
   "name": "mobx-node",
-  "version": "0.1.1",
+  "version": "0.1.3",
   "description": "A fast lightweight alternative to MobX-State-Tree + Y.js two-way binding",
   "keywords": [
     "mobx",
@@ -18,7 +18,7 @@
   "bugs": {
     "url": "https://github.com/xaviergonz/mobx-node/issues"
   },
-  "homepage": "https://github.com/xaviergonz/mobx-node/wiki/Introduction",
+  "homepage": "https://github.com/xaviergonz/mobx-node/wiki",
   "license": "MIT",
   "author": "Javier González Garcés",
   "source": "./src/index.ts",
@@ -43,11 +43,11 @@
   "types": "./dist/types/index.d.ts",
   "typings": "./dist/types/index.d.ts",
   "sideEffects": false,
-  "files": ["src", "dist", "LICENSE", "CHANGELOG.md", "README.md"],
+  "files": ["src", "dist", "LICENSE", "CHANGELOG.md", "README.md", "logo.png"],
   "scripts": {
     "quick-build": "tsc",
     "quick-build-tests": "tsc -p test",
-    "copy-root-files": "shx cp ../../README.md . && shx cp ../../LICENSE . && shx cp ../../CHANGELOG.md .",
+    "copy-root-files": "shx cp ../../README.md . && shx cp ../../LICENSE . && shx cp ../../CHANGELOG.md . && shx cp ../../logo.png .",
     "build": "yarn quick-build && yarn copy-root-files && shx rm -rf dist && vite build && shx cp dist/mobx-node.esm.mjs dist/mobx-node.esm.js",
     "test": "jest",
     "test:ci": "yarn test -i --coverage",
