@@ -3,26 +3,26 @@ import { action, createAtom, IAtom, isObservableArray, isObservableObject } from
 import { isPlainPrimitive } from "../plainTypes/checks"
 import { failure } from "../error/failure"
 import { getParentPath } from "./tree/getParentPath"
-import { assertIsNode, Node } from "./node"
+import { assertIsNode, MobxNode } from "./node"
 
-const snapshots = new WeakMap<Node, PlainStructure>()
-const snapshotAtoms = new WeakMap<Node, IAtom>()
+const snapshots = new WeakMap<MobxNode, PlainStructure>()
+const snapshotAtoms = new WeakMap<MobxNode, IAtom>()
 
 /**
  * @internal
  */
-export const invalidateSnapshotTreeToRoot = action((node: Node): void => {
+export const invalidateSnapshotTreeToRoot = action((node: MobxNode): void => {
   assertIsNode(node)
 
-  let current: Node | undefined = node
+  let current: MobxNode | undefined = node
   while (current) {
     snapshots.delete(current)
     snapshotAtoms.get(current)?.reportChanged()
-    current = getParentPath(current)?.parent as Node | undefined
+    current = getParentPath(current)?.parent as MobxNode | undefined
   }
 })
 
-const createSnapshot = action(<T extends Node>(node: T): T => {
+const createSnapshot = action(<T extends MobxNode>(node: T): T => {
   assertIsNode(node)
 
   if (isObservableArray(node)) {
@@ -45,7 +45,7 @@ function getSnapshotOrPrimitive<T>(value: T, acceptPrimitives: boolean): T {
     return value
   }
 
-  const node = value as Node
+  const node = value as MobxNode
   assertIsNode(node)
 
   let existingSnapshot = snapshots.get(node)
@@ -75,6 +75,6 @@ function getSnapshotOrPrimitive<T>(value: T, acceptPrimitives: boolean): T {
  * @param node - The node to snapshot.
  * @returns A snapshot of the node.
  */
-export function getSnapshot<T extends Node>(node: T): T {
+export function getSnapshot<T extends MobxNode>(node: T): T {
   return getSnapshotOrPrimitive(node, false)
 }

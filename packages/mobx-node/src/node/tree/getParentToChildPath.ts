@@ -1,4 +1,4 @@
-import { assertIsNode, Node } from "../node"
+import { assertIsNode, MobxNode } from "../node"
 import { getParentPath } from "./getParentPath"
 import { ParentPath } from "./ParentPath"
 import { Path, WritablePath } from "./pathTypes"
@@ -11,7 +11,7 @@ import { Path, WritablePath } from "./pathTypes"
  * @param toChild The child node.
  * @returns The path from the parent to the child or undefined if the child is not a child of the parent.
  */
-export function getParentToChildPath(fromParent: Node, toChild: Node): Path | undefined {
+export function getParentToChildPath(fromParent: MobxNode, toChild: MobxNode): Path | undefined {
   assertIsNode(fromParent)
   assertIsNode(toChild)
 

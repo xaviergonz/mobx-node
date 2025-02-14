@@ -1,19 +1,19 @@
 import { getParentPath } from "../tree/getParentPath"
-import { Node } from "../node"
+import { MobxNode } from "../node"
 
 /**
  * @internal
  */
-export function buildNodeFullPath(node: Node | undefined, subPath?: string): string[] {
+export function buildNodeFullPath(node: MobxNode | undefined, subPath?: string): string[] {
   const fullPath: string[] = []
 
-  let current: Node | undefined = node
+  let current: MobxNode | undefined = node
   while (current) {
     const parent = getParentPath(current)
     if (parent) {
       fullPath.push(parent.path)
     }
-    current = parent?.parent as Node | undefined
+    current = parent?.parent as MobxNode | undefined
   }
   fullPath.reverse()
 

@@ -23,7 +23,7 @@ export { clone } from "./node/clone"
 export { computedProp } from "./node/computedProp"
 export { getSnapshot } from "./node/getSnapshot"
 export { assertIsNode, isNode, node } from "./node/node"
-export type { Node } from "./node/node"
+export type { MobxNode } from "./node/node"
 
 export * from "./plainTypes/types"
 

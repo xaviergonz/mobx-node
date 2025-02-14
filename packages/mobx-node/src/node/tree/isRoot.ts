@@ -1,4 +1,4 @@
-import { Node } from "../node"
+import { MobxNode } from "../node"
 import { getParent } from "./getParent"
 
 /**
@@ -10,6 +10,6 @@ import { getParent } from "./getParent"
  * @returns true if the object is a root, false otherwise.
  */
 
-export function isRoot(node: Node): boolean {
+export function isRoot(node: MobxNode): boolean {
   return !getParent(node)
 }

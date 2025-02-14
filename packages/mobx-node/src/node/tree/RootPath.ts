@@ -1,5 +1,5 @@
 import { Path } from "./pathTypes"
-import { Node } from "../node"
+import { MobxNode } from "../node"
 
 /**
  * Path from an object to its root.
@@ -7,7 +7,7 @@ import { Node } from "../node"
  * @typeparam T Root object type.
  */
 
-export interface RootPath<T extends Node> {
+export interface RootPath<T extends MobxNode> {
   /**
    * Root object.
    */

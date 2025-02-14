@@ -1,4 +1,4 @@
-import { assertIsNode, Node } from "../node"
+import { assertIsNode, MobxNode } from "../node"
 import { getChildrenNodes } from "./getChildrenNodes"
 
 /**
@@ -28,8 +28,8 @@ export enum WalkTreeMode {
  * or undefined if the walk was completed.
  */
 export function walkTree<T = void>(
-  root: Node,
-  visit: (node: Node) => T | undefined,
+  root: MobxNode,
+  visit: (node: MobxNode) => T | undefined,
   mode: WalkTreeMode
 ): T | undefined {
   assertIsNode(root)
@@ -42,10 +42,10 @@ export function walkTree<T = void>(
 }
 
 function walkTreeParentFirst<T = void>(
-  root: Node,
-  visit: (node: Node) => T | undefined
+  root: MobxNode,
+  visit: (node: MobxNode) => T | undefined
 ): T | undefined {
-  const stack: Node[] = [root]
+  const stack: MobxNode[] = [root]
 
   while (stack.length > 0) {
     const node = stack.pop()!
@@ -72,8 +72,8 @@ function walkTreeParentFirst<T = void>(
 }
 
 function walkTreeChildrenFirst<T = void>(
-  root: Node,
-  visit: (node: Node) => T | undefined
+  root: MobxNode,
+  visit: (node: MobxNode) => T | undefined
 ): T | undefined {
   const childrenIter = getChildrenNodes(root).values()
   let ch = childrenIter.next()

@@ -1,7 +1,7 @@
 import { isObservableArray, isObservableObject, remove, runInAction, set } from "mobx"
 import * as Y from "yjs"
 import { failure } from "../../error/failure"
-import { assertIsNode, Node } from "../../node/node"
+import { assertIsNode, MobxNode } from "../../node/node"
 import { resolvePath } from "../../node/tree/resolvePath"
 import { PlainValue } from "../../plainTypes/types"
 import { YjsStructure, YjsValue } from "../yjsTypes/types"
@@ -20,7 +20,7 @@ export function setupYjsToMobxNodeReplication({
   yjsOrigin,
   yjsReplicatingRef,
 }: {
-  mobxNode: Node
+  mobxNode: MobxNode
   yjsObject: YjsStructure
   yjsOrigin: symbol
   yjsReplicatingRef: { current: number }
@@ -36,7 +36,7 @@ export function setupYjsToMobxNodeReplication({
     try {
       runInAction(() => {
         events.forEach((event) => {
-          const resolutionResult = resolvePath<Node>(mobxNode, event.path)
+          const resolutionResult = resolvePath<MobxNode>(mobxNode, event.path)
           if (!resolutionResult.resolved) {
             throw failure(
               `failed to resolve mobx node path for yjs event: ${JSON.stringify(event.path)}`
@@ -52,7 +52,7 @@ export function setupYjsToMobxNodeReplication({
               throw failure("mobx target was expected to be an object")
             }
 
-            const mobxObject = mobxTarget as Node
+            const mobxObject = mobxTarget as MobxNode
             const yjsMap = event.target
 
             event.changes.keys.forEach((change, key) => {

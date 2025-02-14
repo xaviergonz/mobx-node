@@ -5,7 +5,7 @@ import { IChange, mobxDeepObserve } from "./mobxDeepObserve"
 import { resolveYjsStructurePath } from "./resolveYjsStructurePath"
 import { convertPlainToYjsValue } from "./convertPlainToYjsValue"
 import { buildNodeFullPath } from "../../node/utils/buildNodeFullPath"
-import { Node } from "../../node/node"
+import { MobxNode } from "../../node/node"
 import { YjsStructure } from "../yjsTypes/types"
 
 export function setupMobxNodeToYjsReplication({
@@ -15,7 +15,7 @@ export function setupMobxNodeToYjsReplication({
   yjsOrigin,
   yjsReplicatingRef,
 }: {
-  mobxNode: Node
+  mobxNode: MobxNode
   yjsDoc: Y.Doc
   yjsObject: YjsStructure
   yjsOrigin: symbol

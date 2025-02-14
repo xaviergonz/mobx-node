@@ -1,5 +1,5 @@
 import { findParentPath } from "./findParentPath"
-import { Node } from "../node"
+import { MobxNode } from "../node"
 
 /**
  * Iterates through all the parents (from the nearest until the root)
@@ -13,9 +13,9 @@ import { Node } from "../node"
  * @param maxDepth Max depth, or 0 for infinite.
  * @returns
  */
-export function findParent<T extends Node>(
-  child: Node,
-  predicate: (parentNode: Node) => boolean,
+export function findParent<T extends MobxNode>(
+  child: MobxNode,
+  predicate: (parentNode: MobxNode) => boolean,
   maxDepth = 0
 ): T | undefined {
   const foundParentPath = findParentPath(child, predicate, maxDepth)

@@ -1,4 +1,4 @@
-import { assertIsNode, Node } from "../node"
+import { assertIsNode, MobxNode } from "../node"
 import { getParent } from "./getParent"
 
 /**
@@ -8,11 +8,11 @@ import { getParent } from "./getParent"
  * @param parent Parent node.
  * @returns
  */
-export function isChildOfParent(child: Node, parent: Node): boolean {
+export function isChildOfParent(child: MobxNode, parent: MobxNode): boolean {
   assertIsNode(child)
   assertIsNode(parent)
 
-  let currentParent = getParent<Node>(child)
+  let currentParent = getParent<MobxNode>(child)
   while (currentParent) {
     if (currentParent === parent) {
       return true

@@ -1,11 +1,11 @@
 import { values } from "mobx"
 import { isPlainPrimitive } from "../../plainTypes/checks"
 import { PlainValue } from "../../plainTypes/types"
-import { assertIsNode, isNode, Node } from "../node"
+import { assertIsNode, isNode, MobxNode } from "../node"
 
 export function getChildrenNodesWithTargetSet(
-  node: Node,
-  targetSet: Set<Node>,
+  node: MobxNode,
+  targetSet: Set<MobxNode>,
   options?: {
     deep?: boolean
   }
@@ -13,7 +13,6 @@ export function getChildrenNodesWithTargetSet(
   assertIsNode(node)
 
   const deep = options?.deep ?? false
-
   ;(values(node) as PlainValue[]).forEach((child) => {
     if (!isPlainPrimitive(child) && isNode(child)) {
       targetSet.add(child)
@@ -33,12 +32,12 @@ export function getChildrenNodesWithTargetSet(
  * @returns A readonly set with the children.
  */
 export function getChildrenNodes(
-  node: Node,
+  node: MobxNode,
   options?: {
     deep?: boolean
   }
-): ReadonlySet<Node> {
-  const children = new Set<Node>()
+): ReadonlySet<MobxNode> {
+  const children = new Set<MobxNode>()
   getChildrenNodesWithTargetSet(node, children, options)
   return children
 }

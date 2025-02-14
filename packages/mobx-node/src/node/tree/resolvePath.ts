@@ -1,4 +1,4 @@
-import { Node, assertIsNode } from "../node"
+import { MobxNode, assertIsNode } from "../node"
 
 const unresolved = { resolved: false } as const
 
@@ -10,8 +10,8 @@ const unresolved = { resolved: false } as const
  * @param path Path as an string or number array.
  * @returns An object with `{ resolved: true, value: T }` or `{ resolved: false }`.
  */
-export function resolvePath<T extends Node>(
-  pathRootNode: Node,
+export function resolvePath<T extends MobxNode>(
+  pathRootNode: MobxNode,
   path: readonly (string | number)[] // accepts number paths too just for convenience
 ):
   | {
@@ -24,7 +24,7 @@ export function resolvePath<T extends Node>(
     } {
   assertIsNode(pathRootNode)
 
-  let current: Node = pathRootNode
+  let current: MobxNode = pathRootNode
 
   const len = path.length
   for (let i = 0; i < len; i++) {

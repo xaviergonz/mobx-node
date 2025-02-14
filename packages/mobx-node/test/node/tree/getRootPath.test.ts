@@ -1,5 +1,5 @@
 import { runInAction, reaction } from "mobx"
-import { node, getRootPath, RootPath, Node } from "../../../src"
+import { node, getRootPath, RootPath, MobxNode } from "../../../src"
 
 describe("getRootPath", () => {
   it("should return empty path for a root node (object)", () => {
@@ -23,7 +23,7 @@ describe("getRootPath", () => {
     const root = node({ child: { grandchild: { a: 1 } } })
     const child = root.child
     const grandchild = child.grandchild
-    const gp: RootPath<Node> = getRootPath(grandchild)
+    const gp: RootPath<MobxNode> = getRootPath(grandchild)
     expect(gp.root).toBe(root)
     expect(gp.path).toEqual(["child", "grandchild"])
     expect(gp.pathObjects).toEqual([root, child, grandchild])
@@ -31,7 +31,7 @@ describe("getRootPath", () => {
 
   it("should return empty path for a root node (array)", () => {
     const arr = node([{ a: 1 }])
-    const rootPath: RootPath<Node> = getRootPath(arr)
+    const rootPath: RootPath<MobxNode> = getRootPath(arr)
     expect(rootPath.root).toBe(arr)
     expect(rootPath.path).toEqual([])
     expect(rootPath.pathObjects).toEqual([arr])
@@ -40,7 +40,7 @@ describe("getRootPath", () => {
   it("should return correct path for an element in an array", () => {
     const arr = node([{ a: 1 }])
     const element = arr[0]
-    const elemPath: RootPath<Node> = getRootPath(element)
+    const elemPath: RootPath<MobxNode> = getRootPath(element)
     expect(elemPath.root).toBe(arr)
     expect(elemPath.path).toEqual(["0"])
     expect(elemPath.pathObjects).toEqual([arr, element])
@@ -57,7 +57,7 @@ describe("getRootPath", () => {
     runInAction(() => {
       root2.child2 = child // attach child to root2 under 'child2'
     })
-    const childPath: RootPath<Node> = getRootPath(child)
+    const childPath: RootPath<MobxNode> = getRootPath(child)
     expect(childPath.root).toBe(root2)
     expect(childPath.path).toEqual(["child2"])
     expect(childPath.pathObjects).toEqual([root2, child])
@@ -68,7 +68,7 @@ describe("getRootPath", () => {
     const root = node<N>({ child: { a: 1 } })
     const child = root.child!
 
-    const paths: RootPath<Node>[] = []
+    const paths: RootPath<MobxNode>[] = []
     const disposer = reaction(
       () => getRootPath(child),
       (newPath) => {

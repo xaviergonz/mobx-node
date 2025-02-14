@@ -1,4 +1,4 @@
-import { node, getChildrenNodes, Node } from "../../../src"
+import { node, getChildrenNodes, MobxNode } from "../../../src"
 import { reaction, runInAction } from "mobx"
 
 it("should return shallow children for an object node", () => {
@@ -51,7 +51,7 @@ it("should return deep children for an array node", () => {
 it("should react when a child is added/removed", () => {
   const root = node<{ child1?: { a: number }; child2?: { b: number } }>({ child1: { a: 1 } })
 
-  const children: ReadonlySet<Node>[] = []
+  const children: ReadonlySet<MobxNode>[] = []
   const disposer = reaction(
     () => getChildrenNodes(root, { deep: false }),
     (ch) => {

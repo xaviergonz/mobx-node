@@ -15,12 +15,12 @@ type NodeData = {
   parentAtom: IAtom | undefined
 }
 
-export type Node = PlainStructure
+export type MobxNode = PlainStructure
 
 /**
  * @internal
  */
-export function getNodeData(node: Node): NodeData {
+export function getNodeData(node: MobxNode): NodeData {
   assertIsNode(node)
   return nodes.get(node)!
 }
@@ -28,7 +28,7 @@ export function getNodeData(node: Node): NodeData {
 /**
  * @internal
  */
-export function reportNodeParentObserved(node: Node): void {
+export function reportNodeParentObserved(node: MobxNode): void {
   const data = getNodeData(node)
   if (!data.parentAtom) {
     data.parentAtom = createAtom("parent")
@@ -36,9 +36,9 @@ export function reportNodeParentObserved(node: Node): void {
   data.parentAtom.reportObserved()
 }
 
-const nodes = new WeakMap<Node, NodeData>()
+const nodes = new WeakMap<MobxNode, NodeData>()
 
-function mergeNodeData(node: Node, newData: Partial<NodeData>): void {
+function mergeNodeData(node: MobxNode, newData: Partial<NodeData>): void {
   const nodeData = getNodeData(node)
   Object.assign(nodeData, newData)
 
@@ -51,7 +51,7 @@ export function isNode(struct: PlainStructure): struct is PlainStructure {
   return nodes.has(struct)
 }
 
-export function assertIsNode(node: Node): asserts node is Node {
+export function assertIsNode(node: MobxNode): asserts node is MobxNode {
   if (!isNode(node)) {
     throw failure("node expected")
   }
@@ -91,7 +91,7 @@ export function node<T extends PlainStructure>(struct: T): T {
         throw failure(
           `The same node cannot appear twice in the same or different trees,` +
             ` trying to assign it to ${JSON.stringify(buildNodeFullPath(observableStruct, path))},` +
-            ` but it already exists at ${JSON.stringify(buildNodeFullPath(parent.object as Node | undefined, parent.path))}.` +
+            ` but it already exists at ${JSON.stringify(buildNodeFullPath(parent.object as MobxNode | undefined, parent.path))}.` +
             ` If you are moving the node then remove it from the tree first before moving it.` +
             ` If you are copying the node then use 'cloneNode' to make a clone first.`
         )

@@ -1,4 +1,4 @@
-import { Node } from "../node"
+import { MobxNode } from "../node"
 import { getChildrenNodes } from "./getChildrenNodes"
 
 /**
@@ -11,9 +11,9 @@ import { getChildrenNodes } from "./getChildrenNodes"
  * get the children deeply or `false` to get them shallowly.
  * @returns A readonly set with the matching children.
  */
-export function findChildren<T extends Node>(
-  root: Node,
-  predicate: (node: Node) => boolean,
+export function findChildren<T extends MobxNode>(
+  root: MobxNode,
+  predicate: (node: MobxNode) => boolean,
   options?: {
     deep?: boolean
   }
