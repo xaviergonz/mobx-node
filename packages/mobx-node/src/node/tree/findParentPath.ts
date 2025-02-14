@@ -22,7 +22,7 @@ export function findParentPath<T extends MobxNode>(
   predicate: (parentNode: MobxNode) => boolean,
   maxDepth = 0
 ): FoundParentPath<T> | undefined {
-  assertIsNode(child)
+  assertIsNode(child, "child")
 
   const path: WritablePath = []
 

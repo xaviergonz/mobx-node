@@ -9,8 +9,8 @@ import { getParent } from "./getParent"
  * @returns
  */
 export function isChildOfParent(child: MobxNode, parent: MobxNode): boolean {
-  assertIsNode(child)
-  assertIsNode(parent)
+  assertIsNode(child, "child")
+  assertIsNode(parent, "parent")
 
   let currentParent = getParent<MobxNode>(child)
   while (currentParent) {

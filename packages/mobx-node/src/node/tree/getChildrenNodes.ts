@@ -11,7 +11,7 @@ export function getChildrenNodesWithTargetSet(
     deep?: boolean
   }
 ): void {
-  assertIsNode(node)
+  assertIsNode(node, "node")
 
   const deep = options?.deep ?? false
   ;(values(node) as PlainValue[]).forEach((child) => {

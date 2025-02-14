@@ -2,7 +2,7 @@ import { isObservable, reaction, runInAction } from "mobx"
 import { getSnapshot, isNode, node } from "../../src"
 
 it("throws if an unsupported type is passed", () => {
-  expect(() => getSnapshot(undefined as any)).toThrow("node expected")
+  expect(() => getSnapshot(undefined as any)).toThrow("value must be a mobx-node node")
 })
 
 it("referencial integrity", () => {

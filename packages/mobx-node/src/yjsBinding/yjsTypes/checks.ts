@@ -2,10 +2,16 @@ import * as Y from "yjs"
 import { YjsStructure } from "./types"
 import { failure } from "../../error/failure"
 
+/**
+ * @internal
+ */
 export function isYjsStructure(target: unknown): target is YjsStructure {
   return target instanceof Y.Map || target instanceof Y.Array
 }
 
+/**
+ * @internal
+ */
 export function assertIsYjsStructure(target: unknown): asserts target is YjsStructure {
   const valid = isYjsStructure(target)
   if (!valid) {

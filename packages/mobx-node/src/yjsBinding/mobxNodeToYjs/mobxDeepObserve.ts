@@ -23,8 +23,14 @@ function isRecursivelyObservable(thing: unknown): boolean {
   return isObservableObject(thing) || isObservableArray(thing) || isObservableMap(thing)
 }
 
+/**
+ * @internal
+ */
 export type IChange = IObjectDidChange | IArrayDidChange | IMapDidChange
 
+/**
+ * @internal
+ */
 export function mobxDeepObserve<T = any>(target: T, onChange: (change: IChange, root: T) => void) {
   const entrySet = new WeakMap<any, Entry>()
 

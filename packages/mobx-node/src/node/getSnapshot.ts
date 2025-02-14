@@ -12,7 +12,7 @@ const snapshotAtoms = new WeakMap<MobxNode, IAtom>()
  * @internal
  */
 export const invalidateSnapshotTreeToRoot = action((node: MobxNode): void => {
-  assertIsNode(node)
+  assertIsNode(node, "node")
 
   let current: MobxNode | undefined = node
   while (current) {
@@ -23,7 +23,7 @@ export const invalidateSnapshotTreeToRoot = action((node: MobxNode): void => {
 })
 
 const createSnapshot = action(<T extends MobxNode>(node: T): T => {
-  assertIsNode(node)
+  assertIsNode(node, "node")
 
   if (isObservableArray(node)) {
     return node.map((v) => getSnapshotOrPrimitive(v, true)) as T
@@ -45,8 +45,8 @@ function getSnapshotOrPrimitive<T>(value: T, acceptPrimitives: boolean): T {
     return value
   }
 
-  const node = value as MobxNode
-  assertIsNode(node)
+  assertIsNode(value, "value")
+  const node = value
 
   let existingSnapshot = snapshots.get(node)
   if (!existingSnapshot) {

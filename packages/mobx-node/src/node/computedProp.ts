@@ -30,7 +30,7 @@ export function computedProp<T extends PlainStructure, R>(
   const computedFns = new WeakMap<T, IComputedValue<R>>()
 
   const getFn = (obj: T): R => {
-    assertIsObservablePlainStructure(obj)
+    assertIsObservablePlainStructure(obj, "obj")
 
     let computedFn = computedFns.get(obj)
     if (!computedFn) {

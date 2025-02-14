@@ -21,7 +21,7 @@ export type MobxNode = PlainStructure
  * @internal
  */
 export function getNodeData(node: MobxNode): NodeData {
-  assertIsNode(node)
+  assertIsNode(node, "node")
   return nodes.get(node)!
 }
 
@@ -47,13 +47,13 @@ function mergeNodeData(node: MobxNode, newData: Partial<NodeData>): void {
   }
 }
 
-export function isNode(struct: PlainStructure): struct is PlainStructure {
-  return nodes.has(struct)
+export function isNode(struct: unknown): struct is PlainStructure {
+  return nodes.has(struct as PlainStructure)
 }
 
-export function assertIsNode(node: MobxNode): asserts node is MobxNode {
+export function assertIsNode(node: unknown, argName: string): asserts node is MobxNode {
   if (!isNode(node)) {
-    throw failure("node expected")
+    throw failure(`${argName} must be a mobx-node node`)
   }
 }
 

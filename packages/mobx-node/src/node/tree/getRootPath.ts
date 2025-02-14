@@ -14,7 +14,7 @@ import { RootPath } from "./RootPath"
  * @returns
  */
 export function getRootPath<T extends MobxNode>(node: MobxNode): RootPath<T> {
-  assertIsNode(node)
+  assertIsNode(node, "node")
 
   let root = node
   const path = [] as WritablePath

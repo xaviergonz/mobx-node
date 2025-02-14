@@ -32,7 +32,7 @@ export function walkTree<T = void>(
   visit: (node: MobxNode) => T | undefined,
   mode: WalkTreeMode
 ): T | undefined {
-  assertIsNode(root)
+  assertIsNode(root, "root")
 
   if (mode === WalkTreeMode.ParentFirst) {
     return walkTreeParentFirst(root, visit)

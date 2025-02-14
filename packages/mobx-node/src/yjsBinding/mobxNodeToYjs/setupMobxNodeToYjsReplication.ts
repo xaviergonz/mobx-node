@@ -8,6 +8,9 @@ import { buildNodeFullPath } from "../../node/utils/buildNodeFullPath"
 import { MobxNode } from "../../node/node"
 import { YjsStructure } from "../yjsTypes/types"
 
+/**
+ * @internal
+ */
 export function setupMobxNodeToYjsReplication({
   mobxNode,
   yjsDoc,

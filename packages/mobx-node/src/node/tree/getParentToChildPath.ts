@@ -12,8 +12,8 @@ import { Path, WritablePath } from "./pathTypes"
  * @returns The path from the parent to the child or undefined if the child is not a child of the parent.
  */
 export function getParentToChildPath(fromParent: MobxNode, toChild: MobxNode): Path | undefined {
-  assertIsNode(fromParent)
-  assertIsNode(toChild)
+  assertIsNode(fromParent, "fromParent")
+  assertIsNode(toChild, "toChild")
 
   if (fromParent === toChild) {
     return []

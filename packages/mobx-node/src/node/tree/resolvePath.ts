@@ -22,7 +22,7 @@ export function resolvePath<T extends MobxNode>(
       resolved: false
       value?: undefined
     } {
-  assertIsNode(pathRootNode)
+  assertIsNode(pathRootNode, "pathRootNode")
 
   let current: MobxNode = pathRootNode
 

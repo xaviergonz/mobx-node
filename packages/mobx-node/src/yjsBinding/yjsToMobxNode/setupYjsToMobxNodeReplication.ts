@@ -14,6 +14,9 @@ function yjsToPlainValue(v: YjsValue): PlainValue {
   }
 }
 
+/**
+ * @internal
+ */
 export function setupYjsToMobxNodeReplication({
   mobxNode,
   yjsObject,
@@ -43,7 +46,7 @@ export function setupYjsToMobxNodeReplication({
             )
           }
           const mobxTarget = resolutionResult.value
-          assertIsNode(mobxTarget)
+          assertIsNode(mobxTarget, "mobxTarget")
 
           // now y.js and mobx should be in the same target
 
