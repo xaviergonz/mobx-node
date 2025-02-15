@@ -10,7 +10,7 @@ import { sleep } from "./sleep.js"
 
 const extrasToRun: ExtrasToRun = [
   // "es6",
-  "mobx",
+  // "mobx",
 ]
 
 const waitBetweenBenchmarks = () => sleep(1000)
