@@ -3,6 +3,7 @@ import { Primitive } from "../../plainTypes/types"
 import { failure } from "../../error/failure"
 import { isPlainObject, isPrimitive } from "../../plainTypes/checks"
 import { YjsValue } from "../yjsTypes/types"
+import { isObservableArray, isObservableObject } from "mobx"
 
 /**
  * Converts a plain value to a Y.js value.
@@ -17,13 +18,13 @@ export function convertPlainToYjsValue(v: any): YjsValue {
     return v
   }
 
-  if (Array.isArray(v)) {
+  if (Array.isArray(v) || isObservableArray(v)) {
     const arr = new Y.Array<YjsValue>()
     applyPlainArrayToYArray(arr, v)
     return arr as YjsValue
   }
 
-  if (isPlainObject(v)) {
+  if (isPlainObject(v) || isObservableObject(v)) {
     const map = new Y.Map<YjsValue>()
     applyPlainObjectToYMap(map, v)
     return map as YjsValue

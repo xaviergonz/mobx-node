@@ -4,6 +4,7 @@ import {
   IObjectDidChange,
   action,
   createAtom,
+  isObservableArray,
   observable,
   observe,
   set,
@@ -188,8 +189,10 @@ export const node = action(<T extends object>(struct: T): T => {
     })
   }
 
+  const isArray = isObservableArray(observableStruct)
+
   // make current children nodes too (init)
-  if (Array.isArray(observableStruct)) {
+  if (isArray) {
     const array = observableStruct
     array.forEach((v, i) => {
       attachAsChildNode(v, i.toString(), (n) => {
@@ -206,7 +209,7 @@ export const node = action(<T extends object>(struct: T): T => {
   }
 
   // and observe changes
-  if (Array.isArray(observableStruct)) {
+  if (isArray) {
     observe(observableStruct, (change) => {
       switch (change.type) {
         case "update": {
