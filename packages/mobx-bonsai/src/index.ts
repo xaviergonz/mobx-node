@@ -1,5 +1,5 @@
-// mobx-node core
-export { MobxNodeError } from "./error/MobxNodeError"
+// mobx-bonsai core
+export { MobxBonsaiError } from "./error/MobxBonsaiError"
 
 export { findChildren } from "./node/tree/findChildren"
 export { findParent } from "./node/tree/findParent"
@@ -31,7 +31,10 @@ export {
   isNode,
   node,
 } from "./node/node"
-export type { MobxNodeChangeListener, MobxNodeChange } from "./node/node"
+export type {
+  NodeChangeListener,
+  NodeChange,
+} from "./node/node"
 export { volatileProp } from "./node/volatileProp"
 
 export * from "./plainTypes/types"
@@ -43,8 +46,8 @@ export {
   applyPlainArrayToYArray,
   applyPlainObjectToYMap,
   convertPlainToYjsValue,
-} from "./yjsBinding/mobxNodeToYjs/convertPlainToYjsValue"
+} from "./yjsBinding/nodeToYjs/convertPlainToYjsValue"
 
 export * from "./yjsBinding/yjsTypes/types"
 
-export { bindYjsToMobxNode } from "./yjsBinding/bindYjsToMobxNode"
+export { bindYjsToNode } from "./yjsBinding/bindYjsToNode"

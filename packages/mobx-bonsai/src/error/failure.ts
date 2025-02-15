@@ -1,8 +1,8 @@
-import { MobxNodeError } from "./MobxNodeError"
+import { MobxBonsaiError } from "./MobxBonsaiError"
 
 /**
  * @internal
  */
 export function failure(msg: string) {
-  return new MobxNodeError(msg)
+  return new MobxBonsaiError(msg)
 }

@@ -1,9 +1,9 @@
 import { action } from "mobx"
-import { getSnapshot } from "mobx-node"
+import { getSnapshot } from "mobx-bonsai"
 import { getSnapshot as mstGetSnapshot } from "mobx-state-tree"
 import { bench, ExtrasToRun } from "./bench.js"
 import { ESBigModel } from "./models/es6.js"
-import { createBigModel, setA, setters } from "./models/mobxNode.js"
+import { createBigModel, setA, setters } from "./models/mobxBonsai.js"
 import { MobxBigModel } from "./models/mobx.js"
 import { mstBigModel } from "./models/mst.js"
 import { sleep } from "./sleep.js"
@@ -149,7 +149,7 @@ await waitBetweenBenchmarks()
   await waitBetweenBenchmarks()
 }
 
-const setVarsMobxNode = action((x: any) => {
+const setVarsMobxBonsai = action((x: any) => {
   bigModelBigVars.forEach((bmbv) => {
     const small = x[bmbv]
     smallModelVars.forEach((smv) => {
@@ -182,7 +182,7 @@ const setVars = action((x: any) => {
   bench(
     `already created, change all simple props (${name})`,
     () => {
-      setVarsMobxNode(bm1)
+      setVarsMobxBonsai(bm1)
     },
     () => {
       setVars(bm2)

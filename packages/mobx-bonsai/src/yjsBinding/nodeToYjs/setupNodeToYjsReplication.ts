@@ -4,32 +4,32 @@ import { failure } from "../../error/failure"
 import { resolveYjsStructurePath } from "./resolveYjsStructurePath"
 import { convertPlainToYjsValue } from "./convertPlainToYjsValue"
 import { buildNodeFullPath } from "../../node/utils/buildNodeFullPath"
-import { onDeepChange, MobxNodeChange } from "../../node/node"
+import { onDeepChange, NodeChange } from "../../node/node"
 import { YjsStructure } from "../yjsTypes/types"
 
 /**
  * @internal
  */
-export function setupMobxNodeToYjsReplication({
-  mobxNode,
+export function setupNodeToYjsReplication({
+  node,
   yjsDoc,
   yjsObject,
   yjsOrigin,
   yjsReplicatingRef,
 }: {
-  mobxNode: object
+  node: object
   yjsDoc: Y.Doc
   yjsObject: YjsStructure
   yjsOrigin: symbol
   yjsReplicatingRef: { current: number }
 }) {
   let pendingMobxChanges: {
-    change: MobxNodeChange
+    change: NodeChange
     path: string[]
   }[] = []
   let mobxDeepChangesNestingLevel = 0
 
-  const disposeOnDeepChange = onDeepChange(mobxNode, (change) => {
+  const disposeOnDeepChange = onDeepChange(node, (change) => {
     // if this comes from a yjs change, ignore it
     if (yjsReplicatingRef.current > 0) {
       return

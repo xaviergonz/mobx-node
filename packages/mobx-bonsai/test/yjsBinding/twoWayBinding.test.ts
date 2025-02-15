@@ -1,5 +1,5 @@
 import * as Y from "yjs"
-import { createArrayTestbed, createObjectTestbed } from "../testbed"
+import { createArrayTestbed, createObjectTestbed } from "./testbed"
 import { runInAction } from "mobx"
 
 test("object two-way binding", () => {

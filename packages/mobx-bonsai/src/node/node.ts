@@ -18,20 +18,20 @@ type ParentNode = {
   path: string
 }
 
-export type MobxNodeChange = IObjectDidChange | IArrayDidChange
+export type NodeChange = IObjectDidChange | IArrayDidChange
 
-export type MobxNodeChangeListener = (change: MobxNodeChange) => void
+export type NodeChangeListener = (change: NodeChange) => void
 
-type MobxNodeData = {
+type NodeData = {
   parent: ParentNode | undefined
   parentAtom: IAtom | undefined
-  onChangeListeners: MobxNodeChangeListener[]
+  onChangeListeners: NodeChangeListener[]
 }
 
 /**
  * @internal
  */
-export function getNodeData(node: object): MobxNodeData {
+export function getNodeData(node: object): NodeData {
   assertIsNode(node, "node")
   return nodes.get(node)!
 }
@@ -47,9 +47,9 @@ export function reportNodeParentObserved(node: object): void {
   data.parentAtom.reportObserved()
 }
 
-const nodes = new WeakMap<object, MobxNodeData>()
+const nodes = new WeakMap<object, NodeData>()
 
-function mergeNodeData(node: object, newData: Partial<MobxNodeData>): void {
+function mergeNodeData(node: object, newData: Partial<NodeData>): void {
   const nodeData = getNodeData(node)
   Object.assign(nodeData, newData)
 
@@ -64,7 +64,7 @@ export function isNode(struct: object): boolean {
 
 export function assertIsNode(node: object, argName: string): void {
   if (!isNode(node)) {
-    throw failure(`${argName} must be a mobx-node node`)
+    throw failure(`${argName} must be a mobx-bonsai node`)
   }
 }
 
@@ -96,11 +96,11 @@ function emitChangeToRoot(eventTarget: object, change: IObjectDidChange | IArray
  * @param listener - The callback function that is called when a change occurs.
  *   The listener receives two parameters:
  *   - changeTarget: The node where the change occurred.
- *   - change: The change event, which is either a MobxNodeChange.
+ *   - change: The change event, which is a NodeChange.
  *
  * @returns A disposer function that, when invoked, unregisters the listener.
  */
-export function onDeepChange(node: object, listener: MobxNodeChangeListener) {
+export function onDeepChange(node: object, listener: NodeChangeListener) {
   const changeListeners = getNodeData(node).onChangeListeners
   changeListeners.push(listener)
 
@@ -128,7 +128,7 @@ export function node<T extends object>(struct: T): T {
       : observable.object(struct, undefined, { deep: true })
   })()
 
-  const nodeData: MobxNodeData = {
+  const nodeData: NodeData = {
     parent: undefined,
     parentAtom: undefined,
     onChangeListeners: [],
@@ -246,7 +246,7 @@ export function node<T extends object>(struct: T): T {
   } else {
     observe(observableStruct, (change) => {
       if (typeof change.name === "symbol") {
-        throw failure("symbol keys are not supported on a mobx-node node")
+        throw failure("symbol keys are not supported on a mobx-bonsai node")
       }
 
       switch (change.type) {

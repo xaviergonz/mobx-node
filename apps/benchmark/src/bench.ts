@@ -5,7 +5,7 @@ export type ExtrasToRun = ("es6" | "mobx")[]
 
 export function bench(
   name: string,
-  mobxNodeImpl: Function,
+  mobxBonsaiImpl: Function,
   mstImpl: Function,
   es6Impl: Function,
   mobxImpl: Function,
@@ -15,12 +15,12 @@ export function bench(
 
   let results: Record<string, Benchmark.Target> = {}
 
-  const mobxNode = chalk.green("mobx-node")
+  const mobxBonsai = chalk.green("mobx-bonsai")
   const mst = chalk.red("mobx-state-tree")
   const es6 = chalk.magenta("raw es6")
   const mobx = chalk.blue("raw mobx")
 
-  suite = suite.add(mobxNode, mobxNodeImpl)
+  suite = suite.add(mobxBonsai, mobxBonsaiImpl)
 
   const runMst = true
   if (runMst) {
@@ -49,25 +49,25 @@ export function bench(
     })
     .on("complete", () => {
       if (runMst) {
-        const mobxNodeSpeed = results[mobxNode].hz!
+        const mobxBonsaiSpeed = results[mobxBonsai].hz!
         const mstSpeed = results[mst].hz!
-        const fastest = mobxNodeSpeed > mstSpeed ? mobxNode : mst
+        const fastest = mobxBonsaiSpeed > mstSpeed ? mobxBonsai : mst
 
-        const ratio = Math.max(mobxNodeSpeed, mstSpeed) / Math.min(mobxNodeSpeed, mstSpeed)
+        const ratio = Math.max(mobxBonsaiSpeed, mstSpeed) / Math.min(mobxBonsaiSpeed, mstSpeed)
 
         console.log(
-          `Fastest between mobx-node and mobx-state-tree is ${fastest} by ${ratio.toFixed(2)}x`
+          `Fastest between mobx-bonsai and mobx-state-tree is ${fastest} by ${ratio.toFixed(2)}x`
         )
       }
 
       if (extrasToRun.includes("mobx")) {
-        const mobxRatio = results[mobx].hz! / results[mobxNode].hz!
-        console.log(`${mobx} is faster than mobx-node by ${mobxRatio.toFixed(2)}x`)
+        const mobxRatio = results[mobx].hz! / results[mobxBonsai].hz!
+        console.log(`${mobx} is faster than mobx-bonsai by ${mobxRatio.toFixed(2)}x`)
       }
 
       if (extrasToRun.includes("es6")) {
-        const es6Ratio = results[es6].hz! / results[mobxNode].hz!
-        console.log(`${es6} is faster than mobx-node by ${es6Ratio.toFixed(2)}x`)
+        const es6Ratio = results[es6].hz! / results[mobxBonsai].hz!
+        console.log(`${es6} is faster than mobx-bonsai by ${es6Ratio.toFixed(2)}x`)
       }
 
       console.log()

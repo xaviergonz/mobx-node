@@ -1,5 +1,5 @@
 import { action, computed, makeObservable, observable } from "mobx"
-import { computedProp, node } from "mobx-node"
+import { computedProp, node } from "mobx-bonsai"
 
 export interface SmallModel {
   a: string

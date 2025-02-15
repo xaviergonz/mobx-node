@@ -26,13 +26,13 @@ function yjsToPlainValue(v: YjsValue): unknown {
 /**
  * @internal
  */
-export function setupYjsToMobxNodeReplication({
-  mobxNode,
+export function setupYjsToNodeReplication({
+  node,
   yjsObject,
   yjsOrigin,
   yjsReplicatingRef,
 }: {
-  mobxNode: object
+  node: object
   yjsObject: YjsStructure
   yjsOrigin: symbol
   yjsReplicatingRef: { current: number }
@@ -48,10 +48,10 @@ export function setupYjsToMobxNodeReplication({
     try {
       runInAction(() => {
         events.forEach((event) => {
-          const resolutionResult = resolvePath(mobxNode, event.path)
+          const resolutionResult = resolvePath(node, event.path)
           if (!resolutionResult.resolved) {
             throw failure(
-              `failed to resolve mobx node path for yjs event: ${JSON.stringify(event.path)}`
+              `failed to resolve node path for yjs event: ${JSON.stringify(event.path)}`
             )
           }
           const mobxTarget = resolutionResult.value

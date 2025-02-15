@@ -1,5 +1,5 @@
 import * as Y from "yjs"
-import { createObjectTestbed } from "../testbed"
+import { createObjectTestbed } from "./testbed"
 import { runInAction } from "mobx"
 
 test("transactions", () => {

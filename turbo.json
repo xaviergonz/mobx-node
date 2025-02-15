@@ -1,16 +1,16 @@
 {
   "$schema": "https://turborepo.org/schema.json",
   "tasks": {
-    "mobx-node#build": {
+    "mobx-bonsai#build": {
       "dependsOn": [],
       "outputs": ["dist/**"]
     },
-    "mobx-node#test": {
+    "mobx-bonsai#test": {
       "dependsOn": [],
       "outputs": [],
       "env": ["MOBX-VERSION"]
     },
-    "mobx-node#test:ci": {
+    "mobx-bonsai#test:ci": {
       "dependsOn": [],
       "outputs": [],
       "env": ["MOBX-VERSION"]

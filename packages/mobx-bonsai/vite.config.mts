@@ -9,7 +9,7 @@ export default defineConfig({
     target: "node10",
     lib: {
       entry: resolvePath("./src/index.ts"),
-      name: "mobx-node",
+      name: "mobx-bonsai",
     },
     sourcemap: "inline",
     minify: false,
@@ -20,10 +20,10 @@ export default defineConfig({
       output: [
         {
           format: "esm",
-          entryFileNames: "mobx-node.esm.mjs",
+          entryFileNames: "mobx-bonsai.esm.mjs",
         },
         {
-          name: "mobx-node",
+          name: "mobx-bonsai",
           format: "umd",
           globals: {
             mobx: "mobx",

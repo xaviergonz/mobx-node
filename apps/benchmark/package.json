@@ -3,7 +3,7 @@
   "name": "benchmark",
   "type": "module",
   "version": "0.0.0",
-  "description": "Benchmark for mobx-node",
+  "description": "Benchmark for mobx-bonsai",
   "main": "dist/index.js",
   "license": "MIT",
   "scripts": {
@@ -17,7 +17,7 @@
   "dependencies": {
     "benchmark": "^2.1.4",
     "chalk": "^5.4.1",
-    "mobx-node": "workspace:packages/mobx-node",
+    "mobx-bonsai": "workspace:packages/mobx-bonsai",
     "mobx-state-tree": "^7.0.1",
     "tslib": "^2.8.1"
   },

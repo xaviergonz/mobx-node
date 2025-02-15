@@ -1624,7 +1624,7 @@ __metadata:
     benchmark: "npm:^2.1.4"
     chalk: "npm:^5.4.1"
     cross-env: "npm:^7.0.3"
-    mobx-node: "workspace:packages/mobx-node"
+    mobx-bonsai: "workspace:packages/mobx-bonsai"
     mobx-state-tree: "npm:^7.0.1"
     shx: "npm:^0.3.4"
     tslib: "npm:^2.8.1"
@@ -3493,9 +3493,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mobx-node@workspace:packages/mobx-node":
+"mobx-bonsai@workspace:packages/mobx-bonsai":
   version: 0.0.0-use.local
-  resolution: "mobx-node@workspace:packages/mobx-node"
+  resolution: "mobx-bonsai@workspace:packages/mobx-bonsai"
   dependencies:
     "@types/jest": "npm:^29.5.14"
     "@types/node": "npm:^22.13.4"

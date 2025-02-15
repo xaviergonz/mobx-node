@@ -7,13 +7,13 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "mobx-node - Jest debug current file",
-      "program": "${workspaceFolder}/packages/mobx-node/node_modules/jest/bin/jest.js",
+      "name": "mobx-bonsai - Jest debug current file",
+      "program": "${workspaceFolder}/packages/mobx-bonsai/node_modules/jest/bin/jest.js",
       "args": ["--verbose", "-i", "--no-cache", "--testPathPattern", "${fileBasename}"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "skipFiles": ["${workspaceFolder}/**/node_modules/**/*.js", "<node_internals>/**/*.js"],
-      "cwd": "${workspaceFolder}/packages/mobx-node"
+      "cwd": "${workspaceFolder}/packages/mobx-bonsai"
     }
   ]
 }

@@ -1,5 +1,5 @@
 import { runInAction, toJS } from "mobx"
-import { createObjectTestbed } from "../testbed"
+import { createObjectTestbed } from "./testbed"
 
 test("reassign an already added object to another part of the tree should fail", () => {
   const { mobxObservable } = createObjectTestbed<{

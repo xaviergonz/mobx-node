@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "lib:build": "turbo run mobx-node#build",
-    "lib:test": "turbo run mobx-node#test",
-    "lib:test:ci": "turbo run mobx-node#test:ci",
+    "lib:build": "turbo run mobx-bonsai#build",
+    "lib:test": "turbo run mobx-bonsai#test",
+    "lib:test:ci": "turbo run mobx-bonsai#test:ci",
     "lint": "biome lint"
   },
   "workspaces": [
