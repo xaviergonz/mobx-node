@@ -93,3 +93,24 @@ test("should pick up property changes during initialization for deep observation
 `)
   expect(root.child!.value).toBe(2)
 })
+
+it("should use onNodeInit for migrations", () => {
+  interface OldTodo {
+    $type: "todo"
+    text: string
+  }
+
+  interface Todo extends OldTodo {
+    done: boolean
+  }
+
+  onNodeInit(["$type", "todo"], (todo: OldTodo | Todo) => {
+    if (!("done" in todo)) {
+      ;(todo as Todo).done = false
+    }
+  })
+
+  const todo = node<OldTodo>({ $type: "todo", text: "Buy milk" }) as Todo
+
+  expect(todo.done).toBe(false)
+})
