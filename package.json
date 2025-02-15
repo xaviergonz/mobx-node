@@ -11,7 +11,7 @@
   },
   "workspaces": [
     "packages/*",
-    "apps/site"
+    "apps/benchmark"
   ],
   "dependencies": {
     "mobx": "^6.13.6",
