@@ -1,6 +1,6 @@
 import { reaction } from "mobx"
 import { getSnapshot } from "./getSnapshot"
-import { assertIsNode, MobxNode } from "../node"
+import { assertIsNode } from "../node"
 
 /**
  * Listener function for onSnapshot.
@@ -20,7 +20,7 @@ export type OnSnapshotDisposer = () => void
  * @param listener Function that will be triggered when the snapshot changes.
  * @returns A disposer.
  */
-export function onSnapshot<T extends MobxNode>(
+export function onSnapshot<T extends object>(
   nodeOrFn: T | (() => T),
   listener: OnSnapshotListener<T>
 ): OnSnapshotDisposer {

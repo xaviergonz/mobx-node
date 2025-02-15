@@ -1,5 +1,5 @@
 import { runInAction, reaction } from "mobx"
-import { node, getParentPath, ParentPath, getParent, MobxNode } from "../../../src"
+import { node, getParentPath, ParentPath, getParent } from "../../../src"
 
 describe("getParentPath - object roots", () => {
   it("should return undefined for a root object", () => {
@@ -38,7 +38,7 @@ describe("getParentPath - object roots", () => {
     const parent2 = node<N>({})
     const child = parent1.child!
 
-    const parents: (ParentPath<MobxNode> | undefined)[] = []
+    const parents: (ParentPath<object> | undefined)[] = []
     reaction(
       () => getParentPath(child),
       (parent) => {
@@ -108,7 +108,7 @@ describe("getParentPath - array roots", () => {
     const arr2 = node<{ a: number }[]>([])
     const element = arr1[0]
 
-    const parents: (ParentPath<MobxNode> | undefined)[] = []
+    const parents: (ParentPath<object> | undefined)[] = []
     const disposer = reaction(
       () => getParentPath(element),
       (parent) => {

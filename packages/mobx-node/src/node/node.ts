@@ -7,15 +7,14 @@ import {
   observe,
   set,
 } from "mobx"
-import { isObservablePlainStructure, isPlainPrimitive } from "../plainTypes/checks"
-import { PlainStructure } from "../plainTypes/types"
+import { isObservablePlainStructure, isPrimitive } from "../plainTypes/checks"
 import { failure } from "../error/failure"
 import { invalidateSnapshotTreeToRoot } from "./snapshot/getSnapshot"
 import { buildNodeFullPath } from "./utils/buildNodeFullPath"
 import { getParent } from "./tree/getParent"
 
 type ParentNode = {
-  object: unknown
+  object: object
   path: string
 }
 
@@ -29,12 +28,10 @@ type MobxNodeData = {
   onChangeListeners: MobxNodeChangeListener[]
 }
 
-export type MobxNode = PlainStructure
-
 /**
  * @internal
  */
-export function getNodeData(node: MobxNode): MobxNodeData {
+export function getNodeData(node: object): MobxNodeData {
   assertIsNode(node, "node")
   return nodes.get(node)!
 }
@@ -42,7 +39,7 @@ export function getNodeData(node: MobxNode): MobxNodeData {
 /**
  * @internal
  */
-export function reportNodeParentObserved(node: MobxNode): void {
+export function reportNodeParentObserved(node: object): void {
   const data = getNodeData(node)
   if (!data.parentAtom) {
     data.parentAtom = createAtom("parent")
@@ -50,9 +47,9 @@ export function reportNodeParentObserved(node: MobxNode): void {
   data.parentAtom.reportObserved()
 }
 
-const nodes = new WeakMap<MobxNode, MobxNodeData>()
+const nodes = new WeakMap<object, MobxNodeData>()
 
-function mergeNodeData(node: MobxNode, newData: Partial<MobxNodeData>): void {
+function mergeNodeData(node: object, newData: Partial<MobxNodeData>): void {
   const nodeData = getNodeData(node)
   Object.assign(nodeData, newData)
 
@@ -61,17 +58,17 @@ function mergeNodeData(node: MobxNode, newData: Partial<MobxNodeData>): void {
   }
 }
 
-export function isNode(struct: unknown): struct is PlainStructure {
-  return nodes.has(struct as PlainStructure)
+export function isNode(struct: object): boolean {
+  return nodes.has(struct as object)
 }
 
-export function assertIsNode(node: unknown, argName: string): asserts node is MobxNode {
+export function assertIsNode(node: object, argName: string): void {
   if (!isNode(node)) {
     throw failure(`${argName} must be a mobx-node node`)
   }
 }
 
-function emitChange(eventTarget: MobxNode, change: IObjectDidChange | IArrayDidChange) {
+function emitChange(eventTarget: object, change: IObjectDidChange | IArrayDidChange) {
   const changeListeners = getNodeData(eventTarget).onChangeListeners
   if (changeListeners.length > 0) {
     changeListeners.forEach((listener) => {
@@ -80,8 +77,8 @@ function emitChange(eventTarget: MobxNode, change: IObjectDidChange | IArrayDidC
   }
 }
 
-function emitChangeToRoot(eventTarget: MobxNode, change: IObjectDidChange | IArrayDidChange) {
-  let currentTarget: MobxNode | undefined = eventTarget
+function emitChangeToRoot(eventTarget: object, change: IObjectDidChange | IArrayDidChange) {
+  let currentTarget: object | undefined = eventTarget
   while (currentTarget) {
     emitChange(currentTarget, change)
     currentTarget = getParent(currentTarget)
@@ -103,7 +100,7 @@ function emitChangeToRoot(eventTarget: MobxNode, change: IObjectDidChange | IArr
  *
  * @returns A disposer function that, when invoked, unregisters the listener.
  */
-export function onDeepChange(node: MobxNode, listener: MobxNodeChangeListener) {
+export function onDeepChange(node: object, listener: MobxNodeChangeListener) {
   const changeListeners = getNodeData(node).onChangeListeners
   changeListeners.push(listener)
 
@@ -115,7 +112,7 @@ export function onDeepChange(node: MobxNode, listener: MobxNodeChangeListener) {
   }
 }
 
-export function node<T extends PlainStructure>(struct: T): T {
+export function node<T extends object>(struct: T): T {
   if (isNode(struct)) {
     // nothing to do
     return struct
@@ -139,8 +136,8 @@ export function node<T extends PlainStructure>(struct: T): T {
 
   nodes.set(observableStruct, nodeData)
 
-  const attachAsChildNode = (v: any, path: string, set?: (n: PlainStructure) => void) => {
-    if (isPlainPrimitive(v)) {
+  const attachAsChildNode = (v: any, path: string, set?: (n: object) => void) => {
+    if (isPrimitive(v)) {
       return
     }
 
@@ -152,7 +149,7 @@ export function node<T extends PlainStructure>(struct: T): T {
         throw failure(
           `The same node cannot appear twice in the same or different trees,` +
             ` trying to assign it to ${JSON.stringify(buildNodeFullPath(observableStruct, path))},` +
-            ` but it already exists at ${JSON.stringify(buildNodeFullPath(parent.object as MobxNode | undefined, parent.path))}.` +
+            ` but it already exists at ${JSON.stringify(buildNodeFullPath(parent.object, parent.path))}.` +
             ` If you are moving the node then remove it from the tree first before moving it.` +
             ` If you are copying the node then use 'cloneNode' to make a clone first.`
         )
@@ -177,7 +174,7 @@ export function node<T extends PlainStructure>(struct: T): T {
   }
 
   const detachAsChildNode = (v: any) => {
-    if (isPlainPrimitive(v)) {
+    if (isPrimitive(v)) {
       return
     }
 
@@ -226,7 +223,7 @@ export function node<T extends PlainStructure>(struct: T): T {
           // update paths
           for (let i = change.index + change.addedCount; i < change.object.length; i++) {
             const value = change.object[i]
-            if (isPlainPrimitive(value)) {
+            if (isPrimitive(value)) {
               return
             }
             if (!isNode(value)) {

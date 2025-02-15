@@ -1,6 +1,5 @@
 import { action, createAtom, IAtom } from "mobx"
 import { assertIsObservablePlainStructure } from "../plainTypes/checks"
-import { PlainStructure } from "../plainTypes/types"
 
 /**
  * Creates a volatile property accessor on a target object.
@@ -21,7 +20,7 @@ import { PlainStructure } from "../plainTypes/types"
  * setVolatile(obj, 42);
  * console.log(getVolatile(obj)); // outputs 42
  */
-export function volatileProp<TTarget extends PlainStructure, TValue>(
+export function volatileProp<TTarget extends object, TValue>(
   defaultValueGen: () => TValue
 ): [getter: (target: TTarget) => TValue, setter: (target: TTarget, value: TValue) => void] {
   const volatileProps = new WeakMap<TTarget, { value: TValue; atom: IAtom }>()

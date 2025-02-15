@@ -1,5 +1,5 @@
 import { getSnapshot } from "./snapshot/getSnapshot"
-import { node, MobxNode } from "./node"
+import { node } from "./node"
 
 /**
  * Clones a node.
@@ -7,6 +7,6 @@ import { node, MobxNode } from "./node"
  * @param nodeToClone Node to clone.
  * @returns The cloned node.
  */
-export function clone<T extends MobxNode>(nodeToClone: T): T {
+export function clone<T extends object>(nodeToClone: T): T {
   return node(getSnapshot(nodeToClone))
 }

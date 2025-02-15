@@ -1,11 +1,11 @@
 import { isObservableArray, isObservableObject } from "mobx"
-import { PlainArray, PlainObject, PlainPrimitive, PlainStructure } from "./types"
+import { Primitive } from "./types"
 import { failure } from "../error/failure"
 
 /**
  * @internal
  */
-export function isPlainPrimitive(v: unknown): v is PlainPrimitive {
+export function isPrimitive(v: unknown): v is Primitive {
   const t = typeof v
   return t === "string" || t === "number" || t === "boolean" || v === null || v === undefined
 }
@@ -13,31 +13,21 @@ export function isPlainPrimitive(v: unknown): v is PlainPrimitive {
 /**
  * @internal
  */
-export function isPlainArray(v: unknown): v is PlainArray {
-  return Array.isArray(v)
+export function isPlainObject(v: unknown): v is Record<string, any> {
+  return v !== null && typeof v === "object" && v.constructor === Object
 }
 
 /**
  * @internal
  */
-export function isPlainObject(v: unknown): v is PlainObject {
-  return !isPlainArray(v) && typeof v === "object"
-}
-
-/**
- * @internal
- */
-export function isObservablePlainStructure(target: unknown): target is PlainStructure {
+export function isObservablePlainStructure(target: unknown): boolean {
   return isObservableObject(target) || isObservableArray(target)
 }
 
 /**
  * @internal
  */
-export function assertIsObservablePlainStructure(
-  target: unknown,
-  argName: string
-): asserts target is PlainStructure {
+export function assertIsObservablePlainStructure(target: unknown, argName: string): void {
   const valid = isObservablePlainStructure(target)
   if (!valid) {
     throw failure(`${argName} must be an observable object or array`)

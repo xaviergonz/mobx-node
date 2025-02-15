@@ -1,11 +1,11 @@
-import { node, walkTree, WalkTreeMode, MobxNode } from "../../../src"
+import { node, walkTree, WalkTreeMode } from "../../../src"
 
 it("should visit nodes in ParentFirst mode in expected order", () => {
   const root = node({
     a: { value: "A" },
     b: { value: "B" },
   })
-  const visited: MobxNode[] = []
+  const visited: object[] = []
   walkTree(
     root,
     (n) => {
@@ -25,7 +25,7 @@ it("should visit nodes in ChildrenFirst mode in expected order", () => {
       c: { value: "C" },
     },
   })
-  const visited: MobxNode[] = []
+  const visited: object[] = []
   walkTree(
     root,
     (n) => {

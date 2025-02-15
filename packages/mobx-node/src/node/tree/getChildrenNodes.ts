@@ -1,12 +1,14 @@
 import { values } from "mobx"
-import { isPlainPrimitive } from "../../plainTypes/checks"
-import { PlainValue } from "../../plainTypes/types"
-import { assertIsNode, isNode, MobxNode } from "../node"
+import { isPrimitive } from "../../plainTypes/checks"
+import { assertIsNode, isNode } from "../node"
 import { computedProp } from "../computedProp"
 
+/**
+ * @internal
+ */
 export function getChildrenNodesWithTargetSet(
-  node: MobxNode,
-  targetSet: Set<MobxNode>,
+  node: object,
+  targetSet: Set<object>,
   options?: {
     deep?: boolean
   }
@@ -14,8 +16,8 @@ export function getChildrenNodesWithTargetSet(
   assertIsNode(node, "node")
 
   const deep = options?.deep ?? false
-  ;(values(node) as PlainValue[]).forEach((child) => {
-    if (!isPlainPrimitive(child) && isNode(child)) {
+  values(node).forEach((child) => {
+    if (!isPrimitive(child) && isNode(child)) {
       targetSet.add(child)
 
       if (deep) {
@@ -26,14 +28,14 @@ export function getChildrenNodesWithTargetSet(
   })
 }
 
-const getComputedShallowChildren = computedProp((node: MobxNode): ReadonlySet<MobxNode> => {
-  const children = new Set<MobxNode>()
+const getComputedShallowChildren = computedProp((node: object): ReadonlySet<object> => {
+  const children = new Set<object>()
   getChildrenNodesWithTargetSet(node, children, { deep: false })
   return children
 })
 
-const getComputedDeepChildren = computedProp((node: MobxNode): ReadonlySet<MobxNode> => {
-  const children = new Set<MobxNode>()
+const getComputedDeepChildren = computedProp((node: object): ReadonlySet<object> => {
+  const children = new Set<object>()
   getChildrenNodesWithTargetSet(node, children, { deep: true })
   return children
 })
@@ -47,10 +49,10 @@ const getComputedDeepChildren = computedProp((node: MobxNode): ReadonlySet<MobxN
  * @returns A readonly set with the children.
  */
 export function getChildrenNodes(
-  node: MobxNode,
+  node: object,
   options?: {
     deep?: boolean
   }
-): ReadonlySet<MobxNode> {
+): ReadonlySet<object> {
   return options?.deep ? getComputedDeepChildren(node) : getComputedShallowChildren(node)
 }

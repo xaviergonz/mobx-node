@@ -1,7 +1,5 @@
 import * as Y from "yjs"
 import {
-  PlainArray,
-  PlainObject,
   YjsValue,
   applyPlainArrayToYArray,
   applyPlainObjectToYMap,
@@ -10,7 +8,7 @@ import {
 
 const disposers: (() => void)[] = []
 
-export function createObjectTestbed<T extends PlainObject>(initialData: T) {
+export function createObjectTestbed<T extends Record<string, any>>(initialData: T) {
   const yjsDoc = new Y.Doc()
   const yjsObject = yjsDoc.getMap("data") as Y.Map<YjsValue>
   applyPlainObjectToYMap(yjsObject, initialData)
@@ -25,7 +23,7 @@ export function createObjectTestbed<T extends PlainObject>(initialData: T) {
   return { mobxObservable, yjsDoc, yjsObject }
 }
 
-export function createArrayTestbed<T extends PlainArray>(initialData: T) {
+export function createArrayTestbed<T extends any[]>(initialData: T) {
   const yjsDoc = new Y.Doc()
   const yjsObject = yjsDoc.getArray("data") as Y.Array<YjsValue>
   applyPlainArrayToYArray(yjsObject, initialData)

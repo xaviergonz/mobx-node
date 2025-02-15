@@ -1,7 +1,7 @@
 import * as Y from "yjs"
 import { failure } from "../../error/failure"
-import { YjsStructure } from "../yjsTypes/types"
 import { assertIsYjsStructure } from "../yjsTypes/checks"
+import { YjsStructure } from "../yjsTypes/types"
 
 /**
  * @internal
@@ -15,10 +15,10 @@ export function resolveYjsStructurePath(
 
   path.forEach((pathSegment) => {
     if (target instanceof Y.Array) {
-      target = target.get(+pathSegment) as YjsStructure
+      target = target.get(+pathSegment)
       assertIsYjsStructure(target)
     } else if (target instanceof Y.Map) {
-      target = target.get(String(pathSegment)) as YjsStructure
+      target = target.get(String(pathSegment))
       assertIsYjsStructure(target)
     } else {
       throw failure("unsupported y.js data structure")

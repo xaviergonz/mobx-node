@@ -1,4 +1,4 @@
-import { assertIsNode, MobxNode } from "../node"
+import { assertIsNode } from "../node"
 import { FoundParentPath } from "./FoundParentPath"
 import { getParentPath } from "./getParentPath"
 import { ParentPath } from "./ParentPath"
@@ -17,9 +17,9 @@ import { WritablePath } from "./pathTypes"
  * @param maxDepth Max depth, or 0 for infinite.
  * @returns The found parent node and the path to get from the parent to the child, or undefined if not found.
  */
-export function findParentPath<T extends MobxNode>(
-  child: MobxNode,
-  predicate: (parentNode: MobxNode) => boolean,
+export function findParentPath<T extends object>(
+  child: object,
+  predicate: (parentNode: object) => boolean,
   maxDepth = 0
 ): FoundParentPath<T> | undefined {
   assertIsNode(child, "child")

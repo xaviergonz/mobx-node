@@ -1,11 +1,11 @@
-import { node, onChildAttachedTo, MobxNode } from "../../../src"
+import { node, onChildAttachedTo } from "../../../src"
 import { runInAction } from "mobx"
 
 it("should fire immediately for current children when fireForCurrentChildren is true", () => {
   const testNode = node({
     child1: { a: 1 },
   })
-  const fired: MobxNode[] = []
+  const fired: object[] = []
   const disposer = onChildAttachedTo(
     () => testNode,
     (child) => {
@@ -24,7 +24,7 @@ it("should fire when a new child is added", () => {
   const testNode = node<{ child1?: { a: number }; child2?: { b: number } }>({
     child1: { a: 1 },
   })
-  const fired: MobxNode[] = []
+  const fired: object[] = []
   const disposer = onChildAttachedTo(
     () => testNode,
     (child) => {
@@ -50,7 +50,7 @@ it("should run detach disposer when a child is removed", () => {
   const testNode = node<{ child1?: { a: number } }>({
     child1: { a: 1 },
   })
-  const detachFired: MobxNode[] = []
+  const detachFired: object[] = []
   const disposer = onChildAttachedTo(
     () => testNode,
     (chDetached) => {
@@ -104,7 +104,7 @@ it("should run pending detach disposers when disposer is called with true", () =
     child1: { a: 1 },
     child2: { b: 2 },
   })
-  const detachCalls: MobxNode[] = []
+  const detachCalls: object[] = []
   const disposer = onChildAttachedTo(
     () => testNode,
     (child) => {
@@ -126,7 +126,7 @@ it("should fire for deep children when deep is set to true", () => {
     child1: { a: 1, nested: { b: 2 } },
     child2: { c: 3 },
   })
-  const fired: MobxNode[] = []
+  const fired: object[] = []
   const disposer = onChildAttachedTo(
     () => testNode,
     (child) => {

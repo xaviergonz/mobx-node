@@ -1,10 +1,9 @@
 import { Path } from "./pathTypes"
-import { MobxNode } from "../node"
 
 /**
  * Result of `findParentPath`.
  */
-export interface FoundParentPath<T extends MobxNode> {
+export interface FoundParentPath<T extends object> {
   /**
    * Found parent node.
    */

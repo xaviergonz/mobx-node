@@ -1,5 +1,4 @@
 import { PathElement } from "./pathTypes"
-import { MobxNode } from "../node"
 
 /**
  * Path from an object to its immediate parent.
@@ -7,7 +6,7 @@ import { MobxNode } from "../node"
  * @typeparam T Parent object type.
  */
 
-export interface ParentPath<T extends MobxNode> {
+export interface ParentPath<T extends object> {
   /**
    * Parent object.
    */

@@ -1,4 +1,4 @@
-import { MobxNode, getNodeData, reportNodeParentObserved } from "../node"
+import { getNodeData, reportNodeParentObserved } from "../node"
 import { ParentPath } from "./ParentPath"
 
 /**
@@ -19,8 +19,8 @@ import { ParentPath } from "./ParentPath"
  * @param node Node to get the parent path from.
  * @returns Parent path or undefined if there's no parent.
  */
-export function getParentPath<TParent extends MobxNode>(
-  node: MobxNode
+export function getParentPath<TParent extends object>(
+  node: object
 ): ParentPath<TParent> | undefined {
   const nodeData = getNodeData(node)
 

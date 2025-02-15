@@ -1,4 +1,3 @@
-import { MobxNode } from "../node"
 import { getRootPath } from "./getRootPath"
 
 /**
@@ -10,6 +9,6 @@ import { getRootPath } from "./getRootPath"
  * @param node Node to get the root from.
  * @returns Root object.
  */
-export function getRoot<TRoot extends MobxNode>(node: MobxNode): TRoot {
+export function getRoot<TRoot extends object>(node: object): TRoot {
   return getRootPath(node).root as TRoot
 }

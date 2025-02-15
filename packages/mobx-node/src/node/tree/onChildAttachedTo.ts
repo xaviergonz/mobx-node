@@ -1,6 +1,6 @@
 import { action, reaction, runInAction } from "mobx"
 import { assertIsFunction } from "../../plainTypes/checks"
-import { assertIsNode, MobxNode } from "../node"
+import { assertIsNode } from "../node"
 import { getChildrenNodes } from "./getChildrenNodes"
 
 /**
@@ -22,8 +22,8 @@ import { getChildrenNodes } from "./getChildrenNodes"
  * @returns A disposer function.
  */
 export function onChildAttachedTo(
-  target: () => MobxNode,
-  onChildAttached: (child: MobxNode) => (() => void) | void,
+  target: () => object,
+  onChildAttached: (child: object) => (() => void) | void,
   options?: {
     deep?: boolean
     fireForCurrentChildren?: boolean
@@ -105,7 +105,7 @@ export function onChildAttachedTo(
       const newChildrenIter = newChildren.values()
       let newChildrenCur = newChildrenIter.next()
       while (!newChildrenCur.done) {
-        const n = newChildrenCur.value as MobxNode
+        const n = newChildrenCur.value
         if (!currentChildren.has(n)) {
           currentChildren.add(n)
 

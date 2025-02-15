@@ -1,4 +1,3 @@
-import { MobxNode } from "../node"
 import { getParentPath } from "./getParentPath"
 
 /**
@@ -10,6 +9,6 @@ import { getParentPath } from "./getParentPath"
  * @param node Node to get the parent path from.
  * @returns
  */
-export function getParent<TParent extends MobxNode>(value: MobxNode): TParent | undefined {
+export function getParent<TParent extends object>(value: object): TParent | undefined {
   return getParentPath(value)?.parent as TParent | undefined
 }

@@ -1,5 +1,4 @@
 import * as Y from "yjs"
-import { PlainStructure } from "../plainTypes/types"
 import { setupMobxNodeToYjsReplication } from "./mobxNodeToYjs/setupMobxNodeToYjsReplication"
 import { createMobxNodeFromYjsObject } from "./yjsToMobxNode/createMobxNodeFromYjsObject"
 import { setupYjsToMobxNodeReplication } from "./yjsToMobxNode/setupYjsToMobxNodeReplication"
@@ -9,7 +8,7 @@ import { YjsStructure } from "./yjsTypes/types"
  * Creates a MobX node that is bound to a Y.js data structure.
  * Y.js Map and Array instances are bound to MobX objects and arrays, respectively.
  */
-export function bindYjsToMobxNode<T extends PlainStructure>({
+export function bindYjsToMobxNode<T extends object>({
   yjsDoc,
   yjsObject,
   yjsOrigin,

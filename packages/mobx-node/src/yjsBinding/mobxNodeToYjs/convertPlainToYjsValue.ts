@@ -1,19 +1,23 @@
 import * as Y from "yjs"
-import { PlainArray, PlainObject, PlainValue } from "../../plainTypes/types"
+import { Primitive } from "../../plainTypes/types"
 import { failure } from "../../error/failure"
-import { isPlainArray, isPlainObject, isPlainPrimitive } from "../../plainTypes/checks"
+import { isPlainObject, isPrimitive } from "../../plainTypes/checks"
 import { YjsValue } from "../yjsTypes/types"
 
 /**
  * Converts a plain value to a Y.js value.
  * Objects are converted to Y.Maps, arrays to Y.Arrays, primitives are untouched.
  */
-export function convertPlainToYjsValue(v: PlainValue): YjsValue {
-  if (isPlainPrimitive(v)) {
+export function convertPlainToYjsValue<T extends Primitive>(v: T): T
+export function convertPlainToYjsValue(v: readonly any[]): Y.Array<YjsValue>
+export function convertPlainToYjsValue(v: Readonly<Record<string, any>>): Y.Map<YjsValue>
+
+export function convertPlainToYjsValue(v: any): YjsValue {
+  if (isPrimitive(v)) {
     return v
   }
 
-  if (isPlainArray(v)) {
+  if (Array.isArray(v)) {
     const arr = new Y.Array<YjsValue>()
     applyPlainArrayToYArray(arr, v)
     return arr as YjsValue
@@ -31,14 +35,14 @@ export function convertPlainToYjsValue(v: PlainValue): YjsValue {
 /**
  * Applies a plain array to a Y.Array, using the convertPlainToYjsValue to convert the values.
  */
-export function applyPlainArrayToYArray(dest: Y.Array<YjsValue>, source: PlainArray) {
+export function applyPlainArrayToYArray(dest: Y.Array<any>, source: readonly any[]) {
   dest.push(source.map(convertPlainToYjsValue))
 }
 
 /**
  * Applies a plain object to a Y.Map, using the convertPlainToYjsValue to convert the values.
  */
-export function applyPlainObjectToYMap(dest: Y.Map<YjsValue>, source: PlainObject) {
+export function applyPlainObjectToYMap(dest: Y.Map<any>, source: Readonly<Record<string, any>>) {
   Object.entries(source).forEach(([k, v]) => {
     dest.set(k, convertPlainToYjsValue(v))
   })

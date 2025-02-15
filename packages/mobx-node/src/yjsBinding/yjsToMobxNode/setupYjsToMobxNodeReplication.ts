@@ -1,17 +1,26 @@
 import { isObservableArray, isObservableObject, remove, runInAction, set } from "mobx"
 import * as Y from "yjs"
 import { failure } from "../../error/failure"
-import { assertIsNode, MobxNode } from "../../node/node"
+import { assertIsNode } from "../../node/node"
 import { resolvePath } from "../../node/tree/resolvePath"
-import { PlainValue } from "../../plainTypes/types"
+import { Primitive } from "../../plainTypes/types"
+import { isPrimitive } from "../../plainTypes/checks"
 import { YjsStructure, YjsValue } from "../yjsTypes/types"
 
-function yjsToPlainValue(v: YjsValue): PlainValue {
-  if (v instanceof Y.Map || v instanceof Y.Array) {
-    return v.toJSON()
-  } else {
+function yjsToPlainValue<T extends Primitive>(v: T): T
+function yjsToPlainValue(v: Y.Map<any>): Record<string, any>
+function yjsToPlainValue(v: Y.Array<any>): any[]
+
+function yjsToPlainValue(v: YjsValue): unknown {
+  if (isPrimitive(v)) {
     return v
   }
+
+  if (v instanceof Y.Map || v instanceof Y.Array) {
+    return v.toJSON()
+  }
+
+  throw failure(`unsupported Y.js value type: ${v}`)
 }
 
 /**
@@ -23,7 +32,7 @@ export function setupYjsToMobxNodeReplication({
   yjsOrigin,
   yjsReplicatingRef,
 }: {
-  mobxNode: MobxNode
+  mobxNode: object
   yjsObject: YjsStructure
   yjsOrigin: symbol
   yjsReplicatingRef: { current: number }
@@ -39,7 +48,7 @@ export function setupYjsToMobxNodeReplication({
     try {
       runInAction(() => {
         events.forEach((event) => {
-          const resolutionResult = resolvePath<MobxNode>(mobxNode, event.path)
+          const resolutionResult = resolvePath(mobxNode, event.path)
           if (!resolutionResult.resolved) {
             throw failure(
               `failed to resolve mobx node path for yjs event: ${JSON.stringify(event.path)}`
@@ -55,7 +64,7 @@ export function setupYjsToMobxNodeReplication({
               throw failure("mobx target was expected to be an object")
             }
 
-            const mobxObject = mobxTarget as MobxNode
+            const mobxObject = mobxTarget
             const yjsMap = event.target
 
             event.changes.keys.forEach((change, key) => {

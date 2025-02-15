@@ -1,28 +1,27 @@
 import { IAtom, action, createAtom, isObservableArray, isObservableObject } from "mobx"
 import { failure } from "../../error/failure"
-import { isPlainPrimitive } from "../../plainTypes/checks"
-import { PlainStructure } from "../../plainTypes/types"
-import { MobxNode, assertIsNode } from "../node"
+import { isPrimitive } from "../../plainTypes/checks"
+import { assertIsNode } from "../node"
 import { getParentPath } from "../tree/getParentPath"
 
-const snapshots = new WeakMap<MobxNode, PlainStructure>()
-const snapshotAtoms = new WeakMap<MobxNode, IAtom>()
+const snapshots = new WeakMap<object, object>()
+const snapshotAtoms = new WeakMap<object, IAtom>()
 
 /**
  * @internal
  */
-export const invalidateSnapshotTreeToRoot = action((node: MobxNode): void => {
+export const invalidateSnapshotTreeToRoot = action((node: object): void => {
   assertIsNode(node, "node")
 
-  let current: MobxNode | undefined = node
+  let current: object | undefined = node
   while (current) {
     snapshots.delete(current)
     snapshotAtoms.get(current)?.reportChanged()
-    current = getParentPath(current)?.parent as MobxNode | undefined
+    current = getParentPath(current)?.parent
   }
 })
 
-const createSnapshot = action(<T extends MobxNode>(node: T): T => {
+const createSnapshot = action(<T extends object>(node: T): T => {
   assertIsNode(node, "node")
 
   if (isObservableArray(node)) {
@@ -41,12 +40,12 @@ const createSnapshot = action(<T extends MobxNode>(node: T): T => {
 })
 
 function getSnapshotOrPrimitive<T>(value: T, acceptPrimitives: boolean): T {
-  if (acceptPrimitives && isPlainPrimitive(value)) {
+  if (acceptPrimitives && isPrimitive(value)) {
     return value
   }
 
-  assertIsNode(value, "value")
-  const node = value
+  const node = value as object
+  assertIsNode(node, "value")
 
   let existingSnapshot = snapshots.get(node)
   if (!existingSnapshot) {
@@ -75,6 +74,6 @@ function getSnapshotOrPrimitive<T>(value: T, acceptPrimitives: boolean): T {
  * @param node - The node to snapshot.
  * @returns A snapshot of the node.
  */
-export function getSnapshot<T extends MobxNode>(node: T): T {
+export function getSnapshot<T extends object>(node: T): T {
   return getSnapshotOrPrimitive(node, false)
 }
