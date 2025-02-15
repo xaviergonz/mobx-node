@@ -37,7 +37,7 @@ By using `mobx-node`, you get:
 - **Functional accessors:** Interaction is achieved through pure functions, keeping state manipulation decoupled from the data structure.
 - **Immutable snapshots:** Effortlessly capture a stable state of your tree at any point.
 - **MobX Integration:** Since `mobx-node` uses MobX behind the scenes, it integrates seamlessly with [`mobx`](https://mobx.js.org) and [`mobx-react`](https://github.com/mobxjs/mobx-react).
-- **Seamless Y.js bindings:** Two-way binding between `Y.js` state trees and `mobx-node` reactive trees included.
+- **Seamless Y.js binding:** Two-way binding between `Y.js` state trees and `mobx-node` reactive trees included.
 
 ### Installation
 
