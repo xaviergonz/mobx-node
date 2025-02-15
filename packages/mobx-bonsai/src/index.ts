@@ -14,10 +14,10 @@ export { isChildOfParent } from "./node/tree/isChildOfParent"
 export { isParentOfChild } from "./node/tree/isParentOfChild"
 export { isRoot } from "./node/tree/isRoot"
 export { onChildAttachedTo } from "./node/tree/onChildAttachedTo"
-export type * from "./node/tree/ParentPath"
-export type * from "./node/tree/pathTypes"
+export type { ParentPath } from "./node/tree/ParentPath"
+export type { Path, PathElement, WritablePath } from "./node/tree/pathTypes"
 export { resolvePath } from "./node/tree/resolvePath"
-export type * from "./node/tree/RootPath"
+export type { RootPath } from "./node/tree/RootPath"
 export { walkTree, WalkTreeMode } from "./node/tree/walkTree"
 
 export { getSnapshot } from "./node/snapshot/getSnapshot"
@@ -26,20 +26,28 @@ export { onSnapshot } from "./node/snapshot/onSnapshot"
 export { clone } from "./node/clone"
 export { computedProp } from "./node/computedProp"
 export {
-  onDeepChange,
   assertIsNode,
   isNode,
   node,
+  onDeepChange,
 } from "./node/node"
 export type {
-  NodeChangeListener,
   NodeChange,
+  NodeChangeListener,
 } from "./node/node"
+export { onNodeInit } from "./node/onNodeInit"
+export type {
+  SelectNodeByProp,
+  SelectNodeByTypeProp,
+  SelectNodeFn,
+  InitNodeCallback,
+} from "./node/onNodeInit"
 export { volatileProp } from "./node/volatileProp"
 
-export * from "./plainTypes/types"
+export type { Primitive } from "./plainTypes/types"
 
 export { deepEquals } from "./utils/deepEquals"
+export type { Dispose } from "./utils/disposeOnce"
 
 // yjsBinding
 export {
@@ -48,6 +56,6 @@ export {
   convertPlainToYjsValue,
 } from "./yjsBinding/nodeToYjs/convertPlainToYjsValue"
 
-export * from "./yjsBinding/yjsTypes/types"
+export type { YjsStructure, YjsValue } from "./yjsBinding/yjsTypes/types"
 
 export { bindYjsToNode } from "./yjsBinding/bindYjsToNode"

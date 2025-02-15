@@ -5,7 +5,6 @@ import { PathElement } from "./pathTypes"
  *
  * @typeparam T Parent object type.
  */
-
 export interface ParentPath<T extends object> {
   /**
    * Parent object.

@@ -5,7 +5,6 @@ import { Path } from "./pathTypes"
  *
  * @typeparam T Root object type.
  */
-
 export interface RootPath<T extends object> {
   /**
    * Root object.

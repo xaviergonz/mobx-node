@@ -2,6 +2,7 @@ import { action, reaction, runInAction } from "mobx"
 import { assertIsFunction } from "../../plainTypes/checks"
 import { assertIsNode } from "../node"
 import { getChildrenNodes } from "./getChildrenNodes"
+import { disposeOnce } from "../../utils/disposeOnce"
 
 /**
  * Runs a callback everytime a new node is attached to a given node.
@@ -121,7 +122,7 @@ export function onChildAttachedTo(
     }
   )
 
-  return (runDetachDisposers: boolean) => {
+  return disposeOnce((runDetachDisposers: boolean) => {
     disposer()
 
     if (runDetachDisposers) {
@@ -135,5 +136,5 @@ export function onChildAttachedTo(
       }
     }
     currentChildren.clear()
-  }
+  })
 }
