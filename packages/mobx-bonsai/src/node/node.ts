@@ -2,6 +2,7 @@ import {
   IArrayDidChange,
   IAtom,
   IObjectDidChange,
+  action,
   createAtom,
   observable,
   observe,
@@ -112,7 +113,7 @@ export function onDeepChange(node: object, listener: NodeChangeListener) {
   }
 }
 
-export function node<T extends object>(struct: T): T {
+export const node = action(<T extends object>(struct: T): T => {
   if (isNode(struct)) {
     // nothing to do
     return struct
@@ -276,4 +277,4 @@ export function node<T extends object>(struct: T): T {
   }
 
   return observableStruct as unknown as T
-}
+})

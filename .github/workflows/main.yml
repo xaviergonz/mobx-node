@@ -60,3 +60,19 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: ./packages/mobx-bonsai/coverage
           fail_ci_if_error: true
+
+  benchmark-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "yarn"
+
+      - run: yarn install --immutable
+      - run: yarn lib:build
+      - run: yarn build
+        working-directory: ./apps/benchmark
