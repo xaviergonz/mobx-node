@@ -1,3 +1,3 @@
-import { configure } from "mobx";
+import { configure } from "mobx"
 
-configure({ enforceActions: "always" });
+configure({ enforceActions: "always" })
