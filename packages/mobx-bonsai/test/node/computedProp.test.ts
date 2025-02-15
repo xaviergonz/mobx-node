@@ -36,3 +36,9 @@ it("computedProp", () => {
   const call2 = getDouble(obj)
   expect(call1).toBe(call2)
 })
+
+it("computedProp works with plain objects", () => {
+  const obj = { a: 5 }
+  const getDouble = computedProp((o: typeof obj) => [o.a * 2] as const)
+  expect(getDouble(obj)).toStrictEqual([10])
+})

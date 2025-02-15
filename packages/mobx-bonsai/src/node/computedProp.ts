@@ -1,9 +1,12 @@
 import { computed, IComputedValue, IComputedValueOptions } from "mobx"
-import { assertIsObservablePlainStructure } from "../plainTypes/checks"
+import { isObservablePlainStructure } from "../plainTypes/checks"
 
 /**
  * Create a computed property on an object that is used as a function
  * that takes the object as an argument and returns the computed value.
+ *
+ * If the passed object is not an observable it will return the value
+ * without ever caching it.
  *
  * Example:
  *
@@ -29,7 +32,9 @@ export function computedProp<T extends object, R>(
   const computedFns = new WeakMap<T, IComputedValue<R>>()
 
   const getFn = (obj: T): R => {
-    assertIsObservablePlainStructure(obj, "obj")
+    if (!isObservablePlainStructure(obj)) {
+      return fn(obj)
+    }
 
     let computedFn = computedFns.get(obj)
     if (!computedFn) {
