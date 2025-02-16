@@ -1,5 +1,15 @@
-import { isObservableArray, runInAction } from "mobx"
+import {
+  action,
+  intercept,
+  IObservableArray,
+  ISetWillChange,
+  isObservableArray,
+  observable,
+  ObservableSet,
+  observe,
+} from "mobx"
 import { failure } from "../error/failure"
+import { getMobxVersion } from "./getMobxVersion"
 
 class PlainArraySet<T> implements Set<T> {
   constructor(private readonly data: T[]) {}
@@ -94,105 +104,120 @@ class PlainArraySet<T> implements Set<T> {
   }
 }
 
-class ObservableArraySet<T> implements Set<T> {
-  constructor(private readonly data: T[]) {}
-
-  add(value: T): this {
-    runInAction(() => {
-      if (!this.has(value)) {
-        this.data.push(value)
-      }
-    })
-    return this
-  }
-
-  clear(): void {
-    runInAction(() => {
-      this.data.length = 0
-    })
-  }
-
-  delete(value: T): boolean {
-    let deleted = false
-    runInAction(() => {
-      const index = this.data.indexOf(value)
-      if (index >= 0) {
-        this.data.splice(index, 1)
-        deleted = true
-      }
-    })
-    return deleted
-  }
-
-  has(value: T): boolean {
-    return this.data.indexOf(value) !== -1
-  }
-
-  forEach(callbackfn: (value: T, value2: T, set: Set<T>) => void, thisArg?: any): void {
-    for (const v of this.data.slice()) {
-      callbackfn.call(thisArg, v, v, this)
+const observableSetBackedByObservableArray = action(
+  <T>(array: IObservableArray<T>): ObservableSet<T> & { dataObject: typeof array } => {
+    if (!isObservableArray(array)) {
+      throw failure("assertion failed: expected an observable array")
     }
-  }
 
-  get size(): number {
-    return this.data.length
-  }
-
-  *entries(): ReturnType<Set<T>["entries"]> {
-    for (const v of this.data) {
-      yield [v, v]
+    let set: ObservableSet<T>
+    if (getMobxVersion() >= 6) {
+      set = observable.set(array)
+    } else {
+      set = observable.set()
+      array.forEach((item) => {
+        set.add(item)
+      })
     }
-  }
+    ;(set as ObservableSet<T> & { dataObject: typeof array }).dataObject = array
 
-  *keys(): ReturnType<Set<T>["keys"]> {
-    yield* this.data
-  }
+    if (set.size !== array.length) {
+      throw failure("arrays backing a set cannot contain duplicate values")
+    }
 
-  *values(): ReturnType<Set<T>["values"]> {
-    yield* this.data
-  }
+    let setAlreadyChanged = false
+    let arrayAlreadyChanged = false
 
-  [Symbol.iterator](): ReturnType<Set<T>[typeof Symbol.iterator]> {
-    return this.values()
-  }
+    // for speed reasons we will just assume distinct values are only once in the array
 
-  readonly [Symbol.toStringTag] = "ObservableArraySet"
+    // when the array changes the set changes
+    observe(
+      array,
+      action((change: any /*IArrayDidChange<T>*/) => {
+        if (setAlreadyChanged) {
+          return
+        }
 
-  union<U>(other: ReadonlySetLike<U>): Set<T | U> {
-    const s = new Set(this)
-    return s.union(other)
-  }
+        arrayAlreadyChanged = true
 
-  intersection<U>(other: ReadonlySetLike<U>): Set<T & U> {
-    const s = new Set(this)
-    return s.intersection(other)
-  }
+        try {
+          switch (change.type) {
+            case "splice": {
+              {
+                const removed = change.removed
+                for (let i = 0; i < removed.length; i++) {
+                  set.delete(removed[i])
+                }
+              }
 
-  difference<U>(other: ReadonlySetLike<U>): Set<T> {
-    const s = new Set(this)
-    return s.difference(other)
-  }
+              {
+                const added = change.added
+                for (let i = 0; i < added.length; i++) {
+                  set.add(added[i])
+                }
+              }
 
-  symmetricDifference<U>(other: ReadonlySetLike<U>): Set<T | U> {
-    const s = new Set(this)
-    return s.symmetricDifference(other)
-  }
+              break
+            }
 
-  isSubsetOf(other: ReadonlySetLike<unknown>): boolean {
-    const s = new Set(this)
-    return s.isSubsetOf(other)
-  }
+            case "update": {
+              set.delete(change.oldValue)
+              set.add(change.newValue)
+              break
+            }
 
-  isSupersetOf(other: ReadonlySetLike<unknown>): boolean {
-    const s = new Set(this)
-    return s.isSupersetOf(other)
-  }
+            default:
+              throw failure("assertion error: unsupported array change type")
+          }
+        } finally {
+          arrayAlreadyChanged = false
+        }
+      })
+    )
 
-  isDisjointFrom(other: ReadonlySetLike<unknown>): boolean {
-    const s = new Set(this)
-    return s.isDisjointFrom(other)
+    // when the set changes also change the array
+    intercept(
+      set,
+      action((change: ISetWillChange<T>) => {
+        if (setAlreadyChanged) {
+          return null
+        }
+
+        if (arrayAlreadyChanged) {
+          return change
+        }
+
+        setAlreadyChanged = true
+
+        try {
+          switch (change.type) {
+            case "add": {
+              array.push(change.newValue)
+              break
+            }
+
+            case "delete": {
+              const i = array.indexOf(change.oldValue)
+              if (i >= 0) {
+                array.splice(i, 1)
+              }
+              break
+            }
+
+            default:
+              throw failure("assertion error: unsupported set change type")
+          }
+
+          return change
+        } finally {
+          setAlreadyChanged = false
+        }
+      })
+    )
+
+    return set as ObservableSet<T> & { dataObject: typeof array }
   }
-}
+)
 
 const setCache = new WeakMap<any[], Set<any>>()
 
@@ -216,7 +241,7 @@ export function asSet<T>(data: T[]): Set<T> {
   let setInstance = setCache.get(data)
   if (!setInstance) {
     setInstance = isObservableArray(data)
-      ? new ObservableArraySet<T>(data)
+      ? observableSetBackedByObservableArray<T>(data)
       : new PlainArraySet<T>(data)
     setCache.set(data, setInstance)
   }
