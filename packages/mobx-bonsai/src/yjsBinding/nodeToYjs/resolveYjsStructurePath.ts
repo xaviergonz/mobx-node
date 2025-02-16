@@ -13,7 +13,7 @@ export function resolveYjsStructurePath(
   let target = yjsObject
   assertIsYjsStructure(target)
 
-  path.forEach((pathSegment) => {
+  path.forEach((pathSegment, i) => {
     if (target instanceof Y.Array) {
       target = target.get(+pathSegment)
       assertIsYjsStructure(target)
@@ -21,7 +21,11 @@ export function resolveYjsStructurePath(
       target = target.get(String(pathSegment))
       assertIsYjsStructure(target)
     } else {
-      throw failure("unsupported y.js data structure")
+      throw failure(
+        `Y.Map or Y.Array was expected at path ${JSON.stringify(
+          path.slice(0, i)
+        )} in order to resolve path ${JSON.stringify(path)}, but got ${target} instead`
+      )
     }
   })
 

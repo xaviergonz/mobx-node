@@ -8,14 +8,18 @@ export function createObjectTestbed<T extends Record<string, any>>(initialData: 
   const yjsObject = yjsDoc.getMap("data") as Y.Map<YjsValue>
   applyPlainObjectToYMap(yjsObject, initialData)
 
-  const { node: mobxObservable, dispose } = bindYjsToNode<T>({
+  const {
+    node: mobxObservable,
+    dispose,
+    getYjsObjectForNode,
+  } = bindYjsToNode<T>({
     yjsDoc: yjsDoc,
     yjsObject: yjsObject,
   })
 
   disposers.push(dispose)
 
-  return { mobxObservable, yjsDoc, yjsObject }
+  return { mobxObservable, yjsDoc, yjsObject, getYjsObjectForNode }
 }
 
 export function createArrayTestbed<T extends any[]>(initialData: T) {
@@ -23,14 +27,18 @@ export function createArrayTestbed<T extends any[]>(initialData: T) {
   const yjsObject = yjsDoc.getArray("data") as Y.Array<YjsValue>
   applyPlainArrayToYArray(yjsObject, initialData)
 
-  const { node: mobxObservable, dispose } = bindYjsToNode<T>({
+  const {
+    node: mobxObservable,
+    dispose,
+    getYjsObjectForNode,
+  } = bindYjsToNode<T>({
     yjsDoc: yjsDoc,
     yjsObject: yjsObject,
   })
 
   disposers.push(dispose)
 
-  return { mobxObservable, yjsDoc, yjsObject }
+  return { mobxObservable, yjsDoc, yjsObject, getYjsObjectForNode }
 }
 
 afterEach(() => {

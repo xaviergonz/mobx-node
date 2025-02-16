@@ -7,6 +7,8 @@ import { action } from "mobx"
 import { walkTree, WalkTreeMode } from "../node/tree/walkTree"
 import { initNode } from "../node/onNodeInit"
 import { Dispose } from "../utils/disposeOnce"
+import { getParentToChildPath } from "../node/tree/getParentToChildPath"
+import { resolveYjsStructurePath } from "./nodeToYjs/resolveYjsStructurePath"
 
 /**
  * Creates a node that is bound to a Y.js data structure.
@@ -38,6 +40,15 @@ export const bindYjsToNode = action(
      * The bound node.
      */
     node: T
+
+    /**
+     * Resolves the corresponding YjsStructure for a given target node.
+     *
+     * @param node - The node to resolve in the bound Yjs structure.
+     * @returns The resolved YjsStructure.
+     * @throws Error if the target node is not found in the bound tree.
+     */
+    getYjsObjectForNode: (node: object) => YjsStructure
 
     /**
      * Disposes the binding.
@@ -75,7 +86,18 @@ export const bindYjsToNode = action(
     )
 
     return {
-      node: node,
+      node,
+
+      getYjsObjectForNode: (target: object) => {
+        if (target === node) {
+          return yjsObject
+        }
+        const path = getParentToChildPath(node, target)
+        if (!path) {
+          throw new Error("node not found in the bound tree")
+        }
+        return resolveYjsStructurePath(yjsObject, path)
+      },
 
       dispose: () => {
         nodeToYjsReplicationAdmin.dispose()
