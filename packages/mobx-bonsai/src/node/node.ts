@@ -2,6 +2,7 @@ import {
   IArrayDidChange,
   IAtom,
   IObjectDidChange,
+  ObservableSet,
   action,
   createAtom,
   isObservableArray,
@@ -30,6 +31,7 @@ type NodeData = {
   parent: ParentNode | undefined
   parentAtom: IAtom | undefined
   onChangeListeners: NodeChangeListener[]
+  childrenObjects: ObservableSet<object>
 }
 
 /**
@@ -53,13 +55,10 @@ export function reportNodeParentObserved(node: object): void {
 
 const nodes = new WeakMap<object, NodeData>()
 
-function mergeNodeData(node: object, newData: Partial<NodeData>): void {
+function setParentNode(node: object, parentNode: ParentNode | undefined): void {
   const nodeData = getNodeData(node)
-  Object.assign(nodeData, newData)
-
-  if ("parent" in newData) {
-    nodeData.parentAtom?.reportChanged()
-  }
+  nodeData.parent = parentNode
+  nodeData.parentAtom?.reportChanged()
 }
 
 export function isNode(struct: object): boolean {
@@ -151,6 +150,9 @@ export const node = action(
       parent: undefined,
       parentAtom: undefined,
       onChangeListeners: [],
+      childrenObjects: observable.set([], {
+        deep: false,
+      }),
     }
 
     nodes.set(observableStruct, nodeData)
@@ -187,9 +189,9 @@ export const node = action(
         }
       }
 
-      mergeNodeData(n, {
-        parent: { object: observableStruct, path },
-      })
+      nodeData.childrenObjects.add(n)
+
+      setParentNode(n, { object: observableStruct, path })
     }
 
     const detachAsChildNode = (v: any) => {
@@ -201,9 +203,9 @@ export const node = action(
         throw failure("node expected")
       }
 
-      mergeNodeData(v, {
-        parent: undefined,
-      })
+      setParentNode(v, undefined)
+
+      nodeData.childrenObjects.delete(v)
     }
 
     const isArray = isObservableArray(observableStruct)
@@ -250,9 +252,7 @@ export const node = action(
               if (!isNode(value)) {
                 throw failure("node expected")
               }
-              mergeNodeData(value, {
-                parent: { object: observableStruct, path: "" + i },
-              })
+              setParentNode(value, { object: observableStruct, path: "" + i })
             }
             break
           }

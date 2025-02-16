@@ -12,11 +12,15 @@ for (const isObs of [true, false]) {
       const arr = createArray()
       const setInstance = asSet(arr)
       expect(setInstance.size).toBe(3)
-      setInstance.add(4)
+      runInAction(() => {
+        setInstance.add(4)
+      })
       expect(setInstance.has(4)).toBe(true)
       expect(setInstance.size).toBe(4)
       // adding duplicate does nothing
-      setInstance.add(1)
+      runInAction(() => {
+        setInstance.add(1)
+      })
       expect(setInstance.size).toBe(4)
     })
 
@@ -99,7 +103,9 @@ for (const isObs of [true, false]) {
       const arr = createArray()
       const setInstance = asSet(arr)
       // Ensure duplicate values don't appear
-      setInstance.add(4)
+      runInAction(() => {
+        setInstance.add(4)
+      })
       const other = new Set([3, 4, 5])
       const union = setInstance.union(other)
       expect(Array.from(union).sort((a, b) => a - b)).toStrictEqual([1, 2, 3, 4, 5])

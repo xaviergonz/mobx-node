@@ -7,6 +7,8 @@ import {
   observable,
   ObservableSet,
   observe,
+  transaction,
+  untracked,
 } from "mobx"
 import { failure } from "../error/failure"
 import { getMobxVersion } from "./getMobxVersion"
@@ -104,120 +106,124 @@ class PlainArraySet<T> implements Set<T> {
   }
 }
 
-const observableSetBackedByObservableArray = action(
-  <T>(array: IObservableArray<T>): ObservableSet<T> & { dataObject: typeof array } => {
-    if (!isObservableArray(array)) {
-      throw failure("assertion failed: expected an observable array")
-    }
-
-    let set: ObservableSet<T>
-    if (getMobxVersion() >= 6) {
-      set = observable.set(array)
-    } else {
-      set = observable.set()
-      array.forEach((item) => {
-        set.add(item)
-      })
-    }
-    ;(set as ObservableSet<T> & { dataObject: typeof array }).dataObject = array
-
-    if (set.size !== array.length) {
-      throw failure("arrays backing a set cannot contain duplicate values")
-    }
-
-    let setAlreadyChanged = false
-    let arrayAlreadyChanged = false
-
-    // for speed reasons we will just assume distinct values are only once in the array
-
-    // when the array changes the set changes
-    observe(
-      array,
-      action((change: any /*IArrayDidChange<T>*/) => {
-        if (setAlreadyChanged) {
-          return
-        }
-
-        arrayAlreadyChanged = true
-
-        try {
-          switch (change.type) {
-            case "splice": {
-              {
-                const removed = change.removed
-                for (let i = 0; i < removed.length; i++) {
-                  set.delete(removed[i])
-                }
-              }
-
-              {
-                const added = change.added
-                for (let i = 0; i < added.length; i++) {
-                  set.add(added[i])
-                }
-              }
-
-              break
-            }
-
-            case "update": {
-              set.delete(change.oldValue)
-              set.add(change.newValue)
-              break
-            }
-
-            default:
-              throw failure("assertion error: unsupported array change type")
-          }
-        } finally {
-          arrayAlreadyChanged = false
-        }
-      })
-    )
-
-    // when the set changes also change the array
-    intercept(
-      set,
-      action((change: ISetWillChange<T>) => {
-        if (setAlreadyChanged) {
-          return null
-        }
-
-        if (arrayAlreadyChanged) {
-          return change
-        }
-
-        setAlreadyChanged = true
-
-        try {
-          switch (change.type) {
-            case "add": {
-              array.push(change.newValue)
-              break
-            }
-
-            case "delete": {
-              const i = array.indexOf(change.oldValue)
-              if (i >= 0) {
-                array.splice(i, 1)
-              }
-              break
-            }
-
-            default:
-              throw failure("assertion error: unsupported set change type")
-          }
-
-          return change
-        } finally {
-          setAlreadyChanged = false
-        }
-      })
-    )
-
-    return set as ObservableSet<T> & { dataObject: typeof array }
+const observableSetBackedByObservableArray = <T>(
+  array: IObservableArray<T>
+): ObservableSet<T> & { dataObject: typeof array } => {
+  if (!isObservableArray(array)) {
+    throw failure("assertion failed: expected an observable array")
   }
-)
+
+  const set = transaction(() =>
+    untracked(() => {
+      if (getMobxVersion() >= 6) {
+        return observable.set(array)
+      } else {
+        const set = observable.set()
+        array.forEach((item) => {
+          set.add(item)
+        })
+        return set
+      }
+    })
+  )
+  ;(set as ObservableSet<T> & { dataObject: typeof array }).dataObject = array
+
+  if (set!.size !== array.length) {
+    throw failure("arrays backing a set cannot contain duplicate values")
+  }
+
+  let setAlreadyChanged = false
+  let arrayAlreadyChanged = false
+
+  // for speed reasons we will just assume distinct values are only once in the array
+
+  // when the array changes the set changes
+  observe(
+    array,
+    action((change: any /*IArrayDidChange<T>*/) => {
+      if (setAlreadyChanged) {
+        return
+      }
+
+      arrayAlreadyChanged = true
+
+      try {
+        switch (change.type) {
+          case "splice": {
+            {
+              const removed = change.removed
+              for (let i = 0; i < removed.length; i++) {
+                set.delete(removed[i])
+              }
+            }
+
+            {
+              const added = change.added
+              for (let i = 0; i < added.length; i++) {
+                set.add(added[i])
+              }
+            }
+
+            break
+          }
+
+          case "update": {
+            set.delete(change.oldValue)
+            set.add(change.newValue)
+            break
+          }
+
+          default:
+            throw failure("assertion error: unsupported array change type")
+        }
+      } finally {
+        arrayAlreadyChanged = false
+      }
+    })
+  )
+
+  // when the set changes also change the array
+  intercept(
+    set!,
+    action((change: ISetWillChange<T>) => {
+      if (setAlreadyChanged) {
+        return null
+      }
+
+      if (arrayAlreadyChanged) {
+        return change
+      }
+
+      setAlreadyChanged = true
+
+      try {
+        switch (change.type) {
+          case "add": {
+            array.push(change.newValue)
+            break
+          }
+
+          case "delete": {
+            const i = array.indexOf(change.oldValue)
+            if (i >= 0) {
+              array.splice(i, 1)
+            }
+            break
+          }
+
+          default:
+            throw failure("assertion error: unsupported set change type")
+        }
+
+        return change
+      } finally {
+        setAlreadyChanged = false
+      }
+    })
+  )
+
+  return set! as ObservableSet<T> & { dataObject: typeof array }
+}
 
 const setCache = new WeakMap<any[], Set<any>>()
 

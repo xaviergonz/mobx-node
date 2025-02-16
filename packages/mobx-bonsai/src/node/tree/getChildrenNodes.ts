@@ -1,42 +1,23 @@
-import { values } from "mobx"
-import { isPrimitive } from "../../plainTypes/checks"
-import { assertIsNode, isNode } from "../node"
 import { computedProp } from "../computedProp"
+import { assertIsNode, getNodeData } from "../node"
 
 /**
  * @internal
  */
-export function getChildrenNodesWithTargetSet(
-  node: object,
-  targetSet: Set<object>,
-  options?: {
-    deep?: boolean
-  }
-): void {
-  assertIsNode(node, "node")
+export function getChildrenNodesWithTargetSet(node: object, targetSet: Set<object>): void {
+  getShallowChildren(node).forEach((child) => {
+    targetSet.add(child)
 
-  const deep = options?.deep ?? false
-  values(node).forEach((child) => {
-    if (!isPrimitive(child) && isNode(child)) {
-      targetSet.add(child)
-
-      if (deep) {
-        const deepChildren = getComputedDeepChildren(child)
-        deepChildren.forEach((deepChild) => targetSet.add(deepChild))
-      }
-    }
+    const deepChildren = getComputedDeepChildren(child)
+    deepChildren.forEach((deepChild) => targetSet.add(deepChild))
   })
 }
 
-const getComputedShallowChildren = computedProp((node: object): ReadonlySet<object> => {
-  const children = new Set<object>()
-  getChildrenNodesWithTargetSet(node, children, { deep: false })
-  return children
-})
+const getShallowChildren = (node: object): ReadonlySet<object> => getNodeData(node).childrenObjects
 
 const getComputedDeepChildren = computedProp((node: object): ReadonlySet<object> => {
   const children = new Set<object>()
-  getChildrenNodesWithTargetSet(node, children, { deep: true })
+  getChildrenNodesWithTargetSet(node, children)
   return children
 })
 
@@ -54,5 +35,12 @@ export function getChildrenNodes(
     deep?: boolean
   }
 ): ReadonlySet<object> {
-  return options?.deep ? getComputedDeepChildren(node) : getComputedShallowChildren(node)
+  assertIsNode(node, "node")
+
+  const deep = options?.deep ?? false
+  if (!deep) {
+    return getShallowChildren(node)
+  }
+
+  return getComputedDeepChildren(node)
 }

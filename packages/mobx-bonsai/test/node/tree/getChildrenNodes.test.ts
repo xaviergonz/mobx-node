@@ -51,9 +51,9 @@ it("should return deep children for an array node", () => {
 it("should react when a child is added/removed", () => {
   const root = node<{ child1?: { a: number }; child2?: { b: number } }>({ child1: { a: 1 } })
 
-  const children: ReadonlySet<object>[] = []
+  const children: object[] = []
   const disposer = reaction(
-    () => getChildrenNodes(root, { deep: false }),
+    () => [...getChildrenNodes(root, { deep: false })],
     (ch) => {
       children.push(ch)
     },
@@ -63,11 +63,11 @@ it("should react when a child is added/removed", () => {
   // Initially, one child exists.
   expect(children).toMatchInlineSnapshot(`
 [
-  Set {
+  [
     {
       "a": 1,
     },
-  },
+  ],
 ]
 `)
   children.length = 0
@@ -79,14 +79,14 @@ it("should react when a child is added/removed", () => {
   // Reaction should pick up the change.
   expect(children).toMatchInlineSnapshot(`
 [
-  Set {
+  [
     {
       "a": 1,
     },
     {
       "b": 2,
     },
-  },
+  ],
 ]
 `)
   children.length = 0
@@ -97,11 +97,11 @@ it("should react when a child is added/removed", () => {
 
   expect(children).toMatchInlineSnapshot(`
 [
-  Set {
+  [
     {
       "a": 1,
     },
-  },
+  ],
 ]
 `)
   children.length = 0
@@ -109,11 +109,12 @@ it("should react when a child is added/removed", () => {
   disposer()
 })
 
-it("should keep refs unstable if not observed / stable if observed", () => {
+it("reference stability", () => {
   const root = node<{ child1?: { a: number }; child2?: { b: number } }>({ child1: { a: 1 } })
 
-  // reference should NOT be stable when no changes and NOT observed
-  expect(getChildrenNodes(root, { deep: false })).not.toBe(getChildrenNodes(root, { deep: false }))
+  // shallow reference should be stable when no changes and NOT observed
+  expect(getChildrenNodes(root, { deep: false })).toBe(getChildrenNodes(root, { deep: false }))
+  // deep reference should NOT be stable when no changes and NOT observed
   expect(getChildrenNodes(root, { deep: true })).not.toBe(getChildrenNodes(root, { deep: true }))
 
   const disposer = reaction(
