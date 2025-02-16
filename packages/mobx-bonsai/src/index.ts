@@ -47,6 +47,7 @@ export { volatileProp } from "./node/volatileProp"
 export type { Primitive } from "./plainTypes/types"
 
 export { asMap } from "./utils/asMap"
+export { asSet } from "./utils/asSet"
 export { deepEquals } from "./utils/deepEquals"
 export type { Dispose } from "./utils/disposeOnce"
 

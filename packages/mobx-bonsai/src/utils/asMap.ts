@@ -1,4 +1,4 @@
-import { get, has, isObservableObject, keys, remove, runInAction, set } from "mobx"
+import { entries, get, has, isObservableObject, keys, remove, runInAction, set, values } from "mobx"
 import { failure } from "../error/failure"
 import { isPlainObject } from "../plainTypes/checks"
 
@@ -42,25 +42,19 @@ class PlainObjectMap<V> implements Map<string, V> {
     return Object.keys(this.data).length
   }
 
-  *entries(): MapIterator<[string, V]> {
-    for (const key of Object.keys(this.data)) {
-      yield [key, this.data[key]]
-    }
+  *entries(): ReturnType<Map<string, V>["entries"]> {
+    yield* Object.entries(this.data)
   }
 
-  *keys(): MapIterator<string> {
-    for (const key of Object.keys(this.data)) {
-      yield key
-    }
+  *keys(): ReturnType<Map<string, V>["keys"]> {
+    yield* Object.keys(this.data)
   }
 
-  *values(): MapIterator<V> {
-    for (const key of Object.keys(this.data)) {
-      yield this.data[key]
-    }
+  *values(): ReturnType<Map<string, V>["values"]> {
+    yield* Object.values(this.data)
   }
 
-  [Symbol.iterator](): MapIterator<[string, V]> {
+  [Symbol.iterator](): ReturnType<Map<string, V>[typeof Symbol.iterator]> {
     return this.entries()
   }
 
@@ -115,21 +109,15 @@ class ObservableObjectMap<V> implements Map<string, V> {
   }
 
   *entries(): ReturnType<Map<string, V>["entries"]> {
-    for (const key of keys(this.data)) {
-      yield [key as string, this.get(key as string)!]
-    }
+    yield* entries(this.data)
   }
 
   *keys(): ReturnType<Map<string, V>["keys"]> {
-    for (const key of keys(this.data)) {
-      yield key as string
-    }
+    yield* keys(this.data) as ReadonlyArray<string>
   }
 
   *values(): ReturnType<Map<string, V>["values"]> {
-    for (const key of keys(this.data)) {
-      yield this.get(key as string)!
-    }
+    yield* values(this.data)
   }
 
   [Symbol.iterator](): ReturnType<Map<string, V>[typeof Symbol.iterator]> {
@@ -139,7 +127,7 @@ class ObservableObjectMap<V> implements Map<string, V> {
   readonly [Symbol.toStringTag] = "ObservableObjectMap"
 }
 
-const objectMapCache = new WeakMap<Record<string, any>, Map<string, any>>()
+const mapCache = new WeakMap<Record<string, any>, Map<string, any>>()
 
 /**
  * Returns a reactive Map-like view of the given object.
@@ -155,14 +143,14 @@ export function asMap<V>(data: Record<string, V>): Map<string, V> {
     throw failure("asMap expects an object")
   }
 
-  let map = objectMapCache.get(data)
+  let map = mapCache.get(data)
   if (!map) {
     if (isObservableObject(data)) {
       map = new ObservableObjectMap(data)
     } else {
       map = new PlainObjectMap(data)
     }
-    objectMapCache.set(data, map)
+    mapCache.set(data, map)
   }
   return map
 }
