@@ -93,7 +93,7 @@ export function onChildAttachedTo<T extends object = object>({
 
   const currentChildren = opts.fireForCurrentChildren ? new Set<object>() : getCurrentChildren()
 
-  const disposer = reaction(
+  const disposeReaction = reaction(
     () => getCurrentChildren(),
     (newChildren) => {
       const disposersToRun: object[] = []
@@ -145,7 +145,7 @@ export function onChildAttachedTo<T extends object = object>({
   )
 
   return disposeOnce((runDetachDisposers: boolean) => {
-    disposer()
+    disposeReaction()
 
     if (runDetachDisposers) {
       const currentChildrenIter = currentChildren.values()
