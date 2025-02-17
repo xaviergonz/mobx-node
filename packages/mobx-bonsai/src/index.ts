@@ -40,8 +40,8 @@ export type {
   SelectNodeByProp,
   SelectNodeByTypeProp,
   SelectNodeFn,
-  InitNodeCallback,
-} from "./node/onNodeInit"
+  NodeSelectorCallback,
+} from "./node/utils/nodeSelector"
 export { volatileProp } from "./node/volatileProp"
 
 export type { Primitive } from "./plainTypes/types"
