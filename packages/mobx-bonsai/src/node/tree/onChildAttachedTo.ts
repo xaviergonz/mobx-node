@@ -127,11 +127,13 @@ export function onChildAttachedTo<T extends object = object>({
         if (!currentChildren.has(n)) {
           currentChildren.add(n)
 
-          const callback = nodeSelector.selectNodeCallback(n)
-          if (callback) {
-            const detachAction = runInAction(() => callback(n))
-            addDetachDisposer(n, detachAction)
-          }
+          const callbacks = nodeSelector.selectNodeCallbacks(n)
+          runInAction(() => {
+            for (const callback of callbacks) {
+              const detachAction = callback(n)
+              addDetachDisposer(n, detachAction)
+            }
+          })
         }
 
         newChildrenCur = newChildrenIter.next()

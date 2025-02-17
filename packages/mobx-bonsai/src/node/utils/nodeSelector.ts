@@ -1,4 +1,3 @@
-import { failure } from "../../error/failure"
 import { Dispose, disposeOnce } from "../../utils/disposeOnce"
 
 /**
@@ -28,7 +27,7 @@ export type NodeSelectorCallback<T extends object> = (node: T) => void
  * @internal
  */
 export const createNodeSelector = () => {
-  const selectNodeByProp = new Map<string, Map<any, NodeSelectorCallback<any>>>()
+  const selectNodeByProp = new Map<string, Map<any, NodeSelectorCallback<any>[]>>()
   const selectNodeFns: { selectNodeFn: SelectNodeFn; callback: NodeSelectorCallback<any> }[] = []
 
   const nodeSelector = {
@@ -36,28 +35,34 @@ export const createNodeSelector = () => {
       selectNode: SelectNodeByProp | SelectNodeByTypeProp | SelectNodeFn,
       callback: NodeSelectorCallback<T>
     ): Dispose => {
+      if (typeof selectNode === "string") {
+        const propValue = selectNode
+        return nodeSelector.addSelectorWithCallback(["$type", propValue], callback)
+      }
+
       if (Array.isArray(selectNode)) {
         const [propName, propValue] = selectNode
+
         let propMap = selectNodeByProp.get(propName)
         if (!propMap) {
           propMap = new Map()
           selectNodeByProp.set(propName, propMap)
         }
 
-        if (propMap.has(propValue)) {
-          throw failure(`onNodeInit for ${propName}=${propValue} already registered`)
+        let callbacks = propMap.get(propValue)
+        if (!callbacks) {
+          callbacks = []
+          propMap.set(propValue, callbacks)
         }
 
-        propMap.set(propValue, callback)
+        callbacks.push(callback)
 
         return disposeOnce(() => {
-          propMap!.delete(propValue)
+          const idx = callbacks.indexOf(callback)
+          if (idx >= 0) {
+            callbacks.splice(idx, 1)
+          }
         })
-      }
-
-      if (typeof selectNode === "string") {
-        const propValue = selectNode
-        return nodeSelector.addSelectorWithCallback(["$type", propValue], callback)
       }
 
       const selectNodeFn = selectNode
@@ -66,35 +71,36 @@ export const createNodeSelector = () => {
 
       return disposeOnce(() => {
         const idx = selectNodeFns.indexOf(entry)
-        if (idx > 0) {
+        if (idx >= 0) {
           selectNodeFns.splice(idx, 1)
         }
       })
     },
 
-    selectNodeCallback: (node: object) => {
+    selectNodeCallbacks: (node: object) => {
+      const callbacks: NodeSelectorCallback<any>[] = []
+
       for (const [propName, propValueMap] of selectNodeByProp) {
         const propValue = (node as any)[propName]
-        const callback = propValueMap.get(propValue)
-        if (callback) {
-          return callback
+        const callbacksForProp = propValueMap.get(propValue)
+        if (callbacksForProp && callbacksForProp.length > 0) {
+          callbacks.push(...callbacksForProp)
         }
       }
 
       for (const entry of selectNodeFns) {
         if (entry.selectNodeFn(node)) {
-          return entry.callback
+          callbacks.push(entry.callback)
         }
       }
 
-      return undefined
+      return callbacks
     },
 
-    selectAndInvokeCallback: (node: object) => {
-      const callback = nodeSelector.selectNodeCallback(node)
-      if (callback) {
+    selectAndInvokeCallbacks: (node: object) => {
+      nodeSelector.selectNodeCallbacks(node).forEach((callback) => {
         callback(node)
-      }
+      })
     },
   }
 

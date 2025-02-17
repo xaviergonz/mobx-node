@@ -1,3 +1,4 @@
+import { action } from "mobx"
 import { Dispose } from "../utils/disposeOnce"
 import {
   NodeSelectorCallback,
@@ -13,7 +14,7 @@ const initNodeNodeSelector = createNodeSelector()
  * @internal
  */
 export function initNode<T extends object>(node: T): void {
-  initNodeNodeSelector.selectAndInvokeCallback(node)
+  initNodeNodeSelector.selectAndInvokeCallbacks(node)
 }
 
 /**
@@ -33,5 +34,5 @@ export function onNodeInit<T extends object>(
   nodeSelector: SelectNodeByProp | SelectNodeByTypeProp | SelectNodeFn,
   callback: NodeSelectorCallback<T>
 ): Dispose {
-  return initNodeNodeSelector.addSelectorWithCallback(nodeSelector, callback)
+  return initNodeNodeSelector.addSelectorWithCallback(nodeSelector, action(callback))
 }
