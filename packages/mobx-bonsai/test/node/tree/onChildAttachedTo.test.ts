@@ -6,13 +6,14 @@ it("should fire immediately for current children when fireForCurrentChildren is 
     child1: { a: 1 },
   })
   const fired: object[] = []
-  const disposer = onChildAttachedTo(
-    () => testNode,
-    (child) => {
+  const disposer = onChildAttachedTo({
+    target: () => testNode,
+    childNodeSelector: undefined,
+    onChildAttached: (child) => {
       fired.push(child)
     },
-    { fireForCurrentChildren: true }
-  )
+    options: { fireForCurrentChildren: true },
+  })
   // Expect immediate callback invocation for existing child.
   expect(fired).toStrictEqual([testNode.child1])
   fired.length = 0
@@ -25,13 +26,14 @@ it("should fire when a new child is added", () => {
     child1: { a: 1 },
   })
   const fired: object[] = []
-  const disposer = onChildAttachedTo(
-    () => testNode,
-    (child) => {
+  const disposer = onChildAttachedTo({
+    target: () => testNode,
+    childNodeSelector: undefined,
+    onChildAttached: (child) => {
       fired.push(child)
     },
-    { fireForCurrentChildren: false }
-  )
+    options: { fireForCurrentChildren: false },
+  })
 
   // Initially, no child since fireForCurrentChildren is false.
   expect(fired).toStrictEqual([])
@@ -51,14 +53,15 @@ it("should run detach disposer when a child is removed", () => {
     child1: { a: 1 },
   })
   const detachFired: object[] = []
-  const disposer = onChildAttachedTo(
-    () => testNode,
-    (chDetached) => {
+  const disposer = onChildAttachedTo({
+    target: () => testNode,
+    childNodeSelector: undefined,
+    onChildAttached: (chDetached) => {
       return () => {
         detachFired.push(chDetached)
       }
-    }
-  )
+    },
+  })
 
   const child1 = testNode.child1
 
@@ -76,13 +79,14 @@ it("should stop further notifications after disposer is called", () => {
     child1: { a: 1 },
   })
   let callCount = 0
-  const disposer = onChildAttachedTo(
-    () => testNode,
-    () => {
+  const disposer = onChildAttachedTo({
+    target: () => testNode,
+    childNodeSelector: undefined,
+    onChildAttached: () => {
       callCount++
     },
-    { fireForCurrentChildren: true }
-  )
+    options: { fireForCurrentChildren: true },
+  })
   // Initial call count.
   expect(callCount).toBe(1)
   runInAction(() => {
@@ -105,16 +109,17 @@ it("should run pending detach disposers when disposer is called with true", () =
     child2: { b: 2 },
   })
   const detachCalls: object[] = []
-  const disposer = onChildAttachedTo(
-    () => testNode,
-    (child) => {
+  const disposer = onChildAttachedTo({
+    target: () => testNode,
+    childNodeSelector: undefined,
+    onChildAttached: (child) => {
       // Return a detach disposer that records the child.
       return () => {
         detachCalls.push(child)
       }
     },
-    { fireForCurrentChildren: true }
-  )
+    options: { fireForCurrentChildren: true },
+  })
 
   // At this point, detach disposers for current children are pending.
   disposer(true) // Calling disposer with true should run pending detach disposers.
@@ -127,14 +132,50 @@ it("should fire for deep children when deep is set to true", () => {
     child2: { c: 3 },
   })
   const fired: object[] = []
-  const disposer = onChildAttachedTo(
-    () => testNode,
-    (child) => {
+  const disposer = onChildAttachedTo({
+    target: () => testNode,
+    childNodeSelector: undefined,
+    onChildAttached: (child) => {
       fired.push(child)
     },
-    { fireForCurrentChildren: true, deep: true }
-  )
+    options: { fireForCurrentChildren: true, deep: true },
+  })
   // Expect the callback to run immediately for both shallow and nested children.
   expect(fired).toStrictEqual([testNode.child1, testNode.child1.nested, testNode.child2])
   disposer(false)
+})
+
+it("fires callback only for matching node using a selector", () => {
+  const testNode = node<{
+    child1?: { $type: string; id: number }
+    child2?: { $type: string; id: number }
+  }>({}) // create an empty node
+
+  const onChildAttached1 = jest.fn()
+  const disposer1 = onChildAttachedTo({
+    target: () => testNode,
+    childNodeSelector: ["$type", "match"],
+    onChildAttached: onChildAttached1,
+    options: { fireForCurrentChildren: false },
+  })
+
+  const onChildAttached2 = jest.fn()
+  const predicate = (child: any) => child.id % 2 === 0
+  const disposer2 = onChildAttachedTo({
+    target: () => testNode,
+    childNodeSelector: predicate,
+    onChildAttached: onChildAttached2,
+    options: { fireForCurrentChildren: false },
+  })
+
+  runInAction(() => {
+    testNode.child1 = { $type: "match", id: 1 }
+    testNode.child2 = { $type: "other", id: 2 }
+  })
+
+  // Expect callback only for the matching children.
+  expect(onChildAttached1).toHaveBeenCalledWith(testNode.child1)
+  expect(onChildAttached2).toHaveBeenCalledWith(testNode.child2)
+  disposer1(false)
+  disposer2(false)
 })

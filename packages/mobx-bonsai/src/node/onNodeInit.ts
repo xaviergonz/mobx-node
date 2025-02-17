@@ -20,17 +20,18 @@ export function initNode<T extends object>(node: T): void {
  * Registers a callback to initialize a node based on selection criteria.
  *
  * The selection criteria can be:
- * - An array specifying a property name and its value.
+ * - A tuple specifying a property name and its value.
  * - A string specifying the value of the $type property.
  * - A predicate function that tests if the given node should be selected.
+ * Note that using a tuple or string selector is way faster than using a function selector.
  *
- * @param selectNode - The criteria for selecting the node.
+ * @param nodeSelector - The criteria for selecting the node.
  * @param callback - The initialization callback to be invoked when the node is created.
  * @returns A dispose function that unregisters the callback.
  */
 export function onNodeInit<T extends object>(
-  selectNode: SelectNodeByProp | SelectNodeByTypeProp | SelectNodeFn,
+  nodeSelector: SelectNodeByProp | SelectNodeByTypeProp | SelectNodeFn,
   callback: NodeSelectorCallback<T>
 ): Dispose {
-  return initNodeNodeSelector.addSelectorWithCallback(selectNode, callback)
+  return initNodeNodeSelector.addSelectorWithCallback(nodeSelector, callback)
 }

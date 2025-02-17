@@ -72,21 +72,28 @@ export const createNodeSelector = () => {
       })
     },
 
-    selectAndInvokeCallback: (node: object) => {
+    selectNodeCallback: (node: object) => {
       for (const [propName, propValueMap] of selectNodeByProp) {
         const propValue = (node as any)[propName]
         const callback = propValueMap.get(propValue)
         if (callback) {
-          callback(node)
-          return
+          return callback
         }
       }
 
       for (const entry of selectNodeFns) {
         if (entry.selectNodeFn(node)) {
-          entry.callback(node)
-          return
+          return entry.callback
         }
+      }
+
+      return undefined
+    },
+
+    selectAndInvokeCallback: (node: object) => {
+      const callback = nodeSelector.selectNodeCallback(node)
+      if (callback) {
+        callback(node)
       }
     },
   }
