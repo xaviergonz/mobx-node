@@ -1,10 +1,9 @@
-import { action, createAtom, IAtom } from "mobx"
+import { action, IObservableValue, observable } from "mobx"
 import { assertIsObservablePlainStructure } from "../plainTypes/checks"
 import { failure } from "../error/failure"
 
 type VolatileValueAdmin<TValue> = {
-  value: TValue
-  readonly atom: IAtom
+  valueBox: IObservableValue<TValue>
 }
 
 type GetOrCreateValueAdmin<TTarget, TValue> = (target: TTarget) => VolatileValueAdmin<TValue>
@@ -19,8 +18,7 @@ function unkeyedVolatileProp<TTarget extends object, TValue>(
 
     if (!valueAdmin) {
       valueAdmin = {
-        value: defaultValueGen(),
-        atom: createAtom("volatileProp"),
+        valueBox: observable.box(defaultValueGen(), { deep: false }),
       }
       // do not report changed, it is an initialization
       volatileValueAdmins.set(target, valueAdmin)
@@ -67,8 +65,7 @@ export function keyedVolatileProp<TTarget extends object, TValue>(
 
     if (!valueAdmin) {
       valueAdmin = {
-        value: defaultValueGen(),
-        atom: createAtom("volatileProp"),
+        valueBox: observable.box(defaultValueGen(), { deep: false }),
         instancesAlive: new Set(),
       }
 
@@ -103,17 +100,14 @@ function createPropertyAccessor<TTarget extends object, TValue>(
       assertIsObservablePlainStructure(target, "target")
 
       const valueAdmin = getOrCreateValueAdmin(target)
-      const ret = valueAdmin.value
-      valueAdmin.atom.reportObserved()
-      return ret
+      return valueAdmin.valueBox.get()
     },
 
     action((target: TTarget, value: TValue): void => {
       assertIsObservablePlainStructure(target, "target")
 
       const valueAdmin = getOrCreateValueAdmin(target)
-      valueAdmin.value = value
-      valueAdmin.atom.reportChanged()
+      valueAdmin.valueBox.set(value)
     }),
   ]
 }
