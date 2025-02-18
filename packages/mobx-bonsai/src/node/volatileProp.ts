@@ -128,9 +128,9 @@ function createPropertyAccessor<TTarget extends object, TValue>(
  * @param defaultValueGen A function that returns the default value for the property.
  * @param getKey A function get get a unique key associated to a node (e.g. an ID).
  *   - If a function is passed (recommended whenever possible) then the volatile property is keyed, which means
- *   the volatile property value is shared across all objects that resolve to the same key. This is specially useful
- *   to keep an state when the data for example gets moved around in the tree due to bindings, in which case the node
- *   itself is not reused.
+ *   the volatile property value is shared across all objects that resolve to the same key **as long as one with that
+ *   key is kept alive**. This is specially useful to keep an state when the data for example gets moved around in the tree due to bindings,
+ *   in which case the node itself is not reused.
  *   - If `undefined` is passed the the volatile property is unkeyed, which means it is unique to the node instance
  *   that gets passed to the getter and setter.
  * @returns A tuple where the first element is the getter function and the second is the setter function.
