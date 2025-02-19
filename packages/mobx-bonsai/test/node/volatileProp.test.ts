@@ -53,6 +53,24 @@ describe("keyed volatileProp", () => {
     expect(getVolatile(obj2)).toBe(42)
   })
 
+  it("should share volatile state across objects with the same key even if one is unset in the middle", () => {
+    const getKey = (target: { id: number }) => target.id
+    const [getVolatile, setVolatile] = volatileProp(() => 0, getKey)
+
+    let obj1: { id: number } | undefined = observable({ id: 1 })
+
+    expect(getVolatile(obj1)).toBe(0)
+    setVolatile(obj1, 42)
+    expect(getVolatile(obj1)).toBe(42)
+
+    // obj1 "dies"
+    obj1 = undefined
+
+    // the state is kept since we did not give time for the finalization registry to kick
+    const obj2 = observable({ id: 1 })
+    expect(getVolatile(obj2)).toBe(42)
+  })
+
   it("should maintain separate state for objects with different keys", () => {
     const getKey = (target: { id: number }) => target.id
     const [getVolatile, setVolatile] = volatileProp(() => 0, getKey)
