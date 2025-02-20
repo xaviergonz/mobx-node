@@ -1,5 +1,6 @@
 import { runInAction, toJS } from "mobx"
 import { createObjectTestbed } from "./testbed"
+import { nodeKey, nodeType, UniqueNodeTypeAndKey } from "../../src"
 
 test("reassign an already added object to another part of the tree should fail", () => {
   const { mobxObservable } = createObjectTestbed<{
@@ -53,4 +54,49 @@ test("reassign a copy of an added object to another part of the tree should be o
   expect(mobxObservable.nestedObj1).toBe(mobxNestedObj1)
   expect(mobxObservable.nestedObj2).not.toBe(mobxNestedObj1)
   expect(mobxObservable.nestedObj2).toBeDefined()
+})
+
+test("swapping nodes in an array should be ok if we detach one first", () => {
+  const { mobxObservable } = createObjectTestbed<
+    (
+      | {
+          numberProp: number
+        }
+      | undefined
+    )[]
+  >([{ numberProp: 0 }, { numberProp: 1 }])
+
+  const mobxNode1 = mobxObservable[0]
+  const mobxNode2 = mobxObservable[1]
+  runInAction(() => {
+    mobxObservable[1] = undefined
+    mobxObservable[0] = mobxNode2
+    mobxObservable[1] = mobxNode1
+  })
+  expect(mobxObservable[0]).toBe(mobxNode2)
+  expect(mobxObservable[1]).toBe(mobxNode1)
+})
+
+test("swapping unique nodes in an array should be ok if we detach one first", () => {
+  const { mobxObservable } = createObjectTestbed<
+    (
+      | ({
+          numberProp: number
+        } & UniqueNodeTypeAndKey)
+      | undefined
+    )[]
+  >([
+    { [nodeType]: "1", [nodeKey]: 1, numberProp: 0 },
+    { [nodeType]: "1", [nodeKey]: 2, numberProp: 1 },
+  ])
+
+  const mobxNode1 = mobxObservable[0]
+  const mobxNode2 = mobxObservable[1]
+  runInAction(() => {
+    mobxObservable[1] = undefined
+    mobxObservable[0] = mobxNode2
+    mobxObservable[1] = mobxNode1
+  })
+  expect(mobxObservable[0]).toBe(mobxNode2)
+  expect(mobxObservable[1]).toBe(mobxNode1)
 })

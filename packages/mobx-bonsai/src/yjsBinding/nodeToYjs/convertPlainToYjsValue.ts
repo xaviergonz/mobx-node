@@ -1,7 +1,7 @@
-import { action, isObservableArray, isObservableObject, runInAction } from "mobx"
+import { action, isObservableObject, runInAction } from "mobx"
 import * as Y from "yjs"
 import { failure } from "../../error/failure"
-import { isPlainObject, isPrimitive } from "../../plainTypes/checks"
+import { isArray, isPlainObject, isPrimitive } from "../../plainTypes/checks"
 import { Primitive } from "../../plainTypes/types"
 import { YjsValue } from "../yjsTypes/types"
 
@@ -19,7 +19,7 @@ export function convertPlainToYjsValue(v: any): YjsValue {
       return v
     }
 
-    if (Array.isArray(v) || isObservableArray(v)) {
+    if (isArray(v)) {
       const arr = new Y.Array<YjsValue>()
       applyPlainArrayToYArray(arr, v)
       return arr as YjsValue

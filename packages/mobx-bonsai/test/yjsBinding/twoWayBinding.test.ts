@@ -1,6 +1,7 @@
 import * as Y from "yjs"
 import { createArrayTestbed, createObjectTestbed } from "./testbed"
 import { runInAction } from "mobx"
+import { convertPlainToYjsValue, nodeKey, nodeType, UniqueNodeTypeAndKey } from "../../src"
 
 test("object two-way binding", () => {
   const { mobxObservable, yjsObject } = createObjectTestbed<{
@@ -97,12 +98,15 @@ test("array simple two-way binding", () => {
 })
 
 test("array with nested object two-way binding", () => {
-  const { mobxObservable, yjsObject } = createArrayTestbed<{ n: number }[]>([{ n: 0 }])
+  type TestBed = { n: number }[]
+  const initial: TestBed = [{ n: 0 }] as const
+
+  const { mobxObservable, yjsObject } = createArrayTestbed<TestBed>(initial)
   const yjsArray = yjsObject as Y.Array<any>
 
   // initial state
-  expect(yjsArray.toJSON()).toStrictEqual([{ n: 0 }])
-  expect(mobxObservable).toStrictEqual([{ n: 0 }])
+  expect(yjsArray.toJSON()).toStrictEqual(initial)
+  expect(mobxObservable).toStrictEqual(initial)
 
   // mobx to yjs
   runInAction(() => {
@@ -116,7 +120,52 @@ test("array with nested object two-way binding", () => {
   newN.set("n", 30)
   yjsArray.push([newN])
   expect(yjsArray.toJSON()).toStrictEqual([{ n: 10 }, { n: 20 }, { n: 30 }])
-  expect(mobxObservable).toStrictEqual([{ n: 10 }, { n: 20 }, { n: 30 }])
+  expect(mobxObservable).toStrictEqual(yjsArray.toJSON())
   newN.set("n", 40)
   expect(mobxObservable).toStrictEqual([{ n: 10 }, { n: 20 }, { n: 40 }])
+})
+
+test("object with nested unique node object that gets swapped from one prop to another and then back", () => {
+  type Obj = UniqueNodeTypeAndKey & { n: number }
+  type TestBed = { a?: Obj; b?: Obj }
+
+  const initial: TestBed = {
+    a: { [nodeType]: "1", [nodeKey]: 1, n: 0 },
+    b: { [nodeType]: "1", [nodeKey]: 2, n: 1 },
+  } as const
+
+  const { mobxObservable, yjsObject, yjsDoc } = createObjectTestbed<TestBed>(initial)
+  const yjsObj = yjsObject as Y.Map<any>
+
+  // initial state
+  expect(yjsObj.toJSON()).toStrictEqual(initial)
+  expect(mobxObservable).toStrictEqual(initial)
+
+  const n1 = mobxObservable.a!
+  const n2 = mobxObservable.b!
+
+  // swap using yjs transaction
+  yjsDoc.transact(() => {
+    yjsObj.set("a", convertPlainToYjsValue(n2))
+    yjsObj.set("b", convertPlainToYjsValue(n1))
+  })
+
+  expect(mobxObservable).toStrictEqual({ a: n2, b: n1 })
+
+  expect(yjsObj.toJSON()).toStrictEqual({
+    a: { [nodeType]: "1", [nodeKey]: 2, n: 1 },
+    b: { [nodeType]: "1", [nodeKey]: 1, n: 0 },
+  })
+  expect(mobxObservable).toStrictEqual(yjsObj.toJSON())
+
+  // swap back
+  yjsDoc.transact(() => {
+    yjsObj.set("a", convertPlainToYjsValue(n1))
+    yjsObj.set("b", convertPlainToYjsValue(n2))
+  })
+
+  expect(mobxObservable).toStrictEqual({ a: n1, b: n2 })
+
+  expect(yjsObj.toJSON()).toStrictEqual(initial)
+  expect(mobxObservable).toStrictEqual(yjsObj.toJSON())
 })

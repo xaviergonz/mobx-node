@@ -12,6 +12,7 @@ import {
 } from "mobx"
 import { failure } from "../error/failure"
 import { getMobxVersion } from "./getMobxVersion"
+import { isArray } from "../plainTypes/checks"
 
 class PlainArraySet<T> implements Set<T> {
   constructor(private readonly data: T[]) {}
@@ -240,7 +241,7 @@ const setCache = new WeakMap<any[], Set<any>>()
  * @throws When data is not an array.
  */
 export function asSet<T>(data: T[]): Set<T> {
-  if (!(Array.isArray(data) || isObservableArray(data))) {
+  if (!isArray(data)) {
     throw failure("asSet expects an array")
   }
 

@@ -3503,6 +3503,7 @@ __metadata:
     jest: "npm:^29.7.0"
     mobx-v4: "npm:mobx@^4.15.7"
     mobx-v5: "npm:mobx@^5.15.7"
+    nanoid: "npm:^3.3.8"
     rollup-plugin-typescript2: "npm:^0.36.0"
     shx: "npm:^0.3.4"
     ts-jest: "npm:^29.2.5"

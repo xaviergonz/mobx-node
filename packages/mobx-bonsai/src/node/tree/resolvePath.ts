@@ -1,4 +1,4 @@
-import { isObservableArray } from "mobx"
+import { isArray } from "../../plainTypes/checks"
 import { assertIsNode } from "../node"
 
 const unresolved = { resolved: false } as const
@@ -36,7 +36,7 @@ export function resolvePath<T extends object>(
     const p = path[i]
 
     // check just to avoid mobx warnings about trying to access out of bounds index
-    if ((Array.isArray(current) || isObservableArray(current)) && +p >= current.length) {
+    if (isArray(current) && +p >= current.length) {
       return unresolved
     }
 

@@ -35,14 +35,12 @@ export type {
   NodeChange,
   NodeChangeListener,
 } from "./node/node"
+export { getNodeByTypeAndKey, nodeKey, nodeType } from "./node/nodeTypeKey"
+export type { NodeType, NodeKey, UniqueNodeTypeAndKey } from "./node/nodeTypeKey"
 export { onNodeInit } from "./node/onNodeInit"
-export type {
-  SelectNodeByProp,
-  SelectNodeByTypeProp,
-  SelectNodeFn,
-  NodeSelectorCallback,
-} from "./node/utils/nodeSelector"
+export type { NodeSelectorCallback } from "./node/utils/nodeSelector"
 export { volatileProp } from "./node/volatileProp"
+export type { NodeKeyGenerator } from "./node/utils/nodeKeyGenerator"
 
 export type { Primitive } from "./plainTypes/types"
 

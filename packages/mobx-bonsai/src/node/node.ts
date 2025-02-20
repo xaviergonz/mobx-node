@@ -5,18 +5,26 @@ import {
   ObservableSet,
   action,
   createAtom,
-  isObservableArray,
   observable,
   observe,
   set,
 } from "mobx"
-import { isObservablePlainStructure, isPrimitive } from "../plainTypes/checks"
+import { isArray, isObservablePlainStructure, isPrimitive } from "../plainTypes/checks"
 import { failure } from "../error/failure"
 import { invalidateSnapshotTreeToRoot } from "./snapshot/getSnapshot"
 import { buildNodeFullPath } from "./utils/buildNodeFullPath"
 import { getParent } from "./tree/getParent"
 import { Dispose, disposeOnce } from "../utils/disposeOnce"
 import { initNode } from "./onNodeInit"
+import {
+  extractNodeTypeAndKey,
+  getNodeByTypeAndKey,
+  isUniqueNodeTypeAndKey,
+  nodeKey,
+  nodeType,
+  tryRegisterNodeByTypeAndKey,
+} from "./nodeTypeKey"
+import { reconcileData } from "./reconcileData"
 
 type ParentNode = {
   object: object
@@ -61,10 +69,23 @@ function setParentNode(node: object, parentNode: ParentNode | undefined): void {
   nodeData.parentAtom?.reportChanged()
 }
 
+/**
+ * Checks if the given object is a MobX-Bonsai node.
+ *
+ * @param struct The object to check.
+ * @returns `true` if the object is a MobX-Bonsai node, `false` otherwise.
+ */
 export function isNode(struct: object): boolean {
   return nodes.has(struct as object)
 }
 
+/**
+ * Asserts that the given object is a mobx-bonsai node.
+ *
+ * @param node The object to check.
+ * @param argName The name of the argument being checked. This is used in the error message.
+ * @throws If the object is not a mobx-bonsai node.
+ */
 export function assertIsNode(node: object, argName: string): void {
   if (!isNode(node)) {
     throw failure(`${argName} must be a mobx-bonsai node`)
@@ -115,8 +136,27 @@ export function onDeepChange(node: object, listener: NodeChangeListener): Dispos
   })
 }
 
+const frozenProps = new Set<string>([nodeType, nodeKey])
+
+let detachDuplicatedNodes = 0
+
+/**
+ * @internal
+ */
+export const runDetachingDuplicatedNodes = (fn: () => void) => {
+  detachDuplicatedNodes++
+  try {
+    fn()
+  } finally {
+    detachDuplicatedNodes--
+  }
+}
+
 /**
  * Converts a plain/observable object or array into a mobx-bonsai node.
+ * If the data is already a node it is returned as is.
+ * If the data contains a type and key and they match an already existing node
+ * then that node is reconciled with the new data and the existing node is returned.
  *
  * @param struct - The object or array to be converted.
  * @param options - Optional configuration object.
@@ -134,6 +174,19 @@ export const node = action(
     if (isNode(struct)) {
       // nothing to do
       return struct
+    }
+
+    const typeKey = extractNodeTypeAndKey(struct)
+
+    if (isUniqueNodeTypeAndKey(typeKey)) {
+      const existingNode = getNodeByTypeAndKey(typeKey[nodeType], typeKey[nodeKey])
+      if (existingNode) {
+        const result = reconcileData(existingNode, struct, existingNode)
+        if (result !== existingNode) {
+          throw failure("reconciliation should not create a new object")
+        }
+        return existingNode as T
+      }
     }
 
     const observableStruct = (() => {
@@ -156,8 +209,9 @@ export const node = action(
     }
 
     nodes.set(observableStruct, nodeData)
+    tryRegisterNodeByTypeAndKey(observableStruct)
 
-    const attachAsChildNode = (v: any, path: string, set?: (n: object) => void) => {
+    const attachAsChildNode = (v: any, path: string, setIfConverted: (n: object) => void) => {
       if (isPrimitive(v)) {
         return
       }
@@ -167,25 +221,23 @@ export const node = action(
         // ensure it is detached first or at same position
         const parent = getNodeData(n).parent
         if (parent && (parent.object !== observableStruct || parent.path !== path)) {
-          throw failure(
-            `The same node cannot appear twice in the same or different trees,` +
-              ` trying to assign it to ${JSON.stringify(buildNodeFullPath(observableStruct, path))},` +
-              ` but it already exists at ${JSON.stringify(buildNodeFullPath(parent.object, parent.path))}.` +
-              ` If you are moving the node then remove it from the tree first before moving it.` +
-              ` If you are copying the node then use 'cloneNode' to make a clone first.`
-          )
+          if (detachDuplicatedNodes > 0) {
+            set(parent.object, parent.path, undefined)
+          } else {
+            throw failure(
+              `The same node cannot appear twice in the same or different trees,` +
+                ` trying to assign it to ${JSON.stringify(buildNodeFullPath(observableStruct, path))},` +
+                ` but it already exists at ${JSON.stringify(buildNodeFullPath(parent.object, parent.path))}.` +
+                ` If you are moving the node then remove it from the tree first before moving it.` +
+                ` If you are copying the node then use 'cloneNode' to make a clone first.`
+            )
+          }
         }
       } else {
         n = node(v)
         if (n !== v) {
-          // actually needed conversion
-          if (set) {
-            set(n)
-          } else {
-            throw failure(
-              "assertion error: the value needed to be converted to a node but set was not provided"
-            )
-          }
+          // actually needed conversion from plain object, or was a unique node that resolved to an existing node
+          setIfConverted(n)
         }
       }
 
@@ -195,23 +247,17 @@ export const node = action(
     }
 
     const detachAsChildNode = (v: any) => {
-      if (isPrimitive(v)) {
-        return
+      // might not be a node if we convert from observable struct to an existing unique node
+      if (!isPrimitive(v) && isNode(v)) {
+        setParentNode(v, undefined)
+        nodeData.childrenObjects.delete(v)
       }
-
-      if (!isNode(v)) {
-        throw failure("node expected")
-      }
-
-      setParentNode(v, undefined)
-
-      nodeData.childrenObjects.delete(v)
     }
 
-    const isArray = isObservableArray(observableStruct)
+    const isArrayNode = isArray(observableStruct)
 
     // make current children nodes too (init)
-    if (isArray) {
+    if (isArrayNode) {
       const array = observableStruct
       array.forEach((v, i) => {
         attachAsChildNode(v, i.toString(), (n) => {
@@ -228,19 +274,24 @@ export const node = action(
     }
 
     // and observe changes
-    if (isArray) {
+    if (isArrayNode) {
       observe(observableStruct, (change) => {
         switch (change.type) {
           case "update": {
             detachAsChildNode(change.oldValue)
-            attachAsChildNode(change.newValue, "" + change.index)
+            attachAsChildNode(change.newValue, "" + change.index, (n) => {
+              set(change.object, change.index, n)
+            })
             break
           }
 
           case "splice": {
             change.removed.map((v) => detachAsChildNode(v))
             change.added.forEach((value, idx) => {
-              attachAsChildNode(value, "" + (change.index + idx))
+              const addIndex = change.index + idx
+              attachAsChildNode(value, "" + addIndex, (n) => {
+                set(change.object, addIndex, n)
+              })
             })
 
             // update paths
@@ -270,15 +321,25 @@ export const node = action(
           throw failure("symbol keys are not supported on a mobx-bonsai node")
         }
 
+        const propKey = "" + change.name
+
+        if (frozenProps.has(propKey)) {
+          throw failure(`the property ${change.name} cannot be modified`)
+        }
+
         switch (change.type) {
           case "add": {
-            attachAsChildNode(change.newValue, "" + change.name)
+            attachAsChildNode(change.newValue, propKey, (n) => {
+              set(observableStruct, propKey, n)
+            })
             break
           }
 
           case "update": {
             detachAsChildNode(change.oldValue)
-            attachAsChildNode(change.newValue, "" + change.name)
+            attachAsChildNode(change.newValue, propKey, (n) => {
+              set(observableStruct, propKey, n)
+            })
             break
           }
 

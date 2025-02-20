@@ -3,41 +3,29 @@ import { assertIsFunction } from "../../plainTypes/checks"
 import { assertIsNode } from "../node"
 import { getChildrenNodes } from "./getChildrenNodes"
 import { disposeOnce } from "../../utils/disposeOnce"
-import {
-  createNodeSelector,
-  SelectNodeByProp,
-  SelectNodeByTypeProp,
-  SelectNodeFn,
-} from "../utils/nodeSelector"
-
-const alwaysFn = () => true
+import { createNodeSelector, NodeSelector } from "../utils/nodeSelector"
+import { NodeType } from "../nodeTypeKey"
 
 /**
  * Runs a callback everytime a new node is attached to a given node.
  * The callback can optionally return a disposer which will be run when the child is detached.
  *
- * @param target - Function that returns the node whose children should be tracked.
- * @param childNodeSelector - A node selector to run the callback only for certain kind of children.
- *   The selection criteria can be:
- *   - A tuple specifying a property name and its value.
- *   - A string specifying the value of the $type property.
- *   - A predicate function that tests if the given node should be selected.
- *   - `undefined` to run the callback for all children.
- *   Note that using a tuple or string selector is way faster than using a function selector or no selector at all.
- * @param onChildAttached - Callback called when a child is attached to the target node.
- * @param options - Optional options object.
- * @param options.deep - (default: `false`) Whether to run the callback for all children deeply or only for shallow children.
- * @param options.fireForCurrentChildren - (default: `true`) Whether to immediately call the callback for already attached children.
+ * @param target Function that returns the node whose children should be tracked.
+ * @param childNodeType The node type for which it should be invoked, or undefined if it should be invoked for them all.
+ * @param onChildAttached Callback called when a child is attached to the target node.
+ * @param options Optional options object.
+ * @param options.deep (default: `false`) Whether to run the callback for all children deeply or only for shallow children.
+ * @param options.fireForCurrentChildren (default: `true`) Whether to immediately call the callback for already attached children.
  * @returns A disposer function.
  */
 export function onChildAttachedTo<T extends object = object>({
   target,
-  childNodeSelector,
+  childNodeType,
   onChildAttached,
   options,
 }: {
   target: () => object
-  childNodeSelector: SelectNodeByProp | SelectNodeByTypeProp | SelectNodeFn | undefined
+  childNodeType: NodeType | undefined
   onChildAttached: (child: T) => (() => void) | void
   options?: {
     deep?: boolean
@@ -53,8 +41,11 @@ export function onChildAttachedTo<T extends object = object>({
     ...options,
   }
 
-  const nodeSelector = createNodeSelector()
-  nodeSelector.addSelectorWithCallback(childNodeSelector ?? alwaysFn, onChildAttached)
+  let nodeSelector: NodeSelector | undefined
+  if (childNodeType) {
+    nodeSelector = createNodeSelector()
+    nodeSelector?.addSelectorWithCallback(childNodeType, onChildAttached)
+  }
 
   const detachDisposers = new WeakMap<object, () => void>()
 
@@ -127,10 +118,10 @@ export function onChildAttachedTo<T extends object = object>({
         if (!currentChildren.has(n)) {
           currentChildren.add(n)
 
-          const callbacks = nodeSelector.selectNodeCallbacks(n)
+          const callbacks = nodeSelector ? nodeSelector.selectNodeCallbacks(n) : [onChildAttached]
           runInAction(() => {
             for (const callback of callbacks) {
-              const detachAction = callback(n)
+              const detachAction = callback(n as T)
               addDetachDisposer(n, detachAction)
             }
           })

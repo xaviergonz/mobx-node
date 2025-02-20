@@ -1,4 +1,11 @@
-import { isObservableArray, isObservableObject } from "mobx"
+import {
+  isObservableArray,
+  isObservableMap,
+  isObservableObject,
+  isObservableSet,
+  ObservableMap,
+  ObservableSet,
+} from "mobx"
 import { Primitive } from "./types"
 import { failure } from "../error/failure"
 
@@ -15,6 +22,27 @@ export function isPrimitive(v: unknown): v is Primitive {
  */
 export function isPlainObject(v: unknown): v is Record<string, any> {
   return v !== null && typeof v === "object" && v.constructor === Object
+}
+
+/**
+ * @internal
+ */
+export function isArray(v: unknown): v is any[] {
+  return Array.isArray(v) || isObservableArray(v)
+}
+
+/**
+ * @internal
+ */
+export function isMap(val: unknown): val is Map<any, any> | ObservableMap {
+  return val instanceof Map || isObservableMap(val)
+}
+
+/**
+ * @internal
+ */
+export function isSet(val: unknown): val is Set<any> | ObservableSet {
+  return val instanceof Set || isObservableSet(val)
 }
 
 /**

@@ -1,5 +1,6 @@
 import { isObservable, observable, runInAction } from "mobx"
-import { node, isNode } from "../../src"
+import { node, isNode, getSnapshot } from "../../src"
+import { nodeKey, nodeType } from "../../src/node/nodeTypeKey"
 
 it("should convert a plain object into a node", () => {
   const obj = { a: 1, b: { c: 2 } }
@@ -62,4 +63,124 @@ it("should convert a plain object assigned as a child into a node (changing the 
   expect(isObservable(parent.child!)).toBe(true)
   expect(isNode(parent.child!)).toBe(true)
   expect(parent.child).not.toBe(plainChild)
+})
+
+it("should return the same node when the same type and key are used", () => {
+  const obj1 = { [nodeType]: "type", [nodeKey]: "key" }
+  const nObj1 = node(obj1)
+  expect(node(obj1)).toBe(nObj1)
+
+  // different key
+  const obj2 = { [nodeType]: "type2", [nodeKey]: "key2" }
+  const nObj2 = node(obj2)
+  expect(node({ [nodeType]: "type2", [nodeKey]: "key3" })).not.toBe(nObj2)
+
+  // different type
+  const obj3 = { [nodeType]: "type3", [nodeKey]: "key" }
+  const nObj3 = node({ [nodeType]: "type4", [nodeKey]: "key" })
+  expect(node(obj3)).not.toBe(nObj3)
+})
+
+it("unique node reconciliation", () => {
+  const nObj1 = node({
+    [nodeType]: "t",
+    [nodeKey]: "key",
+    a: 1,
+    b: { c: 1 },
+    arr: [{ d: 1 }],
+    arr2: [{ d: 1 }, { d: 1 }],
+    uni: {
+      [nodeType]: "t2",
+      [nodeKey]: "key",
+      a: 1,
+    },
+  })
+  const arr = nObj1.arr
+  const uni1 = nObj1.uni
+
+  const obj2 = {
+    [nodeType]: "t",
+    [nodeKey]: "key",
+    a: 2,
+    b: { c: 2 },
+    d: 2, // new prop
+    arr: [
+      { d: 2 },
+      { d: 3 }, // new item
+    ],
+    arr2: [
+      // one less item
+      { d: 2 },
+    ],
+    uni: {
+      [nodeType]: "t2",
+      [nodeKey]: "key",
+      a: 2,
+    },
+  }
+  const nObj2 = node(obj2)
+
+  expect(nObj2).toBe(nObj1)
+  expect(nObj2.arr).toBe(arr)
+  expect(nObj2.arr[0]).toBe(arr[0])
+  expect(nObj2.uni).toBe(uni1)
+
+  expect(getSnapshot(nObj2)).toStrictEqual(obj2)
+})
+
+it("swapping a node in an array should be ok if we reconciliate", () => {
+  const nObj1 = node([
+    {
+      [nodeType]: "a",
+      [nodeKey]: "1",
+      a: 1,
+    },
+    {
+      [nodeType]: "a",
+      [nodeKey]: "2",
+      a: 2,
+    },
+  ])
+  const n1 = nObj1[0]
+  const n2 = nObj1[1]
+
+  const nObj2 = node([
+    {
+      [nodeType]: "a",
+      [nodeKey]: "2",
+      a: 3,
+    },
+    {
+      [nodeType]: "a",
+      [nodeKey]: "1",
+      a: 4,
+    },
+  ])
+
+  expect(nObj2).not.toBe(nObj1)
+  expect(nObj2[0]).toBe(n2)
+  expect(nObj2[1]).toBe(n1)
+  expect(n2.a).toBe(3)
+  expect(n1.a).toBe(4)
+})
+
+it("adding a plain object to an object should be a node", () => {
+  const nObj = node<{ child?: { a: number } }>({})
+  runInAction(() => {
+    nObj.child = { a: 1 }
+  })
+  expect(isNode(nObj.child!)).toBe(true)
+})
+
+it("adding a plain object to an array should be a node", () => {
+  const nArr = node<{ a: number }[]>([])
+  runInAction(() => {
+    nArr.push({ a: 1 })
+  })
+  expect(isNode(nArr[0])).toBe(true)
+
+  runInAction(() => {
+    nArr[1] = { a: 1 }
+  })
+  expect(isNode(nArr[1])).toBe(true)
 })
