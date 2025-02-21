@@ -20,8 +20,24 @@ export function isPrimitive(v: unknown): v is Primitive {
 /**
  * @internal
  */
+export function isObject(value: unknown): value is Record<PropertyKey, unknown> {
+  return value !== null && typeof value === "object"
+}
+
+/**
+ * @internal
+ */
+export function assertIsObject(value: unknown, argName: string): asserts value is object {
+  if (!isObject(value)) {
+    throw failure(`${argName} must be an object`)
+  }
+}
+
+/**
+ * @internal
+ */
 export function isPlainObject(v: unknown): v is Record<string, any> {
-  return v !== null && typeof v === "object" && v.constructor === Object
+  return isObject(v) && v.constructor === Object
 }
 
 /**

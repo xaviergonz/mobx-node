@@ -20,6 +20,7 @@ export { resolvePath } from "./node/tree/resolvePath"
 export type { RootPath } from "./node/tree/RootPath"
 export { walkTree, WalkTreeMode } from "./node/tree/walkTree"
 
+export { applySnapshot } from "./node/snapshot/applySnapshot"
 export { getSnapshot } from "./node/snapshot/getSnapshot"
 export { onSnapshot } from "./node/snapshot/onSnapshot"
 

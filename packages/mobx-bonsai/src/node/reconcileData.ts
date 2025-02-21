@@ -4,7 +4,7 @@ import { isNode } from "./node"
 import { getParentPath } from "./tree/getParentPath"
 import { isChildOfParent } from "./tree/isChildOfParent"
 import { failure } from "../error/failure"
-import { extractNodeTypeAndKey, isUniqueNodeTypeAndKey } from "./nodeTypeKey"
+import { extractNodeTypeAndKey, isUniqueNodeTypeAndKey, nodeKey, nodeType } from "./nodeTypeKey"
 
 function detachIfNeeded(newValue: any, oldValue: any, reconciliationRoot: object) {
   // edge case for when we are swapping nodes around the tree
@@ -83,6 +83,16 @@ export function reconcileData<T>(oldValue: any, newValue: T, reconciliationRoot:
     // both objects
     const oldObject = oldValue as any
     const newObject = newValue as any
+
+    // nodes of a different type or key shouldn't be reconciled
+    const newNodeTypeAndKey = extractNodeTypeAndKey(newObject)
+    const oldNodeTypeAndKey = extractNodeTypeAndKey(oldObject)
+    if (
+      newNodeTypeAndKey[nodeType] !== oldNodeTypeAndKey[nodeType] ||
+      newNodeTypeAndKey[nodeKey] !== oldNodeTypeAndKey[nodeKey]
+    ) {
+      return newValue
+    }
 
     // remove excess props
     const oldObjectKeys = Object.keys(oldObject)
