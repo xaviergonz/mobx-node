@@ -88,8 +88,10 @@ export function volatileProp<TTarget extends object, TValue>(
     action((target: TTarget): void => {
       assertIsObservablePlainStructure(target, "target")
 
-      const valueAdmin = getOrCreateValueAdmin(target)
-      valueAdmin.valueBox.set(valueAdmin.initialValue)
+      const valueAdmin = volatileValueAdmins.get(target)
+      if (valueAdmin) {
+        valueAdmin.valueBox.set(valueAdmin.initialValue)
+      }
     }),
   ]
 }
