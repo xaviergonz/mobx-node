@@ -6,19 +6,22 @@ export type NodeType = string | number
 export const nodeKey = "$$key"
 export type NodeKey = string | number
 
-interface NodeTypeAndKey {
+interface NodeWithMaybeTypeAndKey {
   readonly [nodeType]: NodeType | undefined
   readonly [nodeKey]: NodeKey | undefined
 }
 
-export interface UniqueNodeTypeAndKey {
+export interface NodeWithType {
   readonly [nodeType]: NodeType
+}
+
+export interface NodeWithTypeAndKey extends NodeWithType {
   readonly [nodeKey]: NodeKey
 }
 
 const nodeByTypeAndKey = new Map<NodeType, Map<NodeKey, WeakRef<object>>>()
 
-const finalizationRegistry = new FinalizationRegistry((typeKey: UniqueNodeTypeAndKey) => {
+const finalizationRegistry = new FinalizationRegistry((typeKey: NodeWithTypeAndKey) => {
   const typeMap = nodeByTypeAndKey.get(typeKey[nodeType])
   if (!typeMap) {
     // already gone
@@ -89,7 +92,7 @@ export function tryRegisterNodeByTypeAndKey(node: object): boolean {
 /**
  * @internal
  */
-export function extractNodeTypeAndKey(node: object): NodeTypeAndKey {
+export function extractNodeTypeAndKey(node: object): NodeWithMaybeTypeAndKey {
   const type = (node as any)[nodeType]
   const key = (node as any)[nodeKey]
 
@@ -100,8 +103,8 @@ export function extractNodeTypeAndKey(node: object): NodeTypeAndKey {
  * @internal
  */
 export function isUniqueNodeTypeAndKey(
-  nodeTypeKey: NodeTypeAndKey
-): nodeTypeKey is UniqueNodeTypeAndKey {
+  nodeTypeKey: NodeWithMaybeTypeAndKey
+): nodeTypeKey is NodeWithTypeAndKey {
   const typeKey = extractNodeTypeAndKey(nodeTypeKey)
   return typeKey[nodeType] !== undefined && typeKey[nodeKey] !== undefined
 }

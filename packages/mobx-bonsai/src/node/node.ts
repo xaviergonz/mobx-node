@@ -5,6 +5,7 @@ import {
   ObservableSet,
   action,
   createAtom,
+  intercept,
   observable,
   observe,
   set,
@@ -195,8 +196,8 @@ export const node = action(
       }
 
       return Array.isArray(struct)
-        ? observable.array(struct, { deep: true })
-        : observable.object(struct, undefined, { deep: true })
+        ? observable.array(struct, { deep: false })
+        : observable.object(struct, undefined, { deep: false })
     })()
 
     const nodeData: NodeData = {
@@ -275,35 +276,53 @@ export const node = action(
 
     // and observe changes
     if (isArrayNode) {
-      observe(observableStruct, (change) => {
+      // we don't use change.object because it is bugged in some old versions of mobx
+      const array = observableStruct
+
+      intercept(array, (change) => {
         switch (change.type) {
           case "update": {
-            detachAsChildNode(change.oldValue)
+            const oldValue = array[change.index]
+            detachAsChildNode(oldValue)
             attachAsChildNode(change.newValue, "" + change.index, (n) => {
-              set(change.object, change.index, n)
+              change.newValue = n
             })
             break
           }
 
           case "splice": {
-            change.removed.map((v) => detachAsChildNode(v))
-            change.added.forEach((value, idx) => {
-              const addIndex = change.index + idx
-              attachAsChildNode(value, "" + addIndex, (n) => {
-                set(change.object, addIndex, n)
-              })
-            })
+            for (let i = 0; i < change.removedCount; i++) {
+              const removedValue = array[change.index + i]
+              detachAsChildNode(removedValue)
+            }
 
-            // update paths
-            for (let i = change.index + change.addedCount; i < change.object.length; i++) {
-              const value = change.object[i]
-              if (isPrimitive(value)) {
-                return
+            for (let i = 0; i < change.added.length; i++) {
+              attachAsChildNode(change.added[i], "" + (change.index + i), (n) => {
+                change.added[i] = n
+              })
+            }
+
+            // we might also need to update the parent of the next indexes
+            const oldNextIndex = change.index + change.removedCount
+            const newNextIndex = change.index + change.added.length
+
+            if (oldNextIndex !== newNextIndex) {
+              for (let i = oldNextIndex, j = newNextIndex; i < array.length; i++, j++) {
+                const value = array[i]
+                if (isPrimitive(value)) {
+                  continue
+                }
+                if (!isNode(value)) {
+                  throw failure("node expected")
+                }
+                setParentNode(
+                  array[i], // value
+                  {
+                    object: array,
+                    path: "" + j,
+                  } // parentPath
+                )
               }
-              if (!isNode(value)) {
-                throw failure("node expected")
-              }
-              setParentNode(value, { object: observableStruct, path: "" + i })
             }
             break
           }
@@ -313,10 +332,17 @@ export const node = action(
         }
 
         invalidateSnapshotTreeToRoot(observableStruct)
-        emitChangeToRoot(observableStruct, change)
+
+        return change
+      })
+
+      observe(array, (change) => {
+        emitChangeToRoot(array, change)
       })
     } else {
-      observe(observableStruct, (change) => {
+      const object = observableStruct
+
+      intercept(object, (change) => {
         if (typeof change.name === "symbol") {
           throw failure("symbol keys are not supported on a mobx-bonsai node")
         }
@@ -330,21 +356,26 @@ export const node = action(
         switch (change.type) {
           case "add": {
             attachAsChildNode(change.newValue, propKey, (n) => {
-              set(observableStruct, propKey, n)
+              change.newValue = n
             })
             break
           }
 
           case "update": {
-            detachAsChildNode(change.oldValue)
-            attachAsChildNode(change.newValue, propKey, (n) => {
-              set(observableStruct, propKey, n)
-            })
+            const oldValue = (object as any)[propKey]
+            const newValue = change.newValue
+            if (newValue !== oldValue) {
+              detachAsChildNode(oldValue)
+              attachAsChildNode(change.newValue, propKey, (n) => {
+                change.newValue = n
+              })
+            }
             break
           }
 
           case "remove": {
-            detachAsChildNode(change.oldValue)
+            const oldValue = (object as any)[propKey]
+            detachAsChildNode(oldValue)
             break
           }
 
@@ -353,6 +384,11 @@ export const node = action(
         }
 
         invalidateSnapshotTreeToRoot(observableStruct)
+
+        return change
+      })
+
+      observe(observableStruct, (change) => {
         emitChangeToRoot(observableStruct, change)
       })
     }

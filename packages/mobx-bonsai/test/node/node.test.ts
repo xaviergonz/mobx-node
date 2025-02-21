@@ -1,4 +1,4 @@
-import { isObservable, observable, runInAction } from "mobx"
+import { configure, isObservable, observable, reaction, runInAction } from "mobx"
 import { node, isNode, getSnapshot } from "../../src"
 import { nodeKey, nodeType } from "../../src/node/nodeTypeKey"
 
@@ -183,4 +183,48 @@ it("adding a plain object to an array should be a node", () => {
     nArr[1] = { a: 1 }
   })
   expect(isNode(nArr[1])).toBe(true)
+})
+
+it("setting a plain value of an existing unique node should result in a single reaction", () => {
+  configure({ enforceActions: "never" })
+  try {
+    const nodeData1 = {
+      [nodeType]: "a2",
+      [nodeKey]: "1",
+      a: 1,
+    }
+    const nObj1 = node(nodeData1)
+
+    const nodeData2 = {
+      [nodeType]: "a2",
+      [nodeKey]: "2",
+      a: 2,
+    }
+    node(nodeData2)
+
+    const nParent = node<{ nObj?: typeof nObj1 }>({})
+
+    const events: any[] = []
+    const disposer = reaction(
+      () => nParent.nObj,
+      (v) => {
+        events.push([v?.a, isNode(v!)])
+      }
+    )
+
+    nParent.nObj = nodeData1
+
+    expect(events.length).toBe(1)
+    events.length = 0
+
+    nParent.nObj = nodeData2
+
+    console.log(events)
+    expect(events.length).toBe(1)
+    events.length = 0
+
+    disposer()
+  } finally {
+    configure({ enforceActions: "always" })
+  }
 })

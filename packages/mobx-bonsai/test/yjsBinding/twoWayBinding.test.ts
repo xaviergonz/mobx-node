@@ -1,7 +1,7 @@
 import * as Y from "yjs"
 import { createArrayTestbed, createObjectTestbed } from "./testbed"
 import { runInAction } from "mobx"
-import { convertPlainToYjsValue, nodeKey, nodeType, UniqueNodeTypeAndKey } from "../../src"
+import { convertPlainToYjsValue, nodeKey, nodeType, NodeWithTypeAndKey } from "../../src"
 
 test("object two-way binding", () => {
   const { mobxObservable, yjsObject } = createObjectTestbed<{
@@ -126,7 +126,7 @@ test("array with nested object two-way binding", () => {
 })
 
 test("object with nested unique node object that gets swapped from one prop to another and then back", () => {
-  type Obj = UniqueNodeTypeAndKey & { n: number }
+  type Obj = NodeWithTypeAndKey & { n: number }
   type TestBed = { a?: Obj; b?: Obj }
 
   const initial: TestBed = {

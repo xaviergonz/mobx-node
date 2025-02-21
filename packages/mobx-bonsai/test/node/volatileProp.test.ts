@@ -1,5 +1,5 @@
 import { observable, reaction } from "mobx"
-import { node, nodeKey, nodeType, UniqueNodeTypeAndKey, volatileProp } from "../../src"
+import { node, nodeKey, nodeType, NodeWithTypeAndKey, volatileProp } from "../../src"
 
 describe("unkeyed volatileprop", () => {
   it("volatileProp get/set", () => {
@@ -39,7 +39,7 @@ describe("unkeyed volatileprop", () => {
 it("should share volatile state across objects with the same key even if one is unset in the middle", () => {
   const [getVolatile, setVolatile] = volatileProp(() => 0)
 
-  let obj1: UniqueNodeTypeAndKey | undefined = node({ [nodeType]: "t", [nodeKey]: 1 })
+  let obj1: NodeWithTypeAndKey | undefined = node({ [nodeType]: "t", [nodeKey]: 1 })
 
   expect(getVolatile(obj1)).toBe(0)
   setVolatile(obj1, 42)

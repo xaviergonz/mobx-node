@@ -1,6 +1,6 @@
 import { runInAction, toJS } from "mobx"
 import { createObjectTestbed } from "./testbed"
-import { nodeKey, nodeType, UniqueNodeTypeAndKey } from "../../src"
+import { nodeKey, nodeType, NodeWithTypeAndKey } from "../../src"
 
 test("reassign an already added object to another part of the tree should fail", () => {
   const { mobxObservable } = createObjectTestbed<{
@@ -82,7 +82,7 @@ test("swapping unique nodes in an array should be ok if we detach one first", ()
     (
       | ({
           numberProp: number
-        } & UniqueNodeTypeAndKey)
+        } & NodeWithTypeAndKey)
       | undefined
     )[]
   >([

@@ -39,7 +39,7 @@ it("should notify listener on object property changes", () => {
       1,
     ],
     "addedCount": 1,
-    "debugObjectName": "ObservableObject@1.arr",
+    "debugObjectName": "ObservableArray@3",
     "index": 0,
     "object": [
       1,
