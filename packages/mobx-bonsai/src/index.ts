@@ -45,7 +45,7 @@ export type {
 } from "./node/nodeTypeKey"
 export { onNodeInit } from "./node/onNodeInit"
 export type { NodeSelectorCallback } from "./node/utils/nodeSelector"
-export { volatileProp } from "./node/volatileProp"
+export { volatileProp, resetVolatileProps } from "./node/volatileProp"
 export type { NodeKeyGenerator } from "./node/utils/nodeKeyGenerator"
 
 export type { Primitive } from "./plainTypes/types"
