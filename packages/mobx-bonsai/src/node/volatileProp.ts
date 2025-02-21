@@ -1,7 +1,5 @@
 import { action, IObservableValue, observable } from "mobx"
 import { assertIsObservablePlainStructure } from "../plainTypes/checks"
-import { onChildAttachedTo } from "./tree/onChildAttachedTo"
-import { Dispose } from "../utils/disposeOnce"
 
 type VolatileValueAdmin<TValue> = {
   valueBox: IObservableValue<TValue>
@@ -10,7 +8,24 @@ type VolatileValueAdmin<TValue> = {
 
 type GetOrCreateValueAdmin<TTarget, TValue> = (target: TTarget) => VolatileValueAdmin<TValue>
 
-const globalVolatileValueAdmins = new Set<WeakMap<object, VolatileValueAdmin<unknown>>>()
+/**
+ * Represents a volatile property on an object using a tuple of functions.
+ *
+ * This type defines a readonly tuple with three functions:
+ * - A getter that retrieves the current value of the volatile property from the target object.
+ * - A setter that updates the volatile property with a new value on the target object.
+ * - A reset function that restores the volatile property on the target object to its default state.
+ *
+ * @template TTarget - The type of the object that holds the volatile property.
+ * @template TValue - The type of the volatile property's value.
+ */
+export type VolatileProp<TTarget extends object, TValue> = readonly [
+  getter: (target: TTarget) => TValue,
+  setter: (target: TTarget, value: TValue) => void,
+  reset: (target: TTarget) => void,
+]
+
+const globalVolatileProps = new Set<VolatileProp<any, any>>()
 
 /**
  * Creates a volatile property accessor on a target object.
@@ -46,13 +61,8 @@ const globalVolatileValueAdmins = new Set<WeakMap<object, VolatileValueAdmin<unk
  */
 export function volatileProp<TTarget extends object, TValue>(
   defaultValueGen: () => TValue
-): [
-  getter: (target: TTarget) => TValue,
-  setter: (target: TTarget, value: TValue) => void,
-  reset: (target: TTarget) => void,
-] {
+): VolatileProp<TTarget, TValue> {
   const volatileValueAdmins = new WeakMap<TTarget, VolatileValueAdmin<TValue>>()
-  globalVolatileValueAdmins.add(volatileValueAdmins)
 
   const getOrCreateValueAdmin: GetOrCreateValueAdmin<TTarget, TValue> = (target) => {
     let valueAdmin = volatileValueAdmins.get(target)
@@ -70,7 +80,7 @@ export function volatileProp<TTarget extends object, TValue>(
     return valueAdmin
   }
 
-  return [
+  const vProp: VolatileProp<TTarget, TValue> = [
     (target: TTarget): TValue => {
       assertIsObservablePlainStructure(target, "target")
 
@@ -93,53 +103,9 @@ export function volatileProp<TTarget extends object, TValue>(
         valueAdmin.valueBox.set(valueAdmin.initialValue)
       }
     }),
-  ]
-}
+  ] as const
 
-/**
- * Resets all volatile props of a given node to their default values.
- *
- * @param node The node whose volatile values should be reset.
- */
-export const resetVolatileProps = action((node: object): void => {
-  for (const volatileValueAdmins of globalVolatileValueAdmins) {
-    const valueAdmin = volatileValueAdmins.get(node)
-    if (valueAdmin) {
-      valueAdmin.valueBox.set(valueAdmin.initialValue)
-    }
-  }
-})
+  globalVolatileProps.add(vProp)
 
-/**
- * Attaches a cleanup handler that resets volatile properties of child nodes upon detachment from the object.
- * This function should be usually used over your root store.
- *
- * An example of why you might want this:
- * - Say you have a root store that contains a list of items, and each item has an 'isSelected'
- * volatile property.
- * - You remove an item from the list, which has the volatile property 'isSelected' set.
- * - Later, you undo the removal of the item, and the item is inserted back into the list.
- * - Without any cleanup handler, the 'isSelected' property will still be set, and the item will be
- * selected back automatically.
- * - With this cleanup handler, the 'isSelected' property will be reset when the item is removed from the list.
- *
- * @param target Function that returns the root node object to which child nodes are attached.
- * @returns A function that can be called to dispose of the attached cleanup handlers.
- */
-export function resetVolatilePropsOnDetachFrom(target: () => object): Dispose {
-  const dispose = onChildAttachedTo({
-    target,
-    childNodeType: undefined,
-    onChildAttached: (child) => {
-      return () => {
-        resetVolatileProps(child)
-      }
-    },
-    deep: true,
-    fireForCurrentChildren: true,
-  })
-
-  return () => {
-    dispose(false)
-  }
+  return vProp
 }

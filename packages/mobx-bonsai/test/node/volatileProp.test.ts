@@ -1,13 +1,5 @@
-import { observable, reaction, runInAction } from "mobx"
-import {
-  node,
-  nodeKey,
-  nodeType,
-  NodeWithTypeAndKey,
-  volatileProp,
-  resetVolatileProps,
-  resetVolatilePropsOnDetachFrom,
-} from "../../src"
+import { observable, reaction } from "mobx"
+import { node, nodeKey, nodeType, NodeWithTypeAndKey, volatileProp } from "../../src"
 
 it("volatileProp get/set", () => {
   const [getVolatile, setVolatile] = volatileProp(() => 100)
@@ -55,21 +47,6 @@ test("resets a single volatile prop to its default value", () => {
   expect(getVol(testObj)).toBe(0)
 })
 
-test("resets multiple volatile props on the same node", () => {
-  const testObj = observable({})
-  const [getNum, setNum] = volatileProp(() => 10)
-  const [getStr, setStr] = volatileProp(() => "default")
-
-  setNum(testObj, 42)
-  setStr(testObj, "changed")
-  expect(getNum(testObj)).toBe(42)
-  expect(getStr(testObj)).toBe("changed")
-
-  resetVolatileProps(testObj)
-  expect(getNum(testObj)).toBe(10)
-  expect(getStr(testObj)).toBe("default")
-})
-
 it("should share volatile state across objects with the same key even if one is unset in the middle", () => {
   const [getVolatile, setVolatile] = volatileProp(() => 0)
 
@@ -85,23 +62,4 @@ it("should share volatile state across objects with the same key even if one is 
   // the state is kept since we did not give time for the finalization registry to kick
   const obj2 = node({ [nodeType]: "t", [nodeKey]: 1 })
   expect(getVolatile(obj2)).toBe(42)
-})
-
-it("resetVolatilePropsOnDetachFrom should reset volatile property when the child is detached", () => {
-  const [getEphemeral, setEphemeral] = volatileProp(() => 0)
-  const child = node({ [nodeType]: "child", [nodeKey]: 1, value: "child" })
-
-  setEphemeral(child, 42)
-
-  const parent = node({ children: [child] })
-
-  const dispose = resetVolatilePropsOnDetachFrom(() => parent)
-
-  runInAction(() => {
-    parent.children = []
-  })
-
-  expect(getEphemeral(child)).toBe(0)
-
-  dispose()
 })
