@@ -6,7 +6,7 @@ export type NodeType = string | number
 export const nodeKey = "$$key"
 export type NodeKey = string | number
 
-interface NodeWithMaybeTypeAndKey {
+interface NodeWithPartialTypeAndKey {
   readonly [nodeType]: NodeType | undefined
   readonly [nodeKey]: NodeKey | undefined
 }
@@ -16,6 +16,7 @@ export interface NodeWithType {
 }
 
 export interface NodeWithTypeAndKey extends NodeWithType {
+  readonly [nodeType]: NodeType
   readonly [nodeKey]: NodeKey
 }
 
@@ -92,7 +93,7 @@ export function tryRegisterNodeByTypeAndKey(node: object): boolean {
 /**
  * @internal
  */
-export function extractNodeTypeAndKey(node: object): NodeWithMaybeTypeAndKey {
+export function extractNodeTypeAndKey(node: object): NodeWithPartialTypeAndKey {
   const type = (node as any)[nodeType]
   const key = (node as any)[nodeKey]
 
@@ -103,7 +104,7 @@ export function extractNodeTypeAndKey(node: object): NodeWithMaybeTypeAndKey {
  * @internal
  */
 export function isUniqueNodeTypeAndKey(
-  nodeTypeKey: NodeWithMaybeTypeAndKey
+  nodeTypeKey: NodeWithPartialTypeAndKey
 ): nodeTypeKey is NodeWithTypeAndKey {
   const typeKey = extractNodeTypeAndKey(nodeTypeKey)
   return typeKey[nodeType] !== undefined && typeKey[nodeKey] !== undefined

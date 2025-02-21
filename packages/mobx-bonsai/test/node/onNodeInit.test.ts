@@ -4,11 +4,20 @@ import { node, nodeType, onDeepChange, onNodeInit } from "../../src"
 test("should call children onNodeInit callbacks before parent", () => {
   const callOrder: string[] = []
 
-  const dispose1 = onNodeInit("parent", (node: any) => {
+  interface ChildNode {
+    [nodeType]: "child"
+  }
+
+  interface ParentNode {
+    [nodeType]: "parent"
+    children?: ChildNode[]
+  }
+
+  const dispose1 = onNodeInit("parent", (node: ParentNode) => {
     callOrder.push(node[nodeType])
   })
 
-  const dispose2 = onNodeInit("child", (node: any) => {
+  const dispose2 = onNodeInit("child", (node: ChildNode) => {
     callOrder.push(node[nodeType])
   })
 

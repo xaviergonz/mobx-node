@@ -1,7 +1,7 @@
 import { action } from "mobx"
 import { Dispose } from "../utils/disposeOnce"
 import { NodeSelectorCallback, createNodeSelector } from "./utils/nodeSelector"
-import { NodeType } from "./nodeTypeKey"
+import { NodeType, NodeWithType } from "./nodeTypeKey"
 
 const initNodeNodeSelector = createNodeSelector()
 
@@ -19,7 +19,7 @@ export function initNode<T extends object>(node: T): void {
  * @param callback The initialization callback to be invoked when the node is created.
  * @returns A dispose function that unregisters the callback.
  */
-export function onNodeInit<T extends object>(
+export function onNodeInit<T extends NodeWithType>(
   nodeType: NodeType,
   callback: NodeSelectorCallback<T>
 ): Dispose {
