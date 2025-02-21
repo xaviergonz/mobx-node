@@ -11,7 +11,7 @@ import { NodeType } from "../nodeTypeKey"
  * The callback can optionally return a disposer which will be run when the child is detached.
  *
  * @param target Function that returns the node whose children should be tracked.
- * @param childNodeType The node type for which it should be invoked, or undefined if it should be invoked for them all.
+ * @param childNodeType The node type (or array of types) for which it should be invoked, or undefined if it should be invoked for them all.
  * @param onChildAttached Callback called when a child is attached to the target node.
  * @param deep (default: `false`) Whether to run the callback for all children deeply or only for shallow children.
  * @param fireForCurrentChildren (default: `true`) Whether to immediately call the callback for already attached children.
@@ -25,7 +25,7 @@ export function onChildAttachedTo<T extends object = object>({
   fireForCurrentChildren,
 }: {
   target: () => object
-  childNodeType: NodeType | undefined
+  childNodeType: NodeType | readonly NodeType[] | undefined
   onChildAttached: (child: T) => (() => void) | void
   deep?: boolean
   fireForCurrentChildren?: boolean
@@ -39,7 +39,16 @@ export function onChildAttachedTo<T extends object = object>({
   let nodeSelector: NodeSelector | undefined
   if (childNodeType) {
     nodeSelector = createNodeSelector()
-    nodeSelector?.addSelectorWithCallback(childNodeType, onChildAttached)
+
+    if (Array.isArray(childNodeType)) {
+      const types = childNodeType as readonly NodeType[]
+      for (const type of types) {
+        nodeSelector.addSelectorWithCallback(type, onChildAttached)
+      }
+    } else {
+      const type = childNodeType as NodeType
+      nodeSelector.addSelectorWithCallback(type, onChildAttached)
+    }
   }
 
   const detachDisposers = new WeakMap<object, () => void>()
