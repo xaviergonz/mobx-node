@@ -13,33 +13,28 @@ import { NodeType } from "../nodeTypeKey"
  * @param target Function that returns the node whose children should be tracked.
  * @param childNodeType The node type for which it should be invoked, or undefined if it should be invoked for them all.
  * @param onChildAttached Callback called when a child is attached to the target node.
- * @param options Optional options object.
- * @param options.deep (default: `false`) Whether to run the callback for all children deeply or only for shallow children.
- * @param options.fireForCurrentChildren (default: `true`) Whether to immediately call the callback for already attached children.
- * @returns A disposer function.
+ * @param deep (default: `false`) Whether to run the callback for all children deeply or only for shallow children.
+ * @param fireForCurrentChildren (default: `true`) Whether to immediately call the callback for already attached children.
+ * @returns A disposer function. Pass `true` to run the detach disposers for children that had the attach event fired.
  */
 export function onChildAttachedTo<T extends object = object>({
   target,
   childNodeType,
   onChildAttached,
-  options,
+  deep,
+  fireForCurrentChildren,
 }: {
   target: () => object
   childNodeType: NodeType | undefined
   onChildAttached: (child: T) => (() => void) | void
-  options?: {
-    deep?: boolean
-    fireForCurrentChildren?: boolean
-  }
+  deep?: boolean
+  fireForCurrentChildren?: boolean
 }): (runDetachDisposers: boolean) => void {
   assertIsFunction(target, "target")
   assertIsFunction(onChildAttached, "onChildAttached")
 
-  const opts = {
-    deep: false,
-    fireForCurrentChildren: true,
-    ...options,
-  }
+  deep ??= false
+  fireForCurrentChildren ??= true
 
   let nodeSelector: NodeSelector | undefined
   if (childNodeType) {
@@ -63,7 +58,7 @@ export function onChildAttachedTo<T extends object = object>({
     }
   }
 
-  const getChildrenObjectOpts = { deep: opts.deep }
+  const getChildrenObjectOpts = { deep }
   const getCurrentChildren = () => {
     const t = target()
     assertIsNode(t, "target()")
@@ -82,7 +77,7 @@ export function onChildAttachedTo<T extends object = object>({
     return set
   }
 
-  const currentChildren = opts.fireForCurrentChildren ? new Set<object>() : getCurrentChildren()
+  const currentChildren = fireForCurrentChildren ? new Set<object>() : getCurrentChildren()
 
   const disposeReaction = reaction(
     () => getCurrentChildren(),

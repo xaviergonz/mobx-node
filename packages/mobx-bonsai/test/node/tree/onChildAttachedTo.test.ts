@@ -12,7 +12,7 @@ it("should fire immediately for current children when fireForCurrentChildren is 
     onChildAttached: (child) => {
       fired.push(child)
     },
-    options: { fireForCurrentChildren: true },
+    fireForCurrentChildren: true,
   })
   // Expect immediate callback invocation for existing child.
   expect(fired).toStrictEqual([testNode.child1])
@@ -32,7 +32,7 @@ it("should fire when a new child is added", () => {
     onChildAttached: (child) => {
       fired.push(child)
     },
-    options: { fireForCurrentChildren: false },
+    fireForCurrentChildren: false,
   })
 
   // Initially, no child since fireForCurrentChildren is false.
@@ -85,7 +85,7 @@ it("should stop further notifications after disposer is called", () => {
     onChildAttached: () => {
       callCount++
     },
-    options: { fireForCurrentChildren: true },
+    fireForCurrentChildren: true,
   })
   // Initial call count.
   expect(callCount).toBe(1)
@@ -118,7 +118,7 @@ it("should run pending detach disposers when disposer is called with true", () =
         detachCalls.push(child)
       }
     },
-    options: { fireForCurrentChildren: true },
+    fireForCurrentChildren: true,
   })
 
   // At this point, detach disposers for current children are pending.
@@ -138,7 +138,8 @@ it("should fire for deep children when deep is set to true", () => {
     onChildAttached: (child) => {
       fired.push(child)
     },
-    options: { fireForCurrentChildren: true, deep: true },
+    fireForCurrentChildren: true,
+    deep: true,
   })
   // Expect the callback to run immediately for both shallow and nested children.
   expect(fired).toStrictEqual([testNode.child1, testNode.child1.nested, testNode.child2])
@@ -156,7 +157,7 @@ it("fires callback only for matching node using a selector", () => {
     target: () => testNode,
     childNodeType: "match",
     onChildAttached: onChildAttached1,
-    options: { fireForCurrentChildren: false },
+    fireForCurrentChildren: false,
   })
 
   const onChildAttached2 = jest.fn()
@@ -164,7 +165,7 @@ it("fires callback only for matching node using a selector", () => {
     target: () => testNode,
     childNodeType: "other",
     onChildAttached: onChildAttached2,
-    options: { fireForCurrentChildren: false },
+    fireForCurrentChildren: false,
   })
 
   runInAction(() => {

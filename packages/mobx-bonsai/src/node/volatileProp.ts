@@ -1,5 +1,7 @@
 import { action, IObservableValue, observable } from "mobx"
 import { assertIsObservablePlainStructure } from "../plainTypes/checks"
+import { onChildAttachedTo } from "./tree/onChildAttachedTo"
+import { Dispose } from "../utils/disposeOnce"
 
 type VolatileValueAdmin<TValue> = {
   valueBox: IObservableValue<TValue>
@@ -105,3 +107,37 @@ export const resetVolatileProps = action((node: object): void => {
     }
   }
 })
+
+/**
+ * Attaches a cleanup handler that resets volatile properties of child nodes upon detachment from the object.
+ * This function should be usually used over your root store.
+ *
+ * An example of why you might want this:
+ * - Say you have a root store that contains a list of items, and each item has an 'isSelected'
+ * volatile property.
+ * - You remove an item from the list, which has the volatile property 'isSelected' set.
+ * - Later, you undo the removal of the item, and the item is inserted back into the list.
+ * - Without any cleanup handler, the 'isSelected' property will still be set, and the item will be
+ * selected back automatically.
+ * - With this cleanup handler, the 'isSelected' property will be reset when the item is removed from the list.
+ *
+ * @param target Function that returns the root node object to which child nodes are attached.
+ * @returns A function that can be called to dispose of the attached cleanup handlers.
+ */
+export function resetVolatilePropsOnDetachFrom(target: () => object): Dispose {
+  const dispose = onChildAttachedTo({
+    target,
+    childNodeType: undefined,
+    onChildAttached: (child) => {
+      return () => {
+        resetVolatileProps(child)
+      }
+    },
+    deep: true,
+    fireForCurrentChildren: true,
+  })
+
+  return () => {
+    dispose(false)
+  }
+}

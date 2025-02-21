@@ -1,4 +1,4 @@
-import { observable, reaction } from "mobx"
+import { observable, reaction, runInAction } from "mobx"
 import {
   node,
   nodeKey,
@@ -6,41 +6,40 @@ import {
   NodeWithTypeAndKey,
   volatileProp,
   resetVolatileProps,
+  resetVolatilePropsOnDetachFrom,
 } from "../../src"
 
-describe("unkeyed volatileprop", () => {
-  it("volatileProp get/set", () => {
-    const [getVolatile, setVolatile] = volatileProp(() => 100)
+it("volatileProp get/set", () => {
+  const [getVolatile, setVolatile] = volatileProp(() => 100)
 
-    const target1 = observable({})
-    expect(getVolatile(target1)).toBe(100)
-    setVolatile(target1, 200)
-    expect(getVolatile(target1)).toBe(200)
+  const target1 = observable({})
+  expect(getVolatile(target1)).toBe(100)
+  setVolatile(target1, 200)
+  expect(getVolatile(target1)).toBe(200)
 
-    const target2 = observable({})
-    expect(getVolatile(target2)).toBe(100)
-    setVolatile(target2, 200)
-    expect(getVolatile(target2)).toBe(200)
-  })
+  const target2 = observable({})
+  expect(getVolatile(target2)).toBe(100)
+  setVolatile(target2, 200)
+  expect(getVolatile(target2)).toBe(200)
+})
 
-  it("should trigger mobx reactivity when volatile value is updated", () => {
-    const [getVolatile, setVolatile] = volatileProp(() => 0)
-    const target = observable({})
-    const observedValues: number[] = []
+it("should trigger mobx reactivity when volatile value is updated", () => {
+  const [getVolatile, setVolatile] = volatileProp(() => 0)
+  const target = observable({})
+  const observedValues: number[] = []
 
-    const disposer = reaction(
-      () => getVolatile(target),
-      (val) => {
-        observedValues.push(val)
-      },
-      { fireImmediately: true }
-    )
+  const disposer = reaction(
+    () => getVolatile(target),
+    (val) => {
+      observedValues.push(val)
+    },
+    { fireImmediately: true }
+  )
 
-    expect(observedValues).toEqual([0])
-    setVolatile(target, 5)
-    expect(observedValues).toEqual([0, 5])
-    disposer()
-  })
+  expect(observedValues).toEqual([0])
+  setVolatile(target, 5)
+  expect(observedValues).toEqual([0, 5])
+  disposer()
 })
 
 test("resets a single volatile prop to its default value", () => {
@@ -86,4 +85,23 @@ it("should share volatile state across objects with the same key even if one is 
   // the state is kept since we did not give time for the finalization registry to kick
   const obj2 = node({ [nodeType]: "t", [nodeKey]: 1 })
   expect(getVolatile(obj2)).toBe(42)
+})
+
+it("resetVolatilePropsOnDetachFrom should reset volatile property when the child is detached", () => {
+  const [getEphemeral, setEphemeral] = volatileProp(() => 0)
+  const child = node({ [nodeType]: "child", [nodeKey]: 1, value: "child" })
+
+  setEphemeral(child, 42)
+
+  const parent = node({ children: [child] })
+
+  const dispose = resetVolatilePropsOnDetachFrom(() => parent)
+
+  runInAction(() => {
+    parent.children = []
+  })
+
+  expect(getEphemeral(child)).toBe(0)
+
+  dispose()
 })
