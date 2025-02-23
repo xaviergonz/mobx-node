@@ -16,13 +16,10 @@ import { invalidateSnapshotTreeToRoot } from "./snapshot/getSnapshot"
 import { buildNodeFullPath } from "./utils/buildNodeFullPath"
 import { getParent } from "./tree/getParent"
 import { Dispose, disposeOnce } from "../utils/disposeOnce"
-import { initNode } from "./onNodeInit"
 import {
-  extractNodeTypeAndKey,
-  getNodeByTypeAndKey,
-  isUniqueNodeTypeAndKey,
-  nodeKey,
-  nodeType,
+  getNodeTypeAndKey,
+  nodeTypeKey,
+  NodeWithAnyType,
   tryRegisterNodeByTypeAndKey,
 } from "./nodeTypeKey"
 import { reconcileData } from "./reconcileData"
@@ -137,8 +134,6 @@ export function onDeepChange(node: object, listener: NodeChangeListener): Dispos
   })
 }
 
-const frozenProps = new Set<string>([nodeType, nodeKey])
-
 let detachDuplicatedNodes = 0
 
 /**
@@ -177,10 +172,11 @@ export const node = action(
       return struct
     }
 
-    const typeKey = extractNodeTypeAndKey(struct)
+    const { type, key } = getNodeTypeAndKey(struct)
+    const keyProp = type?.key
 
-    if (isUniqueNodeTypeAndKey(typeKey)) {
-      const existingNode = getNodeByTypeAndKey(typeKey[nodeType], typeKey[nodeKey])
+    if (type !== undefined && key !== undefined) {
+      const existingNode = type.findByKey(key)
       if (existingNode) {
         const result = reconcileData(existingNode, struct, existingNode)
         if (result !== existingNode) {
@@ -349,7 +345,7 @@ export const node = action(
 
         const propKey = "" + change.name
 
-        if (frozenProps.has(propKey)) {
+        if (propKey === nodeTypeKey || (keyProp !== undefined && propKey === keyProp)) {
           throw failure(`the property ${change.name} cannot be modified`)
         }
 
@@ -396,7 +392,7 @@ export const node = action(
     // init node if needed
     const skipInit = options?.skipInit ?? false
     if (!skipInit) {
-      initNode(observableStruct)
+      type?._initNode(observableStruct as NodeWithAnyType)
     }
 
     return observableStruct as unknown as T

@@ -1,6 +1,5 @@
 import { runInAction } from "mobx"
-import { clone, node } from "../../src"
-import { nodeKey, nodeType } from "../../src/node/nodeTypeKey"
+import { clone, node, nodeType, TNode } from "../../src"
 
 it("should create a clone that is deeply equal but not the same reference", () => {
   const original = node({ a: 1, b: { c: 2 } })
@@ -30,18 +29,26 @@ it("modifying the original should not affect the clone", () => {
 })
 
 it("should generate new node keys", () => {
-  const original = node({
-    [nodeType]: "type1",
-    [nodeKey]: "key",
+  type TType3 = TNode<"type3", { id: string }>
+  using tType3 = nodeType<TType3>("type3").with({ key: "id" })
+
+  type TType2 = TNode<"type2", { id: string; c: number }>
+  using tType2 = nodeType<TType2>("type2").with({ key: "id" })
+
+  type TType1 = TNode<"type1", { id: string; a: number; b: TType2; arr: TType3[] }>
+  using tType1 = nodeType<TType1>("type1").with({ key: "id" })
+
+  const original = tType1({
+    id: "key",
     a: 1,
-    b: { [nodeType]: "type2", [nodeKey]: "key", c: 2 },
-    arr: [{ [nodeType]: "type3", [nodeKey]: "key" }],
+    b: tType2({ id: "key", c: 2 }),
+    arr: [tType3({ id: "key" })],
   })
   const cloned = clone(original)
 
   expect(cloned).not.toBe(original)
 
-  expect(cloned[nodeKey]).not.toBe(original[nodeKey])
-  expect(cloned.b[nodeKey]).not.toBe(original.b[nodeKey])
-  expect(cloned.arr[0][nodeKey]).not.toBe(original.arr[0][nodeKey])
+  expect(cloned.id).not.toBe(original.id)
+  expect(cloned.b.id).not.toBe(original.b.id)
+  expect(cloned.arr[0].id).not.toBe(original.arr[0].id)
 })

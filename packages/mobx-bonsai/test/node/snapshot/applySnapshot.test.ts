@@ -1,4 +1,4 @@
-import { applySnapshot, node, nodeKey, nodeType, NodeWithTypeAndKey } from "../../../src"
+import { applySnapshot, node, nodeTypeKey, nodeType, TNode } from "../../../src"
 
 test("applies snapshot to an array node", () => {
   const n = node([1, 2, 3])
@@ -14,52 +14,59 @@ test("throws error if snapshot is array but node is not", () => {
 })
 
 test("applies snapshot to an observable object with matching type and key", () => {
-  const n = node({
-    [nodeType]: "A",
-    [nodeKey]: "1",
+  type TA = TNode<"A", { id: string; value: number; arr?: number[]; obj?: { a: number } }>
+  using tA = nodeType<TA>("A").with({ key: "id" })
+
+  const n = tA({
+    id: "1",
     value: 10,
   })
 
-  const snapshot = {
-    [nodeType]: "A",
-    [nodeKey]: "1",
+  const snapshot = tA.snapshot({
+    id: "1",
     value: 20,
     arr: [1, 2, 3],
     obj: { a: 1 },
-  }
+  })
   applySnapshot(n, snapshot)
   expect(n).toStrictEqual(snapshot)
 })
 
 test("throws error if snapshot changes the type property", () => {
-  const n = node({
-    [nodeType]: "A",
-    [nodeKey]: "1",
+  type TA = TNode<"A", { id: string; value: number }>
+  using tA = nodeType<TA>("A").with({ key: "id" })
+
+  type TB = TNode<"B", { id: string; value: number }>
+  using tB = nodeType<TB>("B").with({ key: "id" })
+
+  const n = tA({
+    id: "1",
     value: 10,
   })
-  const snapshot = {
-    [nodeType]: "B", // changed type
-    [nodeKey]: "1",
+  const snapshot = tB.snapshot({
+    // changed type
+    id: "1",
     value: 20,
-  }
-  expect(() => applySnapshot(n, snapshot)).toThrow(
-    `applySnapshot does not allow changes to the ${nodeType} property of the node the snapshot is being applied to`
+  })
+  expect(() => applySnapshot(n, snapshot as any)).toThrow(
+    `applySnapshot does not allow changes to the '${nodeTypeKey}' property of the node the snapshot is being applied to`
   )
 })
 
 test("throws error if snapshot changes the key property", () => {
-  const n = node({
-    [nodeType]: "A",
-    [nodeKey]: "1",
+  type TA = TNode<"A", { id: string; value: number }>
+  using tA = nodeType<TA>("A").with({ key: "id" })
+
+  const n = tA({
+    id: "1",
     value: 10,
   })
-  const snapshot = {
-    [nodeType]: "A",
-    [nodeKey]: "2", // changed key
+  const snapshot = tA.snapshot({
+    id: "2", // changed key
     value: 20,
-  }
+  })
   expect(() => applySnapshot(n, snapshot)).toThrow(
-    `applySnapshot does not allow changes to the ${nodeKey} property of the node the snapshot is being applied to`
+    `applySnapshot does not allow changes to the 'id' property of the node the snapshot is being applied to`
   )
 })
 
@@ -76,12 +83,14 @@ test("throws error if snapshot is a Set", () => {
 })
 
 test("can swap unique objects around", () => {
-  type Obj = NodeWithTypeAndKey & { n: number }
-  type TestBed = { a?: Obj; b?: Obj }
+  type T1 = TNode<"1", { id: number; n: number }>
+  type TestBed = { a?: T1; b?: T1 }
+
+  using t1 = nodeType<T1>("1").with({ key: "id" })
 
   const initial: TestBed = {
-    a: { [nodeType]: "1", [nodeKey]: 1, n: 0 },
-    b: { [nodeType]: "1", [nodeKey]: 2, n: 1 },
+    a: t1.snapshot({ id: 1, n: 0 }),
+    b: t1.snapshot({ id: 2, n: 1 }),
   } as const
 
   const n = node(initial)

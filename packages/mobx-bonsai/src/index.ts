@@ -14,6 +14,10 @@ export { isChildOfParent } from "./node/tree/isChildOfParent"
 export { isParentOfChild } from "./node/tree/isParentOfChild"
 export { isRoot } from "./node/tree/isRoot"
 export { onChildAttachedTo } from "./node/tree/onChildAttachedTo"
+export type {
+  OnChildAttachedToDisposer,
+  OnChildAttachedToParams,
+} from "./node/tree/onChildAttachedTo"
 export type { ParentPath } from "./node/tree/ParentPath"
 export type { Path, PathElement, WritablePath } from "./node/tree/pathTypes"
 export { resolvePath } from "./node/tree/resolvePath"
@@ -36,15 +40,21 @@ export type {
   NodeChange,
   NodeChangeListener,
 } from "./node/node"
-export { getNodeByTypeAndKey, nodeKey, nodeType } from "./node/nodeTypeKey"
-export type {
-  NodeType,
-  NodeKey,
-  NodeWithType,
-  NodeWithTypeAndKey,
+export {
+  nodeTypeKey,
+  getNodeTypeAndKey,
+  findNodeTypeById,
+  nodeType,
+  getNodeTypeId,
 } from "./node/nodeTypeKey"
-export { onNodeInit } from "./node/onNodeInit"
-export type { NodeSelectorCallback } from "./node/utils/nodeSelector"
+export type {
+  NodeTypeValue,
+  NodeKeyValue,
+  NodeWithAnyType,
+  TNode,
+  NodeType,
+  AnyNodeType,
+} from "./node/nodeTypeKey"
 export { volatileProp } from "./node/volatileProp"
 export type { VolatileProp } from "./node/volatileProp"
 export type { NodeKeyGenerator } from "./node/utils/nodeKeyGenerator"

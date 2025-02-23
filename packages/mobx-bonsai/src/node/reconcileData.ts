@@ -4,15 +4,20 @@ import { isNode } from "./node"
 import { getParentPath } from "./tree/getParentPath"
 import { isChildOfParent } from "./tree/isChildOfParent"
 import { failure } from "../error/failure"
-import { extractNodeTypeAndKey, isUniqueNodeTypeAndKey, nodeKey, nodeType } from "./nodeTypeKey"
+import { getNodeTypeAndKey } from "./nodeTypeKey"
 
 function detachIfNeeded(newValue: any, oldValue: any, reconciliationRoot: object) {
   // edge case for when we are swapping nodes around the tree
 
+  const isUniqueNodeTypeAndKey = () => {
+    const { type, key } = getNodeTypeAndKey(newValue)
+    return type !== undefined && key !== undefined
+  }
+
   if (
     newValue === oldValue || // already where it should be
     !isNode(newValue) || // not a node
-    !isUniqueNodeTypeAndKey(extractNodeTypeAndKey(newValue)) || // not a unique node
+    !isUniqueNodeTypeAndKey() || // not a unique node
     !isChildOfParent(newValue, reconciliationRoot) // not a child of the tree we are reconciling
   ) {
     return
@@ -85,11 +90,11 @@ export function reconcileData<T>(oldValue: any, newValue: T, reconciliationRoot:
     const newObject = newValue as any
 
     // nodes of a different type or key shouldn't be reconciled
-    const newNodeTypeAndKey = extractNodeTypeAndKey(newObject)
-    const oldNodeTypeAndKey = extractNodeTypeAndKey(oldObject)
+    const newNodeTypeAndKey = getNodeTypeAndKey(newObject)
+    const oldNodeTypeAndKey = getNodeTypeAndKey(oldObject)
     if (
-      newNodeTypeAndKey[nodeType] !== oldNodeTypeAndKey[nodeType] ||
-      newNodeTypeAndKey[nodeKey] !== oldNodeTypeAndKey[nodeKey]
+      newNodeTypeAndKey.type !== oldNodeTypeAndKey.type ||
+      newNodeTypeAndKey.key !== oldNodeTypeAndKey.key
     ) {
       return newValue
     }

@@ -2,7 +2,7 @@ import { action, isObservableObject } from "mobx"
 import { failure } from "../../error/failure"
 import { assertIsObject, isArray, isMap, isPlainObject, isSet } from "../../plainTypes/checks"
 import { assertIsNode } from "../node"
-import { extractNodeTypeAndKey, nodeKey, nodeType } from "../nodeTypeKey"
+import { getNodeTypeAndKey, nodeTypeKey } from "../nodeTypeKey"
 import { reconcileData } from "../reconcileData"
 
 /**
@@ -40,16 +40,16 @@ export const applySnapshot = action(<T extends object>(node: T, snapshot: T): vo
     }
 
     // if present, type and key changes are not allowed in first level reconciliation
-    const typeKey = extractNodeTypeAndKey(node)
-    const newTypeKey = extractNodeTypeAndKey(snapshot)
-    if (typeKey[nodeType] !== newTypeKey[nodeType]) {
+    const typeKey = getNodeTypeAndKey(node)
+    const newTypeKey = getNodeTypeAndKey(snapshot)
+    if (typeKey.type !== newTypeKey.type) {
       throw failure(
-        `applySnapshot does not allow changes to the ${nodeType} property of the node the snapshot is being applied to`
+        `applySnapshot does not allow changes to the '${nodeTypeKey}' property of the node the snapshot is being applied to`
       )
     }
-    if (typeKey[nodeKey] !== newTypeKey[nodeKey]) {
+    if (typeKey.key !== newTypeKey.key) {
       throw failure(
-        `applySnapshot does not allow changes to the ${nodeKey} property of the node the snapshot is being applied to`
+        `applySnapshot does not allow changes to the '${typeKey.type?.key}' property of the node the snapshot is being applied to`
       )
     }
 

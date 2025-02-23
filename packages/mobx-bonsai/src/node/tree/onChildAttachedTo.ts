@@ -3,8 +3,28 @@ import { assertIsFunction } from "../../plainTypes/checks"
 import { assertIsNode } from "../node"
 import { getChildrenNodes } from "./getChildrenNodes"
 import { disposeOnce } from "../../utils/disposeOnce"
-import { createNodeSelector, NodeSelector } from "../utils/nodeSelector"
-import { NodeType } from "../nodeTypeKey"
+import { getNodeTypeAndKey, NodeForNodeType, NodeType } from "../nodeTypeKey"
+
+export type OnChildAttachedToDisposer = (runDetachDisposers: boolean) => void
+export type OnChildAttachedToParams<TChildNodeType, TChild> = {
+  target: () => object
+  childNodeType: TChildNodeType
+  onChildAttached: (child: TChild) => (() => void) | void
+  deep?: boolean
+  fireForCurrentChildren?: boolean
+}
+
+export function onChildAttachedTo<const NT extends readonly NodeType<any, any>[]>(
+  params: OnChildAttachedToParams<NT, NodeForNodeType<NT[number]>>
+): OnChildAttachedToDisposer
+
+export function onChildAttachedTo<const NT extends NodeType<any, any>>(
+  params: OnChildAttachedToParams<NT, NodeForNodeType<NT>>
+): OnChildAttachedToDisposer
+
+export function onChildAttachedTo<T extends object = object>(
+  params: OnChildAttachedToParams<undefined, T>
+): OnChildAttachedToDisposer
 
 /**
  * Runs a callback everytime a new node is attached to a given node.
@@ -23,33 +43,23 @@ export function onChildAttachedTo<T extends object = object>({
   onChildAttached,
   deep,
   fireForCurrentChildren,
-}: {
-  target: () => object
-  childNodeType: NodeType | readonly NodeType[] | undefined
-  onChildAttached: (child: T) => (() => void) | void
-  deep?: boolean
-  fireForCurrentChildren?: boolean
-}): (runDetachDisposers: boolean) => void {
+}: OnChildAttachedToParams<
+  NodeType<any, any> | readonly NodeType<any, any>[] | undefined,
+  T
+>): OnChildAttachedToDisposer {
   assertIsFunction(target, "target")
   assertIsFunction(onChildAttached, "onChildAttached")
 
   deep ??= false
   fireForCurrentChildren ??= true
 
-  let nodeSelector: NodeSelector | undefined
-  if (childNodeType) {
-    nodeSelector = createNodeSelector()
-
-    if (Array.isArray(childNodeType)) {
-      const types = childNodeType as readonly NodeType[]
-      for (const type of types) {
-        nodeSelector.addSelectorWithCallback(type, onChildAttached)
-      }
-    } else {
-      const type = childNodeType as NodeType
-      nodeSelector.addSelectorWithCallback(type, onChildAttached)
+  const convertToChildNodeTypeSet = () => {
+    if (!childNodeType) {
+      return undefined
     }
+    return new Set(Array.isArray(childNodeType) ? childNodeType : [childNodeType])
   }
+  const childNodeTypeSet = convertToChildNodeTypeSet()
 
   const detachDisposers = new WeakMap<object, () => void>()
 
@@ -122,10 +132,10 @@ export function onChildAttachedTo<T extends object = object>({
         if (!currentChildren.has(n)) {
           currentChildren.add(n)
 
-          const callbacks = nodeSelector ? nodeSelector.selectNodeCallbacks(n) : [onChildAttached]
           runInAction(() => {
-            for (const callback of callbacks) {
-              const detachAction = callback(n as T)
+            const { type } = getNodeTypeAndKey(n)
+            if (!childNodeTypeSet || childNodeTypeSet.has(type)) {
+              const detachAction = onChildAttached(n as T)
               addDetachDisposer(n, detachAction)
             }
           })

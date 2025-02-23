@@ -1,10 +1,10 @@
 import { nanoid } from "nanoid/non-secure"
-import { NodeKey } from "../nodeTypeKey"
+import { NodeKeyValue } from "../nodeTypeKey"
 
 /**
  * Node key generator function.
  */
-export type NodeKeyGenerator = () => NodeKey
+export type NodeKeyGenerator = () => NodeKeyValue
 
 let localId = 0
 const localBaseId = nanoid()

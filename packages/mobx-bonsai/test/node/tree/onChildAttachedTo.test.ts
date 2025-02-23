@@ -1,5 +1,5 @@
 import { runInAction } from "mobx"
-import { node, nodeType, onChildAttachedTo } from "../../../src"
+import { node, onChildAttachedTo, nodeType, TNode } from "../../../src"
 
 it("should fire immediately for current children when fireForCurrentChildren is true", () => {
   const testNode = node({
@@ -147,15 +147,21 @@ it("should fire for deep children when deep is set to true", () => {
 })
 
 it("fires callback only for matching node using a selector", () => {
+  type TMatch = TNode<"match", { id: number }>
+  using tMatch = nodeType<TMatch>("match").with({ key: "id" })
+
+  type TOther = TNode<"other", { id: number }>
+  using tOther = nodeType<TOther>("other").with({ key: "id" })
+
   const testNode = node<{
-    child1?: { [nodeType]: string; id: number }
-    child2?: { [nodeType]: string; id: number }
+    child1?: TMatch | TOther
+    child2?: TMatch | TOther
   }>({}) // create an empty node
 
   const onChildAttached1 = jest.fn()
   const disposer1 = onChildAttachedTo({
     target: () => testNode,
-    childNodeType: "match",
+    childNodeType: tMatch,
     onChildAttached: onChildAttached1,
     fireForCurrentChildren: false,
   })
@@ -163,14 +169,14 @@ it("fires callback only for matching node using a selector", () => {
   const onChildAttached2 = jest.fn()
   const disposer2 = onChildAttachedTo({
     target: () => testNode,
-    childNodeType: "other",
+    childNodeType: tOther,
     onChildAttached: onChildAttached2,
     fireForCurrentChildren: false,
   })
 
   runInAction(() => {
-    testNode.child1 = { [nodeType]: "match", id: 1 }
-    testNode.child2 = { [nodeType]: "other", id: 2 }
+    testNode.child1 = tMatch.snapshot({ id: 1 })
+    testNode.child2 = tOther.snapshot({ id: 2 })
   })
 
   // Expect callback only for the matching children.

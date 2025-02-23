@@ -1,7 +1,7 @@
 import { failure } from "../error/failure"
 import { isPlainObject, isPrimitive } from "../plainTypes/checks"
 import { node } from "./node"
-import { nodeKey } from "./nodeTypeKey"
+import { getNodeTypeAndKey } from "./nodeTypeKey"
 import { getSnapshot } from "./snapshot/getSnapshot"
 import { NodeKeyGenerator, defaultNodeKeyGenerator } from "./utils/nodeKeyGenerator"
 
@@ -15,9 +15,12 @@ function deepSubstituteNodeKeys<T>(value: T, nodeKeyGenerator: NodeKeyGenerator)
   }
 
   if (isPlainObject(value)) {
+    const typeAndKey = getNodeTypeAndKey(value)
+    const keyProp = typeAndKey.type?.key
+
     const newValue: any = {}
     for (const key in value) {
-      if (key === nodeKey) {
+      if (key === keyProp) {
         newValue[key] = nodeKeyGenerator()
       } else {
         newValue[key] = deepSubstituteNodeKeys(value[key], nodeKeyGenerator)

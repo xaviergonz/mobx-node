@@ -1,29 +1,26 @@
 import { runInAction } from "mobx"
-import { node, nodeType, onDeepChange, onNodeInit } from "../../src"
+import { node, onDeepChange, nodeType, TNode, getNodeTypeId, NodeTypeValue } from "../../src"
 
 test("should call children onNodeInit callbacks before parent", () => {
-  const callOrder: string[] = []
+  const callOrder: NodeTypeValue[] = []
 
-  interface ChildNode {
-    [nodeType]: "child"
-  }
+  type ChildNode = TNode<"child", {}>
 
-  interface ParentNode {
-    [nodeType]: "parent"
-    children?: ChildNode[]
-  }
+  type ParentNode = TNode<"parent", { children?: ChildNode[] }>
 
-  const dispose1 = onNodeInit("parent", (node: ParentNode) => {
-    callOrder.push(node[nodeType])
+  using tParent = nodeType<ParentNode>("parent")
+
+  const dispose1 = tParent.onInit((node) => {
+    callOrder.push(getNodeTypeId(node)!)
   })
 
-  const dispose2 = onNodeInit("child", (node: ChildNode) => {
-    callOrder.push(node[nodeType])
+  using tChild = nodeType<ChildNode>("child")
+  const dispose2 = tChild.onInit((node) => {
+    callOrder.push(getNodeTypeId(node)!)
   })
 
-  node({
-    [nodeType]: "parent",
-    children: [{ [nodeType]: "child" }],
+  tParent({
+    children: [tChild({})],
   })
 
   expect(callOrder).toStrictEqual(["child", "parent"])
@@ -35,16 +32,16 @@ test("should call children onNodeInit callbacks before parent", () => {
 test("should pick up property changes during initialization for deep observation", () => {
   const events: unknown[] = []
 
-  const dispose = onNodeInit("1", (node: any) => {
+  type T1 = TNode<"1", { value: number }>
+  using t1 = nodeType<T1>("1")
+
+  const dispose = t1.onInit((node) => {
     events.push("init")
     node.value++
   })
 
   const root = node<{
-    child?: {
-      [nodeType]: string
-      value: number
-    }
+    child?: T1
   }>({})
 
   expect(events).toStrictEqual([])
@@ -54,10 +51,9 @@ test("should pick up property changes during initialization for deep observation
   })
 
   runInAction(() => {
-    root.child = {
-      [nodeType]: "1",
+    root.child = t1({
       value: 1,
-    }
+    })
   })
 
   expect(events).toMatchInlineSnapshot(`
@@ -89,22 +85,25 @@ test("should pick up property changes during initialization for deep observation
 })
 
 it("should use onNodeInit for migrations", () => {
-  interface OldTodo {
-    [nodeType]: "todo"
-    text: string
-  }
+  type OldTodo = TNode<
+    "todo",
+    {
+      text: string
+    }
+  >
 
   interface Todo extends OldTodo {
     done: boolean
   }
 
-  const dispose = onNodeInit("todo", (todo: OldTodo | Todo) => {
+  using tTodo = nodeType<Todo>("todo")
+  const dispose = tTodo.onInit((todo: OldTodo | Todo) => {
     if (!("done" in todo)) {
       ;(todo as Todo).done = false
     }
   })
 
-  const todo = node<OldTodo>({ [nodeType]: "todo", text: "Buy milk" }) as Todo
+  const todo = tTodo({ text: "Buy milk" } as any)
 
   expect(todo.done).toBe(false)
 

@@ -1,5 +1,5 @@
 import { observable, reaction } from "mobx"
-import { node, nodeKey, nodeType, NodeWithTypeAndKey, volatileProp } from "../../src"
+import { nodeType, TNode, volatileProp } from "../../src"
 
 it("volatileProp get/set", () => {
   const [getVolatile, setVolatile] = volatileProp(() => 100)
@@ -50,7 +50,9 @@ test("resets a single volatile prop to its default value", () => {
 it("should share volatile state across objects with the same key even if one is unset in the middle", () => {
   const [getVolatile, setVolatile] = volatileProp(() => 0)
 
-  let obj1: NodeWithTypeAndKey | undefined = node({ [nodeType]: "t", [nodeKey]: 1 })
+  type TT = TNode<"t", { id: number }>
+  using tT = nodeType<TT>("t").with({ key: "id" })
+  let obj1: TT | undefined = tT({ id: 1 })
 
   expect(getVolatile(obj1)).toBe(0)
   setVolatile(obj1, 42)
@@ -60,6 +62,6 @@ it("should share volatile state across objects with the same key even if one is 
   obj1 = undefined
 
   // the state is kept since we did not give time for the finalization registry to kick
-  const obj2 = node({ [nodeType]: "t", [nodeKey]: 1 })
+  const obj2 = tT({ id: 1 })
   expect(getVolatile(obj2)).toBe(42)
 })

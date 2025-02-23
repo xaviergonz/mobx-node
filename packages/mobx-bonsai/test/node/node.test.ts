@@ -1,6 +1,5 @@
 import { configure, isObservable, observable, reaction, runInAction } from "mobx"
-import { node, isNode, getSnapshot } from "../../src"
-import { nodeKey, nodeType } from "../../src/node/nodeTypeKey"
+import { node, isNode, getSnapshot, nodeTypeKey, nodeType, TNode } from "../../src"
 
 it("should convert a plain object into a node", () => {
   const obj = { a: 1, b: { c: 2 } }
@@ -66,41 +65,72 @@ it("should convert a plain object assigned as a child into a node (changing the 
 })
 
 it("should return the same node when the same type and key are used", () => {
-  const obj1 = { [nodeType]: "type", [nodeKey]: "key" }
-  const nObj1 = node(obj1)
-  expect(node(obj1)).toBe(nObj1)
+  type TType = TNode<"type", { id: string }>
+  using tType = nodeType<TType>("type").with({ key: "id" })
+
+  type TType2 = TNode<"type2", { id: string }>
+  using tType2 = nodeType<TType2>("type2").with({ key: "id" })
+
+  type TType3 = TNode<"type3", { id: string }>
+  using tType3 = nodeType<TType3>("type3").with({ key: "id" })
+
+  type TType4 = TNode<"type4", { id: string }>
+  using tType4 = nodeType<TType4>("type4").with({ key: "id" })
+
+  const nObj1 = tType({ id: "key" })
+  expect(node(getSnapshot(nObj1))).toBe(nObj1)
 
   // different key
-  const obj2 = { [nodeType]: "type2", [nodeKey]: "key2" }
-  const nObj2 = node(obj2)
-  expect(node({ [nodeType]: "type2", [nodeKey]: "key3" })).not.toBe(nObj2)
+  const nObj2 = tType2({ id: "key2" })
+  expect(tType2({ id: "key3" })).not.toBe(nObj2)
 
   // different type
-  const obj3 = { [nodeType]: "type3", [nodeKey]: "key" }
-  const nObj3 = node({ [nodeType]: "type4", [nodeKey]: "key" })
-  expect(node(obj3)).not.toBe(nObj3)
+  const nObj3 = tType3({ id: "key" })
+  const nObj4 = tType4({ id: "key" })
+  expect(nObj3).not.toBe(nObj4)
 })
 
 it("unique node reconciliation", () => {
-  const nObj1 = node({
-    [nodeType]: "t",
-    [nodeKey]: "key",
+  type T2 = TNode<
+    "t2",
+    {
+      id: string
+      a: number
+    }
+  >
+
+  type T = TNode<
+    "t",
+    {
+      id: string
+      a: number
+      b: { c: number }
+      arr: { d: number }[]
+      arr2: { d: number }[]
+      uni: T2
+    }
+  >
+
+  using tT = nodeType<T>("t").with({ key: "id" })
+  using tT2 = nodeType<T2>("t2").with({ key: "id" })
+
+  const nObj1 = tT({
+    id: "key",
     a: 1,
     b: { c: 1 },
     arr: [{ d: 1 }],
     arr2: [{ d: 1 }, { d: 1 }],
-    uni: {
-      [nodeType]: "t2",
-      [nodeKey]: "key",
+    uni: tT2({
+      id: "key",
       a: 1,
-    },
+    }),
   })
   const arr = nObj1.arr
   const uni1 = nObj1.uni
 
   const obj2 = {
-    [nodeType]: "t",
-    [nodeKey]: "key",
+    [nodeTypeKey]: tT.typeId,
+    id: "key",
     a: 2,
     b: { c: 2 },
     d: 2, // new prop
@@ -112,11 +142,10 @@ it("unique node reconciliation", () => {
       // one less item
       { d: 2 },
     ],
-    uni: {
-      [nodeType]: "t2",
-      [nodeKey]: "key",
+    uni: tT2.snapshot({
+      id: "key",
       a: 2,
-    },
+    }),
   }
   const nObj2 = node(obj2)
 
@@ -129,32 +158,31 @@ it("unique node reconciliation", () => {
 })
 
 it("swapping a node in an array should be ok if we reconciliate", () => {
+  type TA = TNode<"a", { id: string; a: number }>
+  using tA = nodeType<TA>("a").with({ key: "id" })
+
   const nObj1 = node([
-    {
-      [nodeType]: "a",
-      [nodeKey]: "1",
+    tA.snapshot({
+      id: "1",
       a: 1,
-    },
-    {
-      [nodeType]: "a",
-      [nodeKey]: "2",
+    }),
+    tA.snapshot({
+      id: "2",
       a: 2,
-    },
+    }),
   ])
   const n1 = nObj1[0]
   const n2 = nObj1[1]
 
   const nObj2 = node([
-    {
-      [nodeType]: "a",
-      [nodeKey]: "2",
+    tA.snapshot({
+      id: "2",
       a: 3,
-    },
-    {
-      [nodeType]: "a",
-      [nodeKey]: "1",
+    }),
+    tA.snapshot({
+      id: "1",
       a: 4,
-    },
+    }),
   ])
 
   expect(nObj2).not.toBe(nObj1)
@@ -188,19 +216,20 @@ it("adding a plain object to an array should be a node", () => {
 it("setting a plain value of an existing unique node should result in a single reaction", () => {
   configure({ enforceActions: "never" })
   try {
-    const nodeData1 = {
-      [nodeType]: "a2",
-      [nodeKey]: "1",
-      a: 1,
-    }
-    const nObj1 = node(nodeData1)
+    type TA2 = TNode<"a2", { id: string; a: number }>
+    using tA2 = nodeType<TA2>("a2").with({ key: "id" })
 
-    const nodeData2 = {
-      [nodeType]: "a2",
-      [nodeKey]: "2",
+    const nodeData1 = tA2.snapshot({
+      id: "1",
+      a: 1,
+    })
+    const nObj1 = tA2(nodeData1)
+
+    const nodeData2 = tA2.snapshot({
+      id: "2",
       a: 2,
-    }
-    node(nodeData2)
+    })
+    tA2(nodeData2)
 
     const nParent = node<{ nObj?: typeof nObj1 }>({})
 
@@ -219,7 +248,6 @@ it("setting a plain value of an existing unique node should result in a single r
 
     nParent.nObj = nodeData2
 
-    console.log(events)
     expect(events.length).toBe(1)
     events.length = 0
 

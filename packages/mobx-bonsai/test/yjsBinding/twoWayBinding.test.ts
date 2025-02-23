@@ -1,7 +1,7 @@
 import * as Y from "yjs"
 import { createArrayTestbed, createObjectTestbed } from "./testbed"
 import { runInAction } from "mobx"
-import { convertPlainToYjsValue, nodeKey, nodeType, NodeWithTypeAndKey } from "../../src"
+import { convertPlainToYjsValue, nodeType, TNode } from "../../src"
 
 test("object two-way binding", () => {
   const { mobxObservable, yjsObject } = createObjectTestbed<{
@@ -126,12 +126,14 @@ test("array with nested object two-way binding", () => {
 })
 
 test("object with nested unique node object that gets swapped from one prop to another and then back", () => {
-  type Obj = NodeWithTypeAndKey & { n: number }
-  type TestBed = { a?: Obj; b?: Obj }
+  type TestBed = { a?: T1; b?: T1 }
+
+  type T1 = TNode<"1", { n: number; id: number }>
+  using t1 = nodeType<T1>("1").with({ key: "id" })
 
   const initial: TestBed = {
-    a: { [nodeType]: "1", [nodeKey]: 1, n: 0 },
-    b: { [nodeType]: "1", [nodeKey]: 2, n: 1 },
+    a: t1.snapshot({ id: 1, n: 0 }),
+    b: t1.snapshot({ id: 2, n: 1 }),
   } as const
 
   const { mobxObservable, yjsObject, yjsDoc } = createObjectTestbed<TestBed>(initial)
@@ -153,8 +155,8 @@ test("object with nested unique node object that gets swapped from one prop to a
   expect(mobxObservable).toStrictEqual({ a: n2, b: n1 })
 
   expect(yjsObj.toJSON()).toStrictEqual({
-    a: { [nodeType]: "1", [nodeKey]: 2, n: 1 },
-    b: { [nodeType]: "1", [nodeKey]: 1, n: 0 },
+    a: t1.snapshot({ id: 2, n: 1 }),
+    b: t1.snapshot({ id: 1, n: 0 }),
   })
   expect(mobxObservable).toStrictEqual(yjsObj.toJSON())
 

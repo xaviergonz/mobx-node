@@ -1,6 +1,6 @@
 import { runInAction, toJS } from "mobx"
 import { createObjectTestbed } from "./testbed"
-import { nodeKey, nodeType, NodeWithTypeAndKey } from "../../src"
+import { nodeType, TNode } from "../../src"
 
 test("reassign an already added object to another part of the tree should fail", () => {
   const { mobxObservable } = createObjectTestbed<{
@@ -78,16 +78,12 @@ test("swapping nodes in an array should be ok if we detach one first", () => {
 })
 
 test("swapping unique nodes in an array should be ok if we detach one first", () => {
-  const { mobxObservable } = createObjectTestbed<
-    (
-      | ({
-          numberProp: number
-        } & NodeWithTypeAndKey)
-      | undefined
-    )[]
-  >([
-    { [nodeType]: "1", [nodeKey]: 1, numberProp: 0 },
-    { [nodeType]: "1", [nodeKey]: 2, numberProp: 1 },
+  type T1 = TNode<"1", { id: number; numberProp: number }>
+  using t1 = nodeType<T1>("1").with({ key: "id" })
+
+  const { mobxObservable } = createObjectTestbed<(T1 | undefined)[]>([
+    t1.snapshot({ id: 1, numberProp: 0 }),
+    t1.snapshot({ id: 2, numberProp: 1 }),
   ])
 
   const mobxNode1 = mobxObservable[0]
