@@ -256,3 +256,14 @@ it("setting a plain value of an existing unique node should result in a single r
     configure({ enforceActions: "always" })
   }
 })
+
+test("auto generates key if missing in snapshot", () => {
+  type Todo = TNode<"todo", { id: string; title: string }>
+  using tTodo = nodeType<Todo>("todo").with({ key: "id" })
+
+  const node = tTodo.snapshot({
+    title: "Test Todo",
+    // id is omitted intentionally
+  })
+  expect(node.id).toBe("id-1")
+})

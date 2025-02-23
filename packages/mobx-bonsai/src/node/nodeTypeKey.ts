@@ -4,6 +4,7 @@ import { Dispose, disposeOnce } from "../utils/disposeOnce"
 import { assertIsNode, node } from "./node"
 import mitt from "mitt"
 import { IsNever, MarkOptional } from "ts-essentials"
+import { getGlobalConfig } from "../globalConfig"
 
 /**
  * A unique key indicating the type of a node. This constant is used internally to identify node types.
@@ -139,7 +140,7 @@ export interface NodeType<TNode extends NodeWithAnyType, TKey extends keyof TNod
    *
    * @param data The data.
    */
-  snapshot(data: MarkOptional<TNode, NodeTypeKey>): TNode
+  snapshot(data: MarkOptional<TNode, NodeTypeKey | TKey>): TNode
 
   /**
    * Retrieves the key associated with the given node.
@@ -310,10 +311,20 @@ export function nodeType<TNode extends NodeWithAnyType = never>(
   }>()
 
   const snapshot = (data: MarkOptional<TNode, NodeTypeKey>) => {
-    return {
+    const sn = {
       ...data,
       [nodeTypeKey]: type,
     } as TNode
+
+    // generate key if missing
+    if (nodeTypeObj.key !== undefined) {
+      const key = nodeTypeObj.getKey(sn)
+      if (key === undefined) {
+        ;(sn as any)[nodeTypeObj.key] = getGlobalConfig().keyGenerator()
+      }
+    }
+
+    return sn
   }
 
   const nodeTypeObj: NodeType<TNode> = (data: MarkOptional<TNode, NodeTypeKey>) => {
