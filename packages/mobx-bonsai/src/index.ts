@@ -76,3 +76,6 @@ export {
 export type { YjsStructure, YjsValue } from "./yjsBinding/yjsTypes/types"
 
 export { bindYjsToNode } from "./yjsBinding/bindYjsToNode"
+
+// polyfill
+;(Symbol as any).dispose ??= Symbol("Symbol.dispose")
