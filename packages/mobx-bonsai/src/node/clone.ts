@@ -1,17 +1,17 @@
 import { failure } from "../error/failure"
+import { getGlobalConfig } from "../globalConfig"
 import { isPlainObject, isPrimitive } from "../plainTypes/checks"
 import { node } from "./node"
 import { getNodeTypeAndKey } from "./nodeTypeKey"
 import { getSnapshot } from "./snapshot/getSnapshot"
-import { NodeKeyGenerator, defaultNodeKeyGenerator } from "./utils/nodeKeyGenerator"
 
-function deepSubstituteNodeKeys<T>(value: T, nodeKeyGenerator: NodeKeyGenerator): T {
+function deepSubstituteNodeKeys<T>(value: T): T {
   if (isPrimitive(value)) {
     return value
   }
 
   if (Array.isArray(value)) {
-    return value.map((v) => deepSubstituteNodeKeys(v, nodeKeyGenerator)) as T
+    return value.map((v) => deepSubstituteNodeKeys(v)) as T
   }
 
   if (isPlainObject(value)) {
@@ -21,9 +21,9 @@ function deepSubstituteNodeKeys<T>(value: T, nodeKeyGenerator: NodeKeyGenerator)
     const newValue: any = {}
     for (const key in value) {
       if (key === keyProp) {
-        newValue[key] = nodeKeyGenerator()
+        newValue[key] = getGlobalConfig().keyGenerator()
       } else {
-        newValue[key] = deepSubstituteNodeKeys(value[key], nodeKeyGenerator)
+        newValue[key] = deepSubstituteNodeKeys(value[key])
       }
     }
     return newValue
@@ -36,14 +36,10 @@ function deepSubstituteNodeKeys<T>(value: T, nodeKeyGenerator: NodeKeyGenerator)
  * Clones a node. It will generate new node keys deeply.
  *
  * @param nodeToClone Node to clone.
- * @param nodeKeyGenerator Optional node key generator.
  * @returns The cloned node.
  */
-export function clone<T extends object>(
-  nodeToClone: T,
-  nodeKeyGenerator = defaultNodeKeyGenerator
-): T {
-  const snapshotWithChangedKeys = deepSubstituteNodeKeys(getSnapshot(nodeToClone), nodeKeyGenerator)
+export function clone<T extends object>(nodeToClone: T): T {
+  const snapshotWithChangedKeys = deepSubstituteNodeKeys(getSnapshot(nodeToClone))
 
   return node(snapshotWithChangedKeys)
 }
