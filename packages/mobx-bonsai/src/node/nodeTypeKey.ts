@@ -1,10 +1,12 @@
-import { action } from "mobx"
+import { action, computed, IComputedValue, IComputedValueOptions } from "mobx"
 import { failure } from "../error/failure"
 import { Dispose, disposeOnce } from "../utils/disposeOnce"
 import { assertIsNode, node } from "./node"
 import mitt from "mitt"
 import { IsNever, MarkOptional } from "ts-essentials"
 import { getGlobalConfig } from "../globalConfig"
+import { volatileProp } from "./volatileProp"
+import { PrependArgument } from "../utils/PrependArgument"
 
 /**
  * A unique key indicating the type of a node. This constant is used internally to identify node types.
@@ -115,7 +117,11 @@ export function tryRegisterNodeByTypeAndKey(node: object): boolean {
  *
  * @template TNode An object representing the node which should adhere to this node type.
  */
-export interface NodeType<TNode extends NodeWithAnyType, TKey extends keyof TNode | never = never> {
+export type NodeType<
+  TNode extends NodeWithAnyType,
+  TKey extends keyof TNode | never = never,
+  TOther = unknown,
+> = {
   /**
    * Unique type identifier.
    */
@@ -197,7 +203,153 @@ export interface NodeType<TNode extends NodeWithAnyType, TKey extends keyof TNod
     TConfig extends {
       key?: keyof TNode
     },
-  >(options: TConfig): NodeType<TNode, TConfig["key"] extends keyof TNode ? TConfig["key"] : never>
+  >(
+    options: TConfig
+  ): NodeType<TNode, TConfig["key"] extends keyof TNode ? TConfig["key"] : never, TOther>
+
+  /**
+   * Registers volatile state for nodes of this type.
+   *
+   * Volatile state is not persisted in snapshots and is local to a particular node instance.
+   * This method creates getter, setter, and reset functions for each volatile property.
+   *
+   * @param volatile An object where each key defines a getter function for volatile state
+   * @returns The same NodeType with added accessor methods for the volatile state
+   */
+  volatile<TVolatiles extends Record<string, () => any>>(
+    volatile: TVolatiles
+  ): NodeType<TNode, TKey, TOther & VolatileAccessors<TVolatiles, TNode>>
+
+  /**
+   * Registers action methods for nodes of this type.
+   *
+   * Actions are methods that can modify the node state and are automatically
+   * wrapped in MobX actions for proper state tracking.
+   *
+   * @param actions A function that receives a node and returns an object of action methods
+   * @returns The same NodeType with added action methods that accept a node as their first parameter
+   */
+  actions<TActions extends Record<string, (...args: any) => any>>(
+    actions: (n: TNode) => TActions
+  ): NodeType<
+    TNode,
+    TKey,
+    TOther & {
+      [k in keyof TActions]: PrependArgument<TActions[k], TNode>
+    }
+  >
+
+  /**
+   * Registers getter methods for nodes of this type.
+   *
+   * Getters are methods that derive values from the node state without modifying it.
+   *
+   * @param getters A function that receives a node and returns an object of getter methods
+   * @returns The same NodeType with added getter methods that accept a node as their first parameter
+   */
+  getters<TGetters extends Record<string, (...args: any) => any>>(
+    getters: (n: TNode) => TGetters
+  ): NodeType<
+    TNode,
+    TKey,
+    TOther & {
+      [k in keyof TGetters]: PrependArgument<TGetters[k], TNode>
+    }
+  >
+
+  /**
+   * Registers computed methods for nodes of this type.
+   *
+   * Computed methods derive values from the node state and are automatically
+   * memoized by MobX for performance optimization.
+   *
+   * Computed properties can be defined in two ways:
+   * 1. As simple getter functions: `getLength() { return n.title.length }`
+   * 2. As configuration objects: `getLength: { get() { return n.title.length }, equals: customComparer }`
+   *
+   * When using the configuration object form, you can specify additional MobX computed options
+   * such as `equals`, `requiresReaction`, `keepAlive`, and `context`.
+   *
+   * @param computeds A function that receives a node and returns an object of computed accessor methods
+   * @returns The same NodeType with added computed methods that accept a node as their first parameter
+   */
+  computeds<TComputeds extends Record<string, ComputedEntry<any>>>(
+    computeds: (n: TNode) => TComputeds
+  ): NodeType<
+    TNode,
+    TKey,
+    TOther & {
+      [k in keyof TComputeds]: TComputeds[k] extends () => any
+        ? PrependArgument<TComputeds[k], TNode>
+        : TComputeds[k] extends ComputedFnWithOptions<any>
+          ? PrependArgument<TComputeds[k]["get"], TNode>
+          : never
+    }
+  >
+} & TOther
+
+/**
+ * Represents a computed property with configuration options.
+ * This type combines a required getter function with optional MobX computed configuration options.
+ *
+ * @template T - The return type of the computed value
+ *
+ * Properties include:
+ * - `get`: Required function that returns the computed value
+ * - MobX computed options (excluding 'get' and 'set'):
+ *   - `equals`: Optional custom equality comparer function
+ *   - `requiresReaction`: Optional flag to throw when the computed is accessed outside a reactive context
+ *   - `keepAlive`: Optional flag to prevent garbage collection when not observed
+ *   - `context`: Optional context object for the getter function
+ */
+export type ComputedFnWithOptions<T> = { get: () => T } & Omit<
+  IComputedValueOptions<T>,
+  "get" | "set"
+>
+
+/**
+ * Represents a computed property definition that can be used with the `computeds` method.
+ *
+ * @template T - The return type of the computed value
+ *
+ * Can be defined in two ways:
+ * 1. As a simple getter function: `() => T`
+ * 2. As a configuration object with a getter and optional MobX settings: `{ get: () => T, ... }`
+ *
+ * Example with a simple getter:
+ * ```
+ * getFullName: () => `${n.firstName} ${n.lastName}`
+ * ```
+ *
+ * Example with configuration options:
+ * ```
+ * getFilteredItems: {
+ *   get: () => n.items.filter(i => i.active),
+ *   equals: comparer.shallow,
+ *   requiresReaction: true,
+ *   keepAlive: false
+ * }
+ * ```
+ */
+export type ComputedEntry<T> = (() => T) | ComputedFnWithOptions<T>
+
+/**
+ * Utility type that generates getter, setter, and reset accessors for volatile properties.
+ *
+ * For each key in the source record, three methods are created:
+ * - `getX` - Retrieves the volatile property value
+ * - `setX` - Sets the volatile property to a new value
+ * - `resetX` - Resets the volatile property to its initial value
+ *
+ * @template T - Record of getter functions for volatile properties
+ * @template TNode - The node type associated with these accessors
+ */
+export type VolatileAccessors<T extends Record<string, () => any>, TNode> = {
+  [K in keyof T as `set${Capitalize<string & K>}`]: (n: TNode, value: ReturnType<T[K]>) => void
+} & {
+  [K in keyof T as `get${Capitalize<string & K>}`]: (n: TNode) => ReturnType<T[K]>
+} & {
+  [K in keyof T as `reset${Capitalize<string & K>}`]: (n: TNode) => void
 }
 
 /**
@@ -376,6 +528,119 @@ export function nodeType<TNode extends NodeWithAnyType = never>(
 
   nodeTypeObj._initNode = (node: TNode) => {
     events.emit("init", node)
+  }
+
+  nodeTypeObj.volatile = function <TVolatiles extends Record<string, () => any>>(
+    volatiles: TVolatiles
+  ) {
+    const result = this as any
+
+    for (const volatileKey of Object.keys(volatiles)) {
+      const defaultValueGen = volatiles[volatileKey]
+      const [getter, setter, resetter] = volatileProp(defaultValueGen)
+
+      const capitalizedVolatileKey = volatileKey.charAt(0).toUpperCase() + volatileKey.slice(1)
+      result[`get${capitalizedVolatileKey}`] = getter
+      result[`set${capitalizedVolatileKey}`] = setter
+      result[`reset${capitalizedVolatileKey}`] = resetter
+    }
+
+    return result
+  }
+
+  nodeTypeObj.actions = function <TActions extends Record<string, (...args: any) => any>>(
+    getActions: (n: TNode) => TActions
+  ) {
+    const result = this as any
+
+    const cachedActions = new WeakMap<object, TActions>()
+
+    for (const key of Object.keys(getActions(undefined as any))) {
+      result[key] = action((n: TNode, ...args: any[]) => {
+        let cachedActionsForNode = cachedActions.get(n)
+        if (!cachedActionsForNode) {
+          const actions = getActions(n)
+          Object.entries(actions).forEach(([key, value]) => {
+            if (typeof value !== "function") {
+              throw failure(`action property '${key}' must be a function`)
+            }
+          })
+          cachedActionsForNode = actions
+          cachedActions.set(n, cachedActionsForNode)
+        }
+
+        return cachedActionsForNode[key](...args)
+      })
+    }
+
+    return result
+  }
+
+  nodeTypeObj.getters = function <TGetters extends Record<string, (...args: any) => any>>(
+    getGetters: (n: TNode) => TGetters
+  ) {
+    const result = this as any
+
+    const cachedGetters = new WeakMap<object, TGetters>()
+
+    for (const key of Object.keys(getGetters(undefined as any))) {
+      result[key] = (n: TNode, ...args: any[]) => {
+        let cachedGettersForNode = cachedGetters.get(n)
+        if (!cachedGettersForNode) {
+          const getters = getGetters(n)
+          Object.entries(getters).forEach(([key, value]) => {
+            if (typeof value !== "function") {
+              throw failure(`getter property '${key}' must be a function`)
+            }
+          })
+          cachedGettersForNode = getters
+          cachedGetters.set(n, cachedGettersForNode)
+        }
+
+        return cachedGettersForNode[key](...args)
+      }
+    }
+
+    return result
+  }
+
+  nodeTypeObj.computeds = function <TComputeds extends Record<string, ComputedEntry<unknown>>>(
+    getComputeds: (n: TNode) => TComputeds
+  ) {
+    const result = this as any
+
+    const cachedComputeds = new WeakMap<object, Record<string, IComputedValue<unknown>>>()
+
+    for (const key of Object.keys(getComputeds(undefined as any))) {
+      result[key] = (n: TNode) => {
+        let cachedComputedsForNode = cachedComputeds.get(n)
+        if (!cachedComputedsForNode) {
+          const computedFns: Record<string, IComputedValue<any>> = {}
+          Object.entries(getComputeds(n)).forEach(([key, value]) => {
+            if (typeof value === "function") {
+              computedFns[key] = computed(() => value())
+            } else if (
+              typeof value === "object" &&
+              "get" in value &&
+              typeof value.get === "function"
+            ) {
+              const options = { ...value, get: undefined }
+              computedFns[key] = computed(value.get, options)
+            } else {
+              throw failure(
+                `computed property '${key}' must be a function or a configuration object with a 'get' method`
+              )
+            }
+          })
+          cachedComputedsForNode = computedFns
+          cachedComputeds.set(n, cachedComputedsForNode)
+        }
+
+        return cachedComputedsForNode[key].get()
+      }
+    }
+
+    return result
   }
 
   registeredNodeTypes.set(type, nodeTypeObj as NodeType<any, any>)

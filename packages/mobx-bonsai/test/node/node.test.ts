@@ -267,3 +267,57 @@ test("auto generates key if missing in snapshot", () => {
   })
   expect(node.id).toBe("id-1")
 })
+
+test("typed nodes with actions/getters/computeds/volatile", () => {
+  type Todo = TNode<"todo", { id: string; title: string }>
+  using tTodo = nodeType<Todo>("todo")
+    .with({
+      key: "id",
+    })
+    .volatile({
+      x: () => 3,
+    })
+    .getters((t) => ({
+      getTitleLengthPlusXPlusParam(param: number) {
+        return tTodo.getTitleLength(t) + tTodo.getX(t) + param
+      },
+    }))
+    .computeds((t) => ({
+      getTitleLength() {
+        return t.title.length
+      },
+      getTitleLength2: {
+        get() {
+          return t.title.length
+        },
+        // TODO: can we fix this so it will infer a and b to be number instead of any?
+        equals: (a, b) => a === b,
+      },
+    }))
+    .actions((t) => ({
+      setTitle(title: string) {
+        t.title = title
+      },
+    }))
+
+  const node = tTodo({
+    title: "Test Todo",
+    // id is omitted intentionally
+  })
+
+  expect(tTodo.getTitleLength(node)).toBe(9)
+  expect(tTodo.getTitleLength2(node)).toBe(9)
+  expect(tTodo.getTitleLengthPlusXPlusParam(node, 5)).toBe(17)
+  expect(tTodo.getX(node)).toBe(3)
+
+  tTodo.setTitle(node, "Test Todo 2")
+  expect(node.title).toBe("Test Todo 2")
+
+  tTodo.setX(node, 4)
+  expect(tTodo.getX(node)).toBe(4)
+
+  expect(tTodo.getTitleLength(node)).toBe(11)
+  expect(tTodo.getTitleLength2(node)).toBe(11)
+  expect(tTodo.getTitleLengthPlusXPlusParam(node, 5)).toBe(20)
+  expect(tTodo.getX(node)).toBe(4)
+})

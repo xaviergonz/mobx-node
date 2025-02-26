@@ -54,6 +54,9 @@ export type {
   TNode,
   NodeType,
   AnyNodeType,
+  ComputedEntry,
+  ComputedFnWithOptions,
+  VolatileAccessors,
 } from "./node/nodeTypeKey"
 export { volatileProp } from "./node/volatileProp"
 export type { VolatileProp } from "./node/volatileProp"
@@ -65,6 +68,7 @@ export { asMap } from "./utils/asMap"
 export { asSet } from "./utils/asSet"
 export { deepEquals } from "./utils/deepEquals"
 export type { Dispose } from "./utils/disposeOnce"
+export type { PrependArgument } from "./utils/PrependArgument"
 
 // yjsBinding
 export {
