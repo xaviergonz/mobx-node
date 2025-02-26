@@ -25,8 +25,6 @@ export type VolatileProp<TTarget extends object, TValue> = readonly [
   reset: (target: TTarget) => void,
 ]
 
-const globalVolatileProps = new Set<VolatileProp<any, any>>()
-
 /**
  * Creates a volatile property accessor on a target object.
  * The property is considered "volatile" because it does not persist on the object itself and is not part
@@ -104,8 +102,6 @@ export function volatileProp<TTarget extends object, TValue>(
       }
     }),
   ] as const
-
-  globalVolatileProps.add(vProp)
 
   return vProp
 }

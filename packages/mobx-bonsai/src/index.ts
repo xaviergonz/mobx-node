@@ -30,6 +30,7 @@ export { onSnapshot } from "./node/snapshot/onSnapshot"
 
 export { clone } from "./node/clone"
 export { computedProp } from "./node/computedProp"
+export type { ComputedPropFn } from "./node/computedProp"
 export {
   assertIsNode,
   isNode,

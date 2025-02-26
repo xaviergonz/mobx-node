@@ -527,24 +527,29 @@ function addNodeTypeExtensionMethods<TNode extends object>(
   nodeTypeObj.actions = (getActions) => {
     const result = nodeTypeObj as any
 
-    const cachedActions = new WeakMap<object, Record<string, (...args: any[]) => any>>()
+    const cachedActionsByNode = new WeakMap<object, Record<string, (...args: any[]) => any>>()
+
+    function getOrCreateNodeCachedActions(n: TNode) {
+      let nodeCachedActions = cachedActionsByNode.get(n)
+
+      if (!nodeCachedActions) {
+        const actions = getActions(n)
+        Object.entries(actions).forEach(([key, value]) => {
+          if (typeof value !== "function") {
+            throw failure(`action property '${key}' must be a function`)
+          }
+        })
+        nodeCachedActions = actions
+        cachedActionsByNode.set(n, nodeCachedActions)
+      }
+
+      return nodeCachedActions
+    }
 
     for (const key of Object.keys(getActions(undefined as any))) {
-      result[key] = action((n: TNode, ...args: any[]) => {
-        let cachedActionsForNode = cachedActions.get(n)
-        if (!cachedActionsForNode) {
-          const actions = getActions(n)
-          Object.entries(actions).forEach(([key, value]) => {
-            if (typeof value !== "function") {
-              throw failure(`action property '${key}' must be a function`)
-            }
-          })
-          cachedActionsForNode = actions
-          cachedActions.set(n, cachedActionsForNode)
-        }
-
-        return cachedActionsForNode[key](...args)
-      })
+      result[key] = action((n: TNode, ...args: any[]) =>
+        getOrCreateNodeCachedActions(n)[key](...args)
+      )
     }
 
     return nodeTypeObj as any
@@ -553,24 +558,27 @@ function addNodeTypeExtensionMethods<TNode extends object>(
   nodeTypeObj.getters = (getGetters) => {
     const result = nodeTypeObj as any
 
-    const cachedGetters = new WeakMap<object, Record<string, (...args: any) => any>>()
+    const cachedGettersByNode = new WeakMap<object, Record<string, (...args: any) => any>>()
+
+    function getOrCreateNodeCachedGetters(n: TNode) {
+      let nodeCachedGetters = cachedGettersByNode.get(n)
+
+      if (!nodeCachedGetters) {
+        const getters = getGetters(n)
+        Object.entries(getters).forEach(([key, value]) => {
+          if (typeof value !== "function") {
+            throw failure(`getter property '${key}' must be a function`)
+          }
+        })
+        nodeCachedGetters = getters
+        cachedGettersByNode.set(n, nodeCachedGetters)
+      }
+
+      return nodeCachedGetters
+    }
 
     for (const key of Object.keys(getGetters(undefined as any))) {
-      result[key] = (n: TNode, ...args: any[]) => {
-        let cachedGettersForNode = cachedGetters.get(n)
-        if (!cachedGettersForNode) {
-          const getters = getGetters(n)
-          Object.entries(getters).forEach(([key, value]) => {
-            if (typeof value !== "function") {
-              throw failure(`getter property '${key}' must be a function`)
-            }
-          })
-          cachedGettersForNode = getters
-          cachedGetters.set(n, cachedGettersForNode)
-        }
-
-        return cachedGettersForNode[key](...args)
-      }
+      result[key] = (n: TNode, ...args: any[]) => getOrCreateNodeCachedGetters(n)[key](...args)
     }
 
     return nodeTypeObj as any
@@ -579,35 +587,38 @@ function addNodeTypeExtensionMethods<TNode extends object>(
   nodeTypeObj.computeds = (getComputeds) => {
     const result = nodeTypeObj as any
 
-    const cachedComputeds = new WeakMap<object, Record<string, IComputedValue<unknown>>>()
+    const cachedComputedsByNode = new WeakMap<object, Record<string, IComputedValue<unknown>>>()
+
+    function getOrCreateNodeCachedComputeds(n: TNode) {
+      let nodeCachedComputeds = cachedComputedsByNode.get(n)
+
+      if (!nodeCachedComputeds) {
+        const computedFns: Record<string, IComputedValue<any>> = {}
+        Object.entries(getComputeds(n)).forEach(([key, value]) => {
+          if (typeof value === "function") {
+            computedFns[key] = computed(() => value())
+          } else if (
+            typeof value === "object" &&
+            "get" in value &&
+            typeof value.get === "function"
+          ) {
+            const options = { ...value, get: undefined }
+            computedFns[key] = computed(value.get, options)
+          } else {
+            throw failure(
+              `computed property '${key}' must be a function or a configuration object with a 'get' method`
+            )
+          }
+        })
+        nodeCachedComputeds = computedFns
+        cachedComputedsByNode.set(n, nodeCachedComputeds)
+      }
+
+      return nodeCachedComputeds
+    }
 
     for (const key of Object.keys(getComputeds(undefined as any))) {
-      result[key] = (n: TNode) => {
-        let cachedComputedsForNode = cachedComputeds.get(n)
-        if (!cachedComputedsForNode) {
-          const computedFns: Record<string, IComputedValue<any>> = {}
-          Object.entries(getComputeds(n)).forEach(([key, value]) => {
-            if (typeof value === "function") {
-              computedFns[key] = computed(() => value())
-            } else if (
-              typeof value === "object" &&
-              "get" in value &&
-              typeof value.get === "function"
-            ) {
-              const options = { ...value, get: undefined }
-              computedFns[key] = computed(value.get, options)
-            } else {
-              throw failure(
-                `computed property '${key}' must be a function or a configuration object with a 'get' method`
-              )
-            }
-          })
-          cachedComputedsForNode = computedFns
-          cachedComputeds.set(n, cachedComputedsForNode)
-        }
-
-        return cachedComputedsForNode[key].get()
-      }
+      result[key] = (n: TNode) => getOrCreateNodeCachedComputeds(n)[key].get()
     }
 
     return nodeTypeObj as any

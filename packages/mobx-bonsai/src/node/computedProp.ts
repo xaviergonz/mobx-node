@@ -2,6 +2,20 @@ import { computed, IComputedValue, IComputedValueOptions } from "mobx"
 import { isObservablePlainStructure } from "../plainTypes/checks"
 
 /**
+ * Represents a function used to compute derived values based on an object's state.
+ *
+ * @template T - The type of the object that this function computes values for.
+ * @template R - The return type of the computation.
+ *
+ * @property getComputedFor - A method that returns the cached computed value for a given object,
+ *                           or undefined if no computation has been performed yet for this object.
+ */
+export type ComputedPropFn<T extends object, R> = {
+  (obj: T): R
+  getComputedFor(obj: T): IComputedValue<R> | undefined
+}
+
+/**
  * Create a computed property on an object that is used as a function
  * that takes the object as an argument and returns the computed value.
  *
@@ -28,7 +42,7 @@ import { isObservablePlainStructure } from "../plainTypes/checks"
 export function computedProp<T extends object, R>(
   fn: (obj: T) => R,
   options?: IComputedValueOptions<R>
-) {
+): ComputedPropFn<T, R> {
   const computedFns = new WeakMap<T, IComputedValue<R>>()
 
   const getFn = (obj: T): R => {
