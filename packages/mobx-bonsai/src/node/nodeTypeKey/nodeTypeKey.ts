@@ -333,6 +333,21 @@ function addNodeTypeExtensionMethods<TNode extends object>(
 
     return nodeTypeObj as any
   }
+
+  nodeTypeObj.setters = (...properties) => {
+    const result = nodeTypeObj as any
+
+    for (const prop of properties) {
+      const capitalizedProp = prop.charAt(0).toUpperCase() + prop.slice(1)
+      const setterName = `set${capitalizedProp}`
+
+      result[setterName] = action((node: TNode, value: any) => {
+        ;(node as any)[prop] = value
+      })
+    }
+
+    return nodeTypeObj as any
+  }
 }
 
 function typedNodeType<TNode extends NodeWithAnyType = never>(

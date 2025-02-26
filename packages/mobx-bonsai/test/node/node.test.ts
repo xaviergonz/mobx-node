@@ -411,3 +411,45 @@ it("should support getters, computeds, volatiles and actions for untyped nodes o
   // Test computed: total title length should equal "hello".length + "world".length.
   expect(untypedFactory.getTotalTitleLength(nArr)).toBe(5 + 5)
 })
+
+test("node type with setters", () => {
+  type Book = { title: string; author: string; pageCount: number }
+  const tBook = nodeType<Book>().setters("title", "author", "pageCount")
+
+  const book = tBook({
+    title: "1984",
+    author: "George Orwell",
+    pageCount: 328,
+  })
+
+  tBook.setTitle(book, "Animal Farm")
+  tBook.setAuthor(book, "G. Orwell")
+  tBook.setPageCount(book, 112)
+
+  expect(book.title).toBe("Animal Farm")
+  expect(book.author).toBe("G. Orwell")
+  expect(book.pageCount).toBe(112)
+})
+
+test("node type setters work with readonly arrays", () => {
+  type TodoList = {
+    name: string
+    todos: string[]
+  }
+
+  const tTodoList = nodeType<TodoList>().setters("name", "todos")
+
+  const todoList = tTodoList({
+    name: "Shopping List",
+    todos: ["Milk", "Eggs"],
+  })
+
+  // Create a readonly array
+  const newTodos: readonly string[] = ["Bread", "Cheese", "Apples"] as const
+
+  // This should compile and work properly
+  tTodoList.setTodos(todoList, newTodos)
+
+  expect(todoList.todos).toEqual(["Bread", "Cheese", "Apples"])
+  expect(todoList.todos).not.toBe(newTodos) // Should be a different array reference
+})

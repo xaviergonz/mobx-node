@@ -1,5 +1,6 @@
 import { IComputedValueOptions } from "mobx"
 import { PrependArgument } from "../../utils/PrependArgument"
+import { ReadonlyArrayCompatible } from "../../utils/ReadonlyArrayCompatible"
 
 /**
  * Base node type definition with core functionality
@@ -82,6 +83,25 @@ export type BaseNodeType<TNode extends object, TKey extends keyof TNode | never,
         : TComputeds[k] extends ComputedFnWithOptions<any>
           ? PrependArgument<TComputeds[k]["get"], TNode>
           : never
+    }
+  >
+
+  /**
+   * Generates setter methods for specified properties
+   *
+   * @param properties - Names of properties to create setters for
+   * @returns The same NodeType with added setter methods
+   */
+  setters<K extends keyof TNode & string>(
+    ...properties: readonly K[]
+  ): BaseNodeType<
+    TNode,
+    TKey,
+    TOther & {
+      [P in K as `set${Capitalize<P>}`]: (
+        node: TNode,
+        value: ReadonlyArrayCompatible<TNode[P]>
+      ) => void
     }
   >
 } & TOther
