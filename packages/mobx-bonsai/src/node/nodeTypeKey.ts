@@ -189,23 +189,7 @@ export type NodeType<
    */
   _initNode(node: TNode): void
 
-  /**
-   * Customizes this NodeType instance by specifying additional options.
-   *
-   * This method returns the same NodeType instance typed with the specified key property configuration.
-   * When provided, the key property will be used for node key retrieval, enabling unique identification.
-   *
-   * @template TConfig - Options object that may include a `key` property.
-   * @param options An object containing additional node type options.
-   * @returns The same NodeType instance, but with a proper type for the given config.
-   */
-  with<
-    TConfig extends {
-      key?: keyof TNode
-    },
-  >(
-    options: TConfig
-  ): NodeType<TNode, TConfig["key"] extends keyof TNode ? TConfig["key"] : never, TOther>
+  withKey<TKey extends keyof TNode>(key: TKey): NodeType<TNode, TKey, TOther>
 
   /**
    * Registers volatile state for nodes of this type.
@@ -488,7 +472,10 @@ export function nodeType<TNode extends NodeWithAnyType = never>(
   nodeTypeObj.typeId = type
   nodeTypeObj.key = undefined
 
-  nodeTypeObj.with = ({ key }) => {
+  nodeTypeObj.withKey = (key) => {
+    if (nodeTypeObj.key !== undefined) {
+      throw failure(`node type already has a key`)
+    }
     nodeTypeObj.key = key as any
     return nodeTypeObj as any
   }

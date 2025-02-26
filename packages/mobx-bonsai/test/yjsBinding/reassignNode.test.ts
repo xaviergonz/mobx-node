@@ -79,7 +79,7 @@ test("swapping nodes in an array should be ok if we detach one first", () => {
 
 test("swapping unique nodes in an array should be ok if we detach one first", () => {
   type T1 = TNode<"1", { id: number; numberProp: number }>
-  using t1 = nodeType<T1>("1").with({ key: "id" })
+  using t1 = nodeType<T1>("1").withKey("id")
 
   const { mobxObservable } = createObjectTestbed<(T1 | undefined)[]>([
     t1.snapshot({ id: 1, numberProp: 0 }),

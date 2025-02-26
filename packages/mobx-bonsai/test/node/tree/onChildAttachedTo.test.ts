@@ -148,10 +148,10 @@ it("should fire for deep children when deep is set to true", () => {
 
 it("fires callback only for matching node using a selector", () => {
   type TMatch = TNode<"match", { id: number }>
-  using tMatch = nodeType<TMatch>("match").with({ key: "id" })
+  using tMatch = nodeType<TMatch>("match").withKey("id")
 
   type TOther = TNode<"other", { id: number }>
-  using tOther = nodeType<TOther>("other").with({ key: "id" })
+  using tOther = nodeType<TOther>("other").withKey("id")
 
   const testNode = node<{
     child1?: TMatch | TOther

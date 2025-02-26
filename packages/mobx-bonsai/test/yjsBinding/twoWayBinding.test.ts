@@ -129,7 +129,7 @@ test("object with nested unique node object that gets swapped from one prop to a
   type TestBed = { a?: T1; b?: T1 }
 
   type T1 = TNode<"1", { n: number; id: number }>
-  using t1 = nodeType<T1>("1").with({ key: "id" })
+  using t1 = nodeType<T1>("1").withKey("id")
 
   const initial: TestBed = {
     a: t1.snapshot({ id: 1, n: 0 }),

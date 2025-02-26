@@ -66,16 +66,16 @@ it("should convert a plain object assigned as a child into a node (changing the 
 
 it("should return the same node when the same type and key are used", () => {
   type TType = TNode<"type", { id: string }>
-  using tType = nodeType<TType>("type").with({ key: "id" })
+  using tType = nodeType<TType>("type").withKey("id")
 
   type TType2 = TNode<"type2", { id: string }>
-  using tType2 = nodeType<TType2>("type2").with({ key: "id" })
+  using tType2 = nodeType<TType2>("type2").withKey("id")
 
   type TType3 = TNode<"type3", { id: string }>
-  using tType3 = nodeType<TType3>("type3").with({ key: "id" })
+  using tType3 = nodeType<TType3>("type3").withKey("id")
 
   type TType4 = TNode<"type4", { id: string }>
-  using tType4 = nodeType<TType4>("type4").with({ key: "id" })
+  using tType4 = nodeType<TType4>("type4").withKey("id")
 
   const nObj1 = tType({ id: "key" })
   expect(node(getSnapshot(nObj1))).toBe(nObj1)
@@ -111,8 +111,8 @@ it("unique node reconciliation", () => {
     }
   >
 
-  using tT = nodeType<T>("t").with({ key: "id" })
-  using tT2 = nodeType<T2>("t2").with({ key: "id" })
+  using tT = nodeType<T>("t").withKey("id")
+  using tT2 = nodeType<T2>("t2").withKey("id")
 
   const nObj1 = tT({
     id: "key",
@@ -159,7 +159,7 @@ it("unique node reconciliation", () => {
 
 it("swapping a node in an array should be ok if we reconciliate", () => {
   type TA = TNode<"a", { id: string; a: number }>
-  using tA = nodeType<TA>("a").with({ key: "id" })
+  using tA = nodeType<TA>("a").withKey("id")
 
   const nObj1 = node([
     tA.snapshot({
@@ -217,7 +217,7 @@ it("setting a plain value of an existing unique node should result in a single r
   configure({ enforceActions: "never" })
   try {
     type TA2 = TNode<"a2", { id: string; a: number }>
-    using tA2 = nodeType<TA2>("a2").with({ key: "id" })
+    using tA2 = nodeType<TA2>("a2").withKey("id")
 
     const nodeData1 = tA2.snapshot({
       id: "1",
@@ -259,7 +259,7 @@ it("setting a plain value of an existing unique node should result in a single r
 
 test("auto generates key if missing in snapshot", () => {
   type Todo = TNode<"todo", { id: string; title: string }>
-  using tTodo = nodeType<Todo>("todo").with({ key: "id" })
+  using tTodo = nodeType<Todo>("todo").withKey("id")
 
   const node = tTodo.snapshot({
     title: "Test Todo",
@@ -271,9 +271,7 @@ test("auto generates key if missing in snapshot", () => {
 test("typed nodes with actions/getters/computeds/volatile", () => {
   type Todo = TNode<"todo", { id: string; title: string }>
   using tTodo = nodeType<Todo>("todo")
-    .with({
-      key: "id",
-    })
+    .withKey("id")
     .volatile({
       x: () => 3,
     })

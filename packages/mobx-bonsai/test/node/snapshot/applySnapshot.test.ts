@@ -15,7 +15,7 @@ test("throws error if snapshot is array but node is not", () => {
 
 test("applies snapshot to an observable object with matching type and key", () => {
   type TA = TNode<"A", { id: string; value: number; arr?: number[]; obj?: { a: number } }>
-  using tA = nodeType<TA>("A").with({ key: "id" })
+  using tA = nodeType<TA>("A").withKey("id")
 
   const n = tA({
     id: "1",
@@ -34,10 +34,10 @@ test("applies snapshot to an observable object with matching type and key", () =
 
 test("throws error if snapshot changes the type property", () => {
   type TA = TNode<"A", { id: string; value: number }>
-  using tA = nodeType<TA>("A").with({ key: "id" })
+  using tA = nodeType<TA>("A").withKey("id")
 
   type TB = TNode<"B", { id: string; value: number }>
-  using tB = nodeType<TB>("B").with({ key: "id" })
+  using tB = nodeType<TB>("B").withKey("id")
 
   const n = tA({
     id: "1",
@@ -55,7 +55,7 @@ test("throws error if snapshot changes the type property", () => {
 
 test("throws error if snapshot changes the key property", () => {
   type TA = TNode<"A", { id: string; value: number }>
-  using tA = nodeType<TA>("A").with({ key: "id" })
+  using tA = nodeType<TA>("A").withKey("id")
 
   const n = tA({
     id: "1",
@@ -86,7 +86,7 @@ test("can swap unique objects around", () => {
   type T1 = TNode<"1", { id: number; n: number }>
   type TestBed = { a?: T1; b?: T1 }
 
-  using t1 = nodeType<T1>("1").with({ key: "id" })
+  using t1 = nodeType<T1>("1").withKey("id")
 
   const initial: TestBed = {
     a: t1.snapshot({ id: 1, n: 0 }),

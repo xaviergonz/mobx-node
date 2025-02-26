@@ -30,13 +30,13 @@ it("modifying the original should not affect the clone", () => {
 
 it("should generate new node keys", () => {
   type TType3 = TNode<"type3", { id: string }>
-  using tType3 = nodeType<TType3>("type3").with({ key: "id" })
+  using tType3 = nodeType<TType3>("type3").withKey("id")
 
   type TType2 = TNode<"type2", { id: string; c: number }>
-  using tType2 = nodeType<TType2>("type2").with({ key: "id" })
+  using tType2 = nodeType<TType2>("type2").withKey("id")
 
   type TType1 = TNode<"type1", { id: string; a: number; b: TType2; arr: TType3[] }>
-  using tType1 = nodeType<TType1>("type1").with({ key: "id" })
+  using tType1 = nodeType<TType1>("type1").withKey("id")
 
   const original = tType1({
     id: "key",

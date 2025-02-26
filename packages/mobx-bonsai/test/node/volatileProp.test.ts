@@ -51,7 +51,7 @@ it("should share volatile state across objects with the same key even if one is 
   const [getVolatile, setVolatile] = volatileProp(() => 0)
 
   type TT = TNode<"t", { id: number }>
-  using tT = nodeType<TT>("t").with({ key: "id" })
+  using tT = nodeType<TT>("t").withKey("id")
   let obj1: TT | undefined = tT({ id: 1 })
 
   expect(getVolatile(obj1)).toBe(0)
