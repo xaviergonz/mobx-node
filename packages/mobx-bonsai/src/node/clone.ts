@@ -16,7 +16,7 @@ function deepSubstituteNodeKeys<T>(value: T): T {
 
   if (isPlainObject(value)) {
     const typeAndKey = getNodeTypeAndKey(value)
-    const keyProp = typeAndKey.type?.key
+    const keyProp = typeAndKey.type && "key" in typeAndKey.type ? typeAndKey.type.key : undefined
 
     const newValue: any = {}
     for (const key in value) {

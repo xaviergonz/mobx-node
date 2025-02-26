@@ -48,8 +48,9 @@ export const applySnapshot = action(<T extends object>(node: T, snapshot: T): vo
       )
     }
     if (typeKey.key !== newTypeKey.key) {
+      const keyProp = typeKey.type && "key" in typeKey.type ? typeKey.type.key : undefined
       throw failure(
-        `applySnapshot does not allow changes to the '${typeKey.type?.key}' property of the node the snapshot is being applied to`
+        `applySnapshot does not allow changes to the '${keyProp}' property of the node the snapshot is being applied to`
       )
     }
 

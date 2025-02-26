@@ -41,26 +41,33 @@ export type {
   NodeChangeListener,
 } from "./node/node"
 export {
-  nodeTypeKey,
-  getNodeTypeAndKey,
   findNodeTypeById,
-  nodeType,
+  getNodeTypeAndKey,
   getNodeTypeId,
+  nodeType,
+  nodeTypeKey,
 } from "./node/nodeTypeKey"
 export type {
-  NodeTypeValue,
-  NodeKeyValue,
-  NodeWithAnyType,
-  TNode,
-  NodeType,
   AnyNodeType,
+  AnyTypedNodeType,
+  AnyUntypedNodeType,
+  BaseNodeType,
+  BaseTypedNodeType,
   ComputedEntry,
   ComputedFnWithOptions,
+  KeyedNodeType,
+  NodeForNodeType,
+  NodeKeyValue,
+  NodeTypeValue,
+  NodeWithAnyType,
+  TNode,
+  TypedNodeType,
+  UntypedNodeType,
   VolatileAccessors,
 } from "./node/nodeTypeKey"
+export type { NodeKeyGenerator } from "./node/utils/nodeKeyGenerator"
 export { volatileProp } from "./node/volatileProp"
 export type { VolatileProp } from "./node/volatileProp"
-export type { NodeKeyGenerator } from "./node/utils/nodeKeyGenerator"
 
 export type { Primitive } from "./plainTypes/types"
 
@@ -80,6 +87,4 @@ export {
 export type { YjsStructure, YjsValue } from "./yjsBinding/yjsTypes/types"
 
 export { bindYjsToNode } from "./yjsBinding/bindYjsToNode"
-
-// polyfill
 ;(Symbol as any).dispose ??= Symbol("Symbol.dispose")

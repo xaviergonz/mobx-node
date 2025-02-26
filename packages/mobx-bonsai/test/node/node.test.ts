@@ -319,3 +319,95 @@ test("typed nodes with actions/getters/computeds/volatile", () => {
   expect(tTodo.getTitleLengthPlusXPlusParam(node, 5)).toBe(20)
   expect(tTodo.getX(node)).toBe(4)
 })
+
+test("untyped nodes with actions/getters/computeds/volatile", () => {
+  type Todo = { title: string }
+  const tTodo = nodeType<Todo>()
+    .volatile({
+      x: () => 3,
+    })
+    .getters((t) => ({
+      getTitleLengthPlusXPlusParam(param: number) {
+        return tTodo.getTitleLength(t) + tTodo.getX(t) + param
+      },
+    }))
+    .computeds((t) => ({
+      getTitleLength() {
+        return t.title.length
+      },
+      getTitleLength2: {
+        get() {
+          return t.title.length
+        },
+        // TODO: can we fix this so it will infer a and b to be number instead of any?
+        equals: (a, b) => a === b,
+      },
+    }))
+    .actions((t) => ({
+      setTitle(title: string) {
+        t.title = title
+      },
+    }))
+
+  const node = tTodo({
+    title: "Test Todo",
+  })
+
+  expect(tTodo.getTitleLength(node)).toBe(9)
+  expect(tTodo.getTitleLength2(node)).toBe(9)
+  expect(tTodo.getTitleLengthPlusXPlusParam(node, 5)).toBe(17)
+  expect(tTodo.getX(node)).toBe(3)
+
+  tTodo.setTitle(node, "Test Todo 2")
+  expect(node.title).toBe("Test Todo 2")
+
+  tTodo.setX(node, 4)
+  expect(tTodo.getX(node)).toBe(4)
+
+  expect(tTodo.getTitleLength(node)).toBe(11)
+  expect(tTodo.getTitleLength2(node)).toBe(11)
+  expect(tTodo.getTitleLengthPlusXPlusParam(node, 5)).toBe(20)
+  expect(tTodo.getX(node)).toBe(4)
+})
+
+it("should support getters, computeds, volatiles and actions for untyped nodes over arrays", () => {
+  // Create an untyped node factory for an array of objects with { title, count } properties
+  const untypedFactory = nodeType<{ title: string; count: number }[]>()
+    .volatile({
+      len: () => 0,
+    })
+    .actions((arr) => ({
+      incrementAt(index: number) {
+        arr[index].count += 1
+      },
+    }))
+    .getters((arr) => ({
+      getTitleAt(index: number) {
+        return arr[index].title
+      },
+    }))
+    .computeds((arr) => ({
+      getTotalTitleLength() {
+        return arr.reduce((sum, item) => sum + item.title.length, 0)
+      },
+    }))
+
+  const data = [
+    { title: "hello", count: 0 },
+    { title: "world", count: 0 },
+  ]
+  const nArr = untypedFactory(data)
+
+  // Verify volatile method returns its default value.
+  expect(untypedFactory.getLen(nArr)).toBe(0)
+
+  // Test action: increment count at index 0.
+  untypedFactory.incrementAt(nArr, 0)
+  expect(nArr[0].count).toBe(1)
+
+  // Test getter: returns title at index 1.
+  expect(untypedFactory.getTitleAt(nArr, 1)).toBe("world")
+
+  // Test computed: total title length should equal "hello".length + "world".length.
+  expect(untypedFactory.getTotalTitleLength(nArr)).toBe(5 + 5)
+})

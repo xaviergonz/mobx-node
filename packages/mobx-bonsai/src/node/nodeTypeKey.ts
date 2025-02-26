@@ -3,51 +3,43 @@ import { failure } from "../error/failure"
 import { Dispose, disposeOnce } from "../utils/disposeOnce"
 import { assertIsNode, node } from "./node"
 import mitt from "mitt"
-import { IsNever, MarkOptional } from "ts-essentials"
+import { MarkOptional } from "ts-essentials"
 import { getGlobalConfig } from "../globalConfig"
 import { volatileProp } from "./volatileProp"
 import { PrependArgument } from "../utils/PrependArgument"
 
 /**
- * A unique key indicating the type of a node. This constant is used internally to identify node types.
+ * Property key used to identify a node's type
  */
 export const nodeTypeKey = "$$type"
 
 /**
- * A type alias that represents the type of the `nodeType` constant.
+ * Type of the nodeTypeKey constant
  */
 export type NodeTypeKey = typeof nodeTypeKey
 
 /**
- * Represents a node's type value, which can be either a string or a number.
- *
- * This alias is defined to allow flexibility in specifying node types, accommodating both textual
- * identifiers and numerical values.
+ * Value that identifies a node's type (string or number)
  */
 export type NodeTypeValue = string | number
 
 /**
- * A type alias representing a node key value.
- *
- * This type is used to uniquely identify nodes and can be either a string or a number.
+ * Value that uniquely identifies a node instance (string or number)
  */
 export type NodeKeyValue = string | number
 
 /**
- * Represents a node that includes a type designation.
+ * Represents any node that has a type designation
  */
 export interface NodeWithAnyType {
   readonly [nodeTypeKey]: NodeTypeValue
 }
 
 /**
- * Represents a node with a specific type and additional data.
+ * Combines a specific node type with additional data properties
  *
- * This type combines a readonly property identified by the symbol
- * [nodeType] (of type TType) with extra data properties defined by TData.
- *
- * @template TType - A subtype of NodeTypeValue that specifies the node's type.
- * @template TData - An object type providing additional data for the node.
+ * @template TType - The node's type identifier
+ * @template TData - Additional data properties for the node
  */
 export type TNode<TType extends NodeTypeValue, TData> = {
   readonly [nodeTypeKey]: TType
@@ -90,6 +82,10 @@ const finalizationRegistry = new FinalizationRegistry(
 
 /**
  * @internal
+ * Attempts to register a node in the type/key registry
+ *
+ * @param node - The node to register
+ * @returns True if registration was successful
  */
 export function tryRegisterNodeByTypeAndKey(node: object): boolean {
   assertIsNode(node, "node")
@@ -113,109 +109,39 @@ export function tryRegisterNodeByTypeAndKey(node: object): boolean {
 }
 
 /**
- * Represents a node type with associated behavior for node management.
+ * Base node type definition with core functionality
  *
- * @template TNode An object representing the node which should adhere to this node type.
+ * @template TNode - Node structure that adheres to this type
+ * @template TKey - Key field in the node structure (if any)
+ * @template TOther - Additional properties and methods
  */
-export type NodeType<
-  TNode extends NodeWithAnyType,
-  TKey extends keyof TNode | never = never,
-  TOther = unknown,
-> = {
+export type BaseNodeType<TNode extends object, TKey extends keyof TNode | never, TOther> = {
   /**
-   * Unique type identifier.
-   */
-  typeId: TNode[NodeTypeKey]
-
-  /**
-   * The property name that contains the unique key of the node, if any.
-   */
-  key: IsNever<TKey> extends true ? undefined : TKey
-
-  /**
-   * Create a new node of this type. This is the same as calling `node` but with
-   * the node type property already set.
+   * Adds volatile state properties to nodes of this type
    *
-   * @param data The node data.
-   */
-  (data: MarkOptional<TNode, NodeTypeKey | TKey>): TNode
-
-  /**
-   * Create snapshot data of this type. This is the same as the given object but with
-   * the node type property already set.
+   * Volatile state is not persisted in snapshots and is local to each node instance.
    *
-   * @param data The data.
-   */
-  snapshot(data: MarkOptional<TNode, NodeTypeKey | TKey>): TNode
-
-  /**
-   * Retrieves the key associated with the given node.
-   *
-   * @param node The node for which to retrieve the key.
-   * @returns The unique key value of the node.
-   */
-  getKey(node: TNode): NodeKeyValue | undefined
-
-  /**
-   * Finds a node by its unique key.
-   *
-   * @param key The key of the node.
-   * @returns The node if found; otherwise, undefined.
-   */
-  findByKey(key: NodeKeyValue): TNode | undefined
-
-  /**
-   * Registers a callback to be invoked upon node initialization.
-   *
-   * @param callback A function that receives the node during initialization.
-   * @returns A dispose function to remove the callback when no longer needed.
-   */
-  onInit(callback: (node: TNode) => void): Dispose
-
-  /**
-   * Unregisters this node type.
-   * Once unregistered, the node type is removed from the internal registry.
-   */
-  unregister(): void
-
-  /**
-   * Unregisters this node type.
-   * Once unregistered, the node type is removed from the internal registry.
-   */
-  [Symbol.dispose](): void
-
-  /**
-   * @internal
-   */
-  _initNode(node: TNode): void
-
-  withKey<TKey extends keyof TNode>(key: TKey): NodeType<TNode, TKey, TOther>
-
-  /**
-   * Registers volatile state for nodes of this type.
-   *
-   * Volatile state is not persisted in snapshots and is local to a particular node instance.
-   * This method creates getter, setter, and reset functions for each volatile property.
-   *
-   * @param volatile An object where each key defines a getter function for volatile state
+   * @template TVolatiles - Record of volatile property getter functions
+   * @param volatile - Object where each key defines a getter function for volatile state
    * @returns The same NodeType with added accessor methods for the volatile state
    */
   volatile<TVolatiles extends Record<string, () => any>>(
     volatile: TVolatiles
-  ): NodeType<TNode, TKey, TOther & VolatileAccessors<TVolatiles, TNode>>
+  ): BaseNodeType<TNode, TKey, TOther & VolatileAccessors<TVolatiles, TNode>>
 
   /**
-   * Registers action methods for nodes of this type.
+   * Registers action methods for nodes of this type
    *
    * Actions are methods that can modify the node state and are automatically
    * wrapped in MobX actions for proper state tracking.
    *
-   * @param actions A function that receives a node and returns an object of action methods
+   * @template TActions - Record of action methods
+   * @param actions - Function that receives a node and returns an object of action methods
    * @returns The same NodeType with added action methods that accept a node as their first parameter
    */
   actions<TActions extends Record<string, (...args: any) => any>>(
     actions: (n: TNode) => TActions
-  ): NodeType<
+  ): BaseNodeType<
     TNode,
     TKey,
     TOther & {
@@ -224,16 +150,17 @@ export type NodeType<
   >
 
   /**
-   * Registers getter methods for nodes of this type.
+   * Registers getter methods for nodes of this type
    *
    * Getters are methods that derive values from the node state without modifying it.
    *
-   * @param getters A function that receives a node and returns an object of getter methods
+   * @template TGetters - Record of getter methods
+   * @param getters - Function that receives a node and returns an object of getter methods
    * @returns The same NodeType with added getter methods that accept a node as their first parameter
    */
   getters<TGetters extends Record<string, (...args: any) => any>>(
     getters: (n: TNode) => TGetters
-  ): NodeType<
+  ): BaseNodeType<
     TNode,
     TKey,
     TOther & {
@@ -242,24 +169,18 @@ export type NodeType<
   >
 
   /**
-   * Registers computed methods for nodes of this type.
+   * Registers computed methods for nodes of this type
    *
    * Computed methods derive values from the node state and are automatically
    * memoized by MobX for performance optimization.
    *
-   * Computed properties can be defined in two ways:
-   * 1. As simple getter functions: `getLength() { return n.title.length }`
-   * 2. As configuration objects: `getLength: { get() { return n.title.length }, equals: customComparer }`
-   *
-   * When using the configuration object form, you can specify additional MobX computed options
-   * such as `equals`, `requiresReaction`, `keepAlive`, and `context`.
-   *
-   * @param computeds A function that receives a node and returns an object of computed accessor methods
+   * @template TComputeds - Record of computed properties
+   * @param computeds - Function that receives a node and returns an object of computed accessor methods
    * @returns The same NodeType with added computed methods that accept a node as their first parameter
    */
   computeds<TComputeds extends Record<string, ComputedEntry<any>>>(
     computeds: (n: TNode) => TComputeds
-  ): NodeType<
+  ): BaseNodeType<
     TNode,
     TKey,
     TOther & {
@@ -273,18 +194,173 @@ export type NodeType<
 } & TOther
 
 /**
- * Represents a computed property with configuration options.
- * This type combines a required getter function with optional MobX computed configuration options.
+ * A type that represents an untyped node type in the mobx-bonsai tree.
  *
- * @template T - The return type of the computed value
+ * @template TNode - The object type that represents the node's data structure.
+ */
+export type UntypedNodeType<TNode extends object> = BaseNodeType<
+  TNode,
+  never,
+  {
+    /**
+     * Creates a node of this type with the type property automatically set
+     *
+     * @param data - Initial node data
+     * @returns A node instance of this type
+     */
+    (data: TNode): TNode
+
+    /**
+     * Creates snapshot data of this type without instantiating a node
+     *
+     * @param data - Initial data
+     * @returns A data snapshot with the type property set
+     */
+    snapshot(data: TNode): TNode
+  }
+>
+
+/**
+ * Represents a node type with associated lifecycle and behavior
  *
- * Properties include:
- * - `get`: Required function that returns the computed value
- * - MobX computed options (excluding 'get' and 'set'):
- *   - `equals`: Optional custom equality comparer function
- *   - `requiresReaction`: Optional flag to throw when the computed is accessed outside a reactive context
- *   - `keepAlive`: Optional flag to prevent garbage collection when not observed
- *   - `context`: Optional context object for the getter function
+ * @template TNode - Node structure that adheres to this type
+ * @template TKey - Key field in the node structure (if any)
+ * @template TOther - Additional properties and methods
+ */
+export type BaseTypedNodeType<
+  TNode extends NodeWithAnyType,
+  TKey extends keyof TNode | never,
+  TOther,
+> = BaseNodeType<
+  TNode,
+  TKey,
+  TOther & {
+    /**
+     * Unique identifier for this node type
+     */
+    typeId: TNode[NodeTypeKey]
+
+    /**
+     * Unregisters this node type
+     */
+    unregister(): void
+
+    /**
+     * Unregisters this node type (disposable pattern)
+     */
+    [Symbol.dispose](): void
+
+    /**
+     * Registers a callback to run when nodes of this type are initialized
+     *
+     * @param callback - Function to execute when a node is initialized
+     * @returns Dispose function to remove the listener
+     */
+    onInit(callback: (node: TNode) => void): Dispose
+
+    /**
+     * @internal
+     * @param node - Node to initialize
+     */
+    _initNode(node: TNode): void
+  }
+>
+
+/**
+ * Represents a node type with associated lifecycle and behavior
+ *
+ * @template TNode - Node structure that adheres to this type
+ * @template TKey - Key field in the node structure (if any)
+ * @template TOther - Additional properties and methods
+ */
+export type TypedNodeType<TNode extends NodeWithAnyType> = BaseTypedNodeType<
+  TNode,
+  never,
+  {
+    /**
+     * Creates a node of this type with the type property automatically set
+     *
+     * @param data - Initial node data
+     * @returns A node instance of this type
+     */
+    (data: MarkOptional<TNode, NodeTypeKey>): TNode
+
+    /**
+     * Creates snapshot data of this type without instantiating a node
+     *
+     * @param data - Initial data
+     * @returns A data snapshot with the type property set
+     */
+    snapshot(data: MarkOptional<TNode, NodeTypeKey>): TNode
+
+    /**
+     * Configures this type to use a specific property as the node key
+     *
+     * @template TKey - Property key in the node type
+     * @param key - Property name to use as the node key
+     * @returns A keyed node type using the specified property as key
+     */
+    withKey<TKey extends keyof TNode>(key: TKey): KeyedNodeType<TNode, TKey>
+  }
+>
+
+/**
+ * Node type that uses a specific property as a unique key for each node
+ *
+ * @template TNode - Node structure that adheres to this type
+ * @template TKey - Key field in the node structure
+ * @template TOther - Additional properties and methods
+ */
+export type KeyedNodeType<
+  TNode extends NodeWithAnyType,
+  TKey extends keyof TNode,
+> = BaseTypedNodeType<
+  TNode,
+  TKey,
+  {
+    /**
+     * Creates a node of this type with the type property automatically set
+     *
+     * @param data - Initial node data
+     * @returns A node instance of this type
+     */
+    (data: MarkOptional<TNode, NodeTypeKey | TKey>): TNode
+
+    /**
+     * Creates snapshot data of this type without instantiating a node
+     *
+     * @param data - Initial data
+     * @returns A data snapshot with the type property set
+     */
+    snapshot(data: MarkOptional<TNode, NodeTypeKey | TKey>): TNode
+
+    /**
+     * Property name containing the node's unique key
+     */
+    key: TKey
+
+    /**
+     * Gets the unique key value for a node
+     *
+     * @param node - Node to get the key from
+     * @returns The node's key value or undefined
+     */
+    getKey(node: TNode): NodeKeyValue | undefined
+
+    /**
+     * Retrieves a node by its key (if it exists)
+     *
+     * @param key - Key to search for
+     * @returns The node with the specified key or undefined
+     */
+    findByKey(key: NodeKeyValue): TNode | undefined
+  }
+>
+
+/**
+ * Configuration for a computed property with options
+ *
+ * @template T - Return type of the computed value
  */
 export type ComputedFnWithOptions<T> = { get: () => T } & Omit<
   IComputedValueOptions<T>,
@@ -292,41 +368,17 @@ export type ComputedFnWithOptions<T> = { get: () => T } & Omit<
 >
 
 /**
- * Represents a computed property definition that can be used with the `computeds` method.
+ * Computed property definition that can be a function or configuration object
  *
- * @template T - The return type of the computed value
- *
- * Can be defined in two ways:
- * 1. As a simple getter function: `() => T`
- * 2. As a configuration object with a getter and optional MobX settings: `{ get: () => T, ... }`
- *
- * Example with a simple getter:
- * ```
- * getFullName: () => `${n.firstName} ${n.lastName}`
- * ```
- *
- * Example with configuration options:
- * ```
- * getFilteredItems: {
- *   get: () => n.items.filter(i => i.active),
- *   equals: comparer.shallow,
- *   requiresReaction: true,
- *   keepAlive: false
- * }
- * ```
+ * @template T - Return type of the computed value
  */
 export type ComputedEntry<T> = (() => T) | ComputedFnWithOptions<T>
 
 /**
- * Utility type that generates getter, setter, and reset accessors for volatile properties.
+ * Generates accessor methods for volatile properties
  *
- * For each key in the source record, three methods are created:
- * - `getX` - Retrieves the volatile property value
- * - `setX` - Sets the volatile property to a new value
- * - `resetX` - Resets the volatile property to its initial value
- *
- * @template T - Record of getter functions for volatile properties
- * @template TNode - The node type associated with these accessors
+ * @template T - Record of volatile property getter functions
+ * @template TNode - The node type these accessors operate on
  */
 export type VolatileAccessors<T extends Record<string, () => any>, TNode> = {
   [K in keyof T as `set${Capitalize<string & K>}`]: (n: TNode, value: ReturnType<T[K]>) => void
@@ -337,31 +389,40 @@ export type VolatileAccessors<T extends Record<string, () => any>, TNode> = {
 }
 
 /**
- * Represents any node type.
+ * A type representing any untyped node type.
  */
-export type AnyNodeType = NodeType<NodeWithAnyType>
+export type AnyUntypedNodeType = UntypedNodeType<any>
 
 /**
- * Extracts the node type associated with a given {@link NodeType} instance.
- *
- * This utility type uses conditional types to infer the node type parameter (TNode)
- * from a provided NodeType instance. If the generic type does not match the expected structure,
- * the resulting type will be `never`.
- *
- * @template T A {@link NodeType} instance from which to extract the node type.
- * @returns The associated node type (TNode) of the provided {@link NodeType} instance.
+ * Union of all possible typed node type objects
  */
-export type NodeForNodeType<T extends NodeType<any, any>> = T extends NodeType<infer TNode>
+export type AnyTypedNodeType = TypedNodeType<any> | KeyedNodeType<any, any>
+
+/**
+ * Union of all possible node type objects
+ */
+export type AnyNodeType = AnyUntypedNodeType | AnyTypedNodeType
+
+/**
+ * Extracts the node type from a NodeType instance
+ *
+ * @template T - A NodeType instance
+ */
+export type NodeForNodeType<T extends BaseNodeType<any, any, any>> = T extends BaseNodeType<
+  infer TNode,
+  any,
+  any
+>
   ? TNode
   : never
 
-const registeredNodeTypes = new Map<NodeTypeValue, NodeType<any, any>>()
+const registeredNodeTypes = new Map<NodeTypeValue, AnyTypedNodeType>()
 
 /**
- * Retrieves the registered node type corresponding to the specified node type ID.
+ * Retrieves the registered node type for a given type ID
  *
- * @param typeId The unique node type identifier.
- * @returns The node type object associated with the provided type, or `undefined` if no matching node type is registered.
+ * @param typeId - The node type identifier to look up
+ * @returns The node type object or undefined if not found
  */
 export function findNodeTypeById(typeId: NodeTypeValue): AnyNodeType | undefined {
   return registeredNodeTypes.get(typeId)
@@ -371,12 +432,10 @@ export function getNodeTypeId<TNode extends NodeWithAnyType>(node: TNode): TNode
 export function getNodeTypeId(node: object): NodeTypeValue | undefined
 
 /**
- * Retrieves the node type identifier from the given node object.
+ * Gets the type identifier of a node
  *
- * This function accesses the value associated with the node type key on the provided object.
- *
- * @param node - The object from which to extract the node type identifier.
- * @returns The node type identifier if available; otherwise, returns undefined.
+ * @param node - The node to get the type from
+ * @returns The node's type identifier or undefined
  */
 export function getNodeTypeId(node: object): NodeTypeValue | undefined {
   return (node as any)[nodeTypeKey]
@@ -385,19 +444,19 @@ export function getNodeTypeId(node: object): NodeTypeValue | undefined {
 export function getNodeTypeAndKey<TNode extends NodeWithAnyType>(
   node: TNode
 ): {
-  type: AnyNodeType
+  type: AnyTypedNodeType
   key: NodeKeyValue | undefined
 }
 export function getNodeTypeAndKey(node: object): {
-  type: AnyNodeType | undefined
+  type: AnyTypedNodeType | undefined
   key: NodeKeyValue | undefined
 }
 
 /**
- * Retrieves the node type and key of the specified node, if any.
+ * Gets both the type object and key value for a node
  *
- * @param node The node from which to retrieve the node type and key.
- * @returns The corresponding NodeType and key if found.
+ * @param node - The node to extract type and key from
+ * @returns Object containing the node's type and key
  */
 export function getNodeTypeAndKey(node: object): {
   type: AnyNodeType | undefined
@@ -418,109 +477,39 @@ export function getNodeTypeAndKey(node: object): {
 
   return {
     type,
-    key: type.getKey(node as NodeWithAnyType),
+    key: "getKey" in type ? type.getKey(node as NodeWithAnyType) : undefined,
   }
 }
 
-/**
- * Registers a new node type with the specified configuration.
- *
- * This function registers a node type by adding it to an internal registry.
- * If the provided node type already exists in the registry, an error is thrown.
- *
- * @param options An object containing the node type configuration.
- * @param options.type A unique identifier for the node type.
- *
- * @returns A NodeType<T> object representing the registered node type.
- *
- * @throws Error if the node type identified by the provided type is already registered.
- */
 export function nodeType<TNode extends NodeWithAnyType = never>(
   type: TNode[NodeTypeKey]
-): NodeType<TNode> {
-  if (registeredNodeTypes.has(type)) {
-    throw failure(`node type '${type}' is already registered`)
-  }
+): TypedNodeType<TNode>
+export function nodeType<TNode extends object = never>(): UntypedNodeType<TNode>
 
-  const events = mitt<{
-    init: TNode
-  }>()
+/**
+ * Creates and registers a new node type
+ *
+ * @template TNode - The node structure that will adhere to this type
+ * @param type - Unique identifier for this node type
+ * @returns A typed node factory with associated methods
+ */
+export function nodeType<TNode extends object = never>(
+  type?: TNode extends NodeWithAnyType ? TNode[NodeTypeKey] : never
+): TNode extends NodeWithAnyType ? TypedNodeType<TNode> : UntypedNodeType<TNode> {
+  return type !== undefined ? (typedNodeType<NodeWithAnyType>(type) as any) : untypedNodeType()
+}
 
-  const snapshot = (data: MarkOptional<TNode, NodeTypeKey>) => {
-    const sn = {
-      ...data,
-      [nodeTypeKey]: type,
-    } as TNode
-
-    // generate key if missing
-    if (nodeTypeObj.key !== undefined) {
-      const key = nodeTypeObj.getKey(sn)
-      if (key === undefined) {
-        ;(sn as any)[nodeTypeObj.key] = getGlobalConfig().keyGenerator()
-      }
-    }
-
-    return sn
-  }
-
-  const nodeTypeObj: NodeType<TNode> = (data: MarkOptional<TNode, NodeTypeKey>) => {
-    return node(snapshot(data)) as TNode
-  }
-
-  nodeTypeObj.snapshot = snapshot
-
-  nodeTypeObj.typeId = type
-  nodeTypeObj.key = undefined
-
-  nodeTypeObj.withKey = (key) => {
-    if (nodeTypeObj.key !== undefined) {
-      throw failure(`node type already has a key`)
-    }
-    nodeTypeObj.key = key as any
-    return nodeTypeObj as any
-  }
-
-  nodeTypeObj.unregister = disposeOnce(() => {
-    registeredNodeTypes.delete(type)
-  })
-
-  nodeTypeObj[Symbol.dispose] = () => {
-    nodeTypeObj.unregister()
-  }
-
-  nodeTypeObj.getKey = (node) => {
-    return nodeTypeObj.key === undefined ? undefined : (node[nodeTypeObj.key] as NodeKeyValue)
-  }
-
-  nodeTypeObj.findByKey = (key) => {
-    const typeMap = nodeByTypeAndKey.get(type)
-    if (!typeMap) {
-      return undefined
-    }
-
-    const ref = typeMap.get(key)
-
-    return ref?.deref() as TNode | undefined
-  }
-
-  nodeTypeObj.onInit = (callback) => {
-    const actionCallback = action(callback)
-
-    events.on("init", actionCallback)
-
-    return () => {
-      events.off("init", actionCallback)
-    }
-  }
-
-  nodeTypeObj._initNode = (node: TNode) => {
-    events.emit("init", node)
-  }
-
-  nodeTypeObj.volatile = function <TVolatiles extends Record<string, () => any>>(
-    volatiles: TVolatiles
-  ) {
-    const result = this as any
+/**
+ * @internal
+ * Adds extension methods (volatile, actions, getters, computeds) to a node type object
+ *
+ * @param nodeTypeObj - The node type object to extend
+ */
+function addNodeTypeExtensionMethods<TNode extends object>(
+  nodeTypeObj: Partial<BaseNodeType<TNode, any, unknown>>
+): void {
+  nodeTypeObj.volatile = (volatiles) => {
+    const result = nodeTypeObj as any
 
     for (const volatileKey of Object.keys(volatiles)) {
       const defaultValueGen = volatiles[volatileKey]
@@ -532,15 +521,13 @@ export function nodeType<TNode extends NodeWithAnyType = never>(
       result[`reset${capitalizedVolatileKey}`] = resetter
     }
 
-    return result
+    return nodeTypeObj as any
   }
 
-  nodeTypeObj.actions = function <TActions extends Record<string, (...args: any) => any>>(
-    getActions: (n: TNode) => TActions
-  ) {
-    const result = this as any
+  nodeTypeObj.actions = (getActions) => {
+    const result = nodeTypeObj as any
 
-    const cachedActions = new WeakMap<object, TActions>()
+    const cachedActions = new WeakMap<object, Record<string, (...args: any[]) => any>>()
 
     for (const key of Object.keys(getActions(undefined as any))) {
       result[key] = action((n: TNode, ...args: any[]) => {
@@ -560,15 +547,13 @@ export function nodeType<TNode extends NodeWithAnyType = never>(
       })
     }
 
-    return result
+    return nodeTypeObj as any
   }
 
-  nodeTypeObj.getters = function <TGetters extends Record<string, (...args: any) => any>>(
-    getGetters: (n: TNode) => TGetters
-  ) {
-    const result = this as any
+  nodeTypeObj.getters = (getGetters) => {
+    const result = nodeTypeObj as any
 
-    const cachedGetters = new WeakMap<object, TGetters>()
+    const cachedGetters = new WeakMap<object, Record<string, (...args: any) => any>>()
 
     for (const key of Object.keys(getGetters(undefined as any))) {
       result[key] = (n: TNode, ...args: any[]) => {
@@ -588,13 +573,11 @@ export function nodeType<TNode extends NodeWithAnyType = never>(
       }
     }
 
-    return result
+    return nodeTypeObj as any
   }
 
-  nodeTypeObj.computeds = function <TComputeds extends Record<string, ComputedEntry<unknown>>>(
-    getComputeds: (n: TNode) => TComputeds
-  ) {
-    const result = this as any
+  nodeTypeObj.computeds = (getComputeds) => {
+    const result = nodeTypeObj as any
 
     const cachedComputeds = new WeakMap<object, Record<string, IComputedValue<unknown>>>()
 
@@ -627,10 +610,111 @@ export function nodeType<TNode extends NodeWithAnyType = never>(
       }
     }
 
-    return result
+    return nodeTypeObj as any
+  }
+}
+
+function typedNodeType<TNode extends NodeWithAnyType = never>(
+  type: TNode[NodeTypeKey]
+): TypedNodeType<TNode> {
+  if (type && registeredNodeTypes.has(type)) {
+    throw failure(`node type '${type}' is already registered`)
   }
 
-  registeredNodeTypes.set(type, nodeTypeObj as NodeType<any, any>)
+  const events = mitt<{
+    init: TNode
+  }>()
 
-  return nodeTypeObj
+  const snapshot = (data: MarkOptional<TNode, NodeTypeKey>) => {
+    const sn = {
+      ...data,
+      [nodeTypeKey]: type,
+    } as TNode
+
+    // generate key if missing
+    if (keyedNodeTypeObj.key !== undefined) {
+      const key = keyedNodeTypeObj.getKey(sn)
+      if (key === undefined) {
+        ;(sn as any)[keyedNodeTypeObj.key] = getGlobalConfig().keyGenerator()
+      }
+    }
+
+    return sn
+  }
+
+  const nodeTypeObj: Partial<TypedNodeType<TNode>> = (data: MarkOptional<TNode, NodeTypeKey>) => {
+    return node(snapshot(data)) as TNode
+  }
+  const keyedNodeTypeObj = nodeTypeObj as unknown as KeyedNodeType<TNode, keyof TNode>
+
+  nodeTypeObj.snapshot = snapshot
+
+  nodeTypeObj.typeId = type
+
+  nodeTypeObj.withKey = (key) => {
+    if (keyedNodeTypeObj.key !== undefined) {
+      throw failure(`node type already has a key`)
+    }
+
+    keyedNodeTypeObj.key = key
+
+    keyedNodeTypeObj.getKey = (node) => {
+      return keyedNodeTypeObj.key === undefined
+        ? undefined
+        : (node[keyedNodeTypeObj.key] as NodeKeyValue)
+    }
+
+    keyedNodeTypeObj.findByKey = (key) => {
+      const typeMap = nodeByTypeAndKey.get(type)
+      if (!typeMap) {
+        return undefined
+      }
+
+      const ref = typeMap.get(key)
+
+      return ref?.deref() as TNode | undefined
+    }
+
+    return keyedNodeTypeObj as any
+  }
+
+  nodeTypeObj.unregister = disposeOnce(() => {
+    registeredNodeTypes.delete(type)
+  })
+
+  nodeTypeObj[Symbol.dispose] = () => {
+    nodeTypeObj.unregister!()
+  }
+
+  nodeTypeObj.onInit = (callback) => {
+    const actionCallback = action(callback)
+
+    events.on("init", actionCallback)
+
+    return () => {
+      events.off("init", actionCallback)
+    }
+  }
+
+  nodeTypeObj._initNode = (node: TNode) => {
+    events.emit("init", node)
+  }
+
+  addNodeTypeExtensionMethods(nodeTypeObj)
+
+  registeredNodeTypes.set(type, nodeTypeObj as AnyTypedNodeType)
+
+  return nodeTypeObj as TypedNodeType<TNode>
+}
+
+function untypedNodeType<TNode extends object = never>(): UntypedNodeType<TNode> {
+  const snapshot = (data: TNode) => data
+
+  const nodeTypeObj: Partial<UntypedNodeType<TNode>> = (data: TNode) => node(snapshot(data))
+
+  nodeTypeObj.snapshot = snapshot
+
+  addNodeTypeExtensionMethods(nodeTypeObj)
+
+  return nodeTypeObj as UntypedNodeType<TNode>
 }

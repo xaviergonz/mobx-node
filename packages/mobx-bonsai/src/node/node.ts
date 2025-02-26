@@ -18,6 +18,7 @@ import { getParent } from "./tree/getParent"
 import { Dispose, disposeOnce } from "../utils/disposeOnce"
 import {
   getNodeTypeAndKey,
+  KeyedNodeType,
   nodeTypeKey,
   NodeWithAnyType,
   tryRegisterNodeByTypeAndKey,
@@ -173,10 +174,10 @@ export const node = action(
     }
 
     const { type, key } = getNodeTypeAndKey(struct)
-    const keyProp = type?.key
+    const keyProp = type && "key" in type ? type.key : undefined
 
     if (type !== undefined && key !== undefined) {
-      const existingNode = type.findByKey(key)
+      const existingNode = (type as KeyedNodeType<any, any>).findByKey(key) as T | undefined
       if (existingNode) {
         const result = reconcileData(existingNode, struct, existingNode)
         if (result !== existingNode) {

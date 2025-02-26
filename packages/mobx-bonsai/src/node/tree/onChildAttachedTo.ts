@@ -3,7 +3,7 @@ import { assertIsFunction } from "../../plainTypes/checks"
 import { assertIsNode } from "../node"
 import { getChildrenNodes } from "./getChildrenNodes"
 import { disposeOnce } from "../../utils/disposeOnce"
-import { getNodeTypeAndKey, NodeForNodeType, NodeType } from "../nodeTypeKey"
+import { AnyTypedNodeType, getNodeTypeAndKey, NodeForNodeType } from "../nodeTypeKey"
 
 export type OnChildAttachedToDisposer = (runDetachDisposers: boolean) => void
 export type OnChildAttachedToParams<TChildNodeType, TChild> = {
@@ -14,11 +14,11 @@ export type OnChildAttachedToParams<TChildNodeType, TChild> = {
   fireForCurrentChildren?: boolean
 }
 
-export function onChildAttachedTo<const NT extends readonly NodeType<any, any>[]>(
+export function onChildAttachedTo<const NT extends readonly AnyTypedNodeType[]>(
   params: OnChildAttachedToParams<NT, NodeForNodeType<NT[number]>>
 ): OnChildAttachedToDisposer
 
-export function onChildAttachedTo<const NT extends NodeType<any, any>>(
+export function onChildAttachedTo<const NT extends AnyTypedNodeType>(
   params: OnChildAttachedToParams<NT, NodeForNodeType<NT>>
 ): OnChildAttachedToDisposer
 
@@ -44,7 +44,7 @@ export function onChildAttachedTo<T extends object = object>({
   deep,
   fireForCurrentChildren,
 }: OnChildAttachedToParams<
-  NodeType<any, any> | readonly NodeType<any, any>[] | undefined,
+  AnyTypedNodeType | readonly AnyTypedNodeType[] | undefined,
   T
 >): OnChildAttachedToDisposer {
   assertIsFunction(target, "target")
