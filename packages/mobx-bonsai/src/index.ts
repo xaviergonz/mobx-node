@@ -2,13 +2,6 @@
 export { MobxBonsaiError } from "./error/MobxBonsaiError"
 
 // node/nodeTypeKey
-export type {
-  BaseNodeType,
-  ComputedEntry,
-  ComputedFnWithOptions,
-  VolatileAccessors,
-} from "./node/nodeTypeKey/BaseNodeType"
-export type { BaseTypedNodeType } from "./node/nodeTypeKey/BaseTypedNodeType"
 export type { KeyedNodeType } from "./node/nodeTypeKey/KeyedNodeType"
 export type { NodeForNodeType } from "./node/nodeTypeKey/NodeForNodeType"
 export {
@@ -44,10 +37,6 @@ export { isChildOfParent } from "./node/tree/isChildOfParent"
 export { isParentOfChild } from "./node/tree/isParentOfChild"
 export { isRoot } from "./node/tree/isRoot"
 export { onChildAttachedTo } from "./node/tree/onChildAttachedTo"
-export type {
-  OnChildAttachedToDisposer,
-  OnChildAttachedToParams,
-} from "./node/tree/onChildAttachedTo"
 export type { ParentPath } from "./node/tree/ParentPath"
 export type { Path, PathElement, WritablePath } from "./node/tree/pathTypes"
 export { resolvePath } from "./node/tree/resolvePath"
@@ -62,7 +51,6 @@ export { onSnapshot } from "./node/snapshot/onSnapshot"
 // node
 export { clone } from "./node/clone"
 export { computedProp } from "./node/computedProp"
-export type { ComputedPropFn } from "./node/computedProp"
 export {
   assertIsNode,
   isNode,
@@ -85,7 +73,6 @@ export { asMap } from "./utils/asMap"
 export { asSet } from "./utils/asSet"
 export { deepEquals } from "./utils/deepEquals"
 export type { Dispose } from "./utils/disposeOnce"
-export type { PrependArgument } from "./utils/PrependArgument"
 
 // yjsBinding
 export {
@@ -97,4 +84,6 @@ export {
 export type { YjsStructure, YjsValue } from "./yjsBinding/yjsTypes/types"
 
 export { bindYjsToNode } from "./yjsBinding/bindYjsToNode"
+
+// polyfills
 ;(Symbol as any).dispose ??= Symbol("Symbol.dispose")

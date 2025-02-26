@@ -1,8 +1,9 @@
 import { IComputedValueOptions } from "mobx"
 import { PrependArgument } from "../../utils/PrependArgument"
-import { ReadonlyArrayCompatible } from "../../utils/ReadonlyArrayCompatible"
 
 /**
+ * @internal
+ *
  * Base node type definition with core functionality
  *
  * @template TNode - Node structure that adheres to this type
@@ -98,15 +99,14 @@ export type BaseNodeType<TNode extends object, TKey extends keyof TNode | never,
     TNode,
     TKey,
     TOther & {
-      [P in K as `set${Capitalize<P>}`]: (
-        node: TNode,
-        value: ReadonlyArrayCompatible<TNode[P]>
-      ) => void
+      [P in K as `set${Capitalize<P>}`]: (node: TNode, value: Readonly<TNode[P]>) => void
     }
   >
 } & TOther
 
 /**
+ * @internal
+ *
  * Configuration for a computed property with options
  *
  * @template T - Return type of the computed value
@@ -117,6 +117,8 @@ export type ComputedFnWithOptions<T> = { get: () => T } & Omit<
 >
 
 /**
+ * @internal
+ *
  * Computed property definition that can be a function or configuration object
  *
  * @template T - Return type of the computed value
@@ -124,6 +126,8 @@ export type ComputedFnWithOptions<T> = { get: () => T } & Omit<
 export type ComputedEntry<T> = (() => T) | ComputedFnWithOptions<T>
 
 /**
+ * @internal
+ *
  * Generates accessor methods for volatile properties
  *
  * @template T - Record of volatile property getter functions

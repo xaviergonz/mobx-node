@@ -6,7 +6,14 @@ import { disposeOnce } from "../../utils/disposeOnce"
 import { AnyTypedNodeType, getNodeTypeAndKey } from "../nodeTypeKey/nodeTypeKey"
 import { NodeForNodeType } from "../nodeTypeKey/NodeForNodeType"
 
+/**
+ * @internal
+ */
 export type OnChildAttachedToDisposer = (runDetachDisposers: boolean) => void
+
+/**
+ * @internal
+ */
 export type OnChildAttachedToParams<TChildNodeType, TChild> = {
   target: () => object
   childNodeType: TChildNodeType

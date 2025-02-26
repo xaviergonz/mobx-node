@@ -3,6 +3,8 @@ import { BaseNodeType } from "./BaseNodeType"
 import { NodeWithAnyType, NodeTypeKey } from "./nodeTypeKey"
 
 /**
+ * @internal
+ *
  * Represents a node type with associated lifecycle and behavior
  *
  * @template TNode - Node structure that adheres to this type

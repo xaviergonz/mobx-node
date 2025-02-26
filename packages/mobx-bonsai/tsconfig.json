@@ -28,7 +28,6 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": false,
     "skipLibCheck": true,
-    "stripInternal": true,
     "useDefineForClassFields": true,
     "isolatedModules": true
   },
