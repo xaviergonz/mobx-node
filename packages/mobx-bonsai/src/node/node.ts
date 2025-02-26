@@ -15,7 +15,7 @@ import { failure } from "../error/failure"
 import { invalidateSnapshotTreeToRoot } from "./snapshot/getSnapshot"
 import { buildNodeFullPath } from "./utils/buildNodeFullPath"
 import { getParent } from "./tree/getParent"
-import { Dispose, disposeOnce } from "../utils/disposeOnce"
+import { DisposableDispose, makeDisposable } from "../utils/disposable"
 import {
   getNodeTypeAndKey,
   nodeTypeKey,
@@ -123,11 +123,11 @@ function emitChangeToRoot(eventTarget: object, change: IObjectDidChange | IArray
  *
  * @returns A disposer function that, when invoked, unregisters the listener.
  */
-export function onDeepChange(node: object, listener: NodeChangeListener): Dispose {
+export function onDeepChange(node: object, listener: NodeChangeListener): DisposableDispose {
   const changeListeners = getNodeData(node).onChangeListeners
   changeListeners.push(listener)
 
-  return disposeOnce(() => {
+  return makeDisposable(() => {
     const index = changeListeners.indexOf(listener)
     if (index !== -1) {
       changeListeners.splice(index, 1)

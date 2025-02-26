@@ -5,7 +5,7 @@ import { setupYjsToNodeReplication } from "./yjsToNode/setupYjsToNodeReplication
 import { YjsStructure } from "./yjsTypes/types"
 import { action } from "mobx"
 import { walkTree, WalkTreeMode } from "../node/tree/walkTree"
-import { Dispose } from "../utils/disposeOnce"
+import { Dispose, disposeOnce } from "../utils/disposable"
 import { getParentToChildPath } from "../node/tree/getParentToChildPath"
 import { resolveYjsStructurePath } from "./nodeToYjs/resolveYjsStructurePath"
 import { getNodeTypeAndKey, NodeWithAnyType } from "../node/nodeTypeKey/nodeTypeKey"
@@ -54,6 +54,11 @@ export const bindYjsToNode = action(
      * Disposes the binding.
      */
     dispose: Dispose
+
+    /**
+     * Disposes the binding.
+     */
+    [Symbol.dispose](): void
   } => {
     yjsOrigin = yjsOrigin ?? Symbol("mobx-bonsai-yjs-origin")
 
@@ -86,7 +91,7 @@ export const bindYjsToNode = action(
       WalkTreeMode.ChildrenFirst
     )
 
-    return {
+    const ret = {
       node,
 
       getYjsObjectForNode: (target: object) => {
@@ -100,10 +105,16 @@ export const bindYjsToNode = action(
         return resolveYjsStructurePath(yjsObject, path)
       },
 
-      dispose: () => {
+      dispose: disposeOnce(() => {
         nodeToYjsReplicationAdmin.dispose()
         yjsToNodeReplicationAdmin.dispose()
+      }),
+
+      [Symbol.dispose]: () => {
+        ret.dispose()
       },
     }
+
+    return ret
   }
 )

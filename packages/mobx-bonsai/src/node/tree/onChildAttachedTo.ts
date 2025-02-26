@@ -2,7 +2,7 @@ import { action, reaction, runInAction } from "mobx"
 import { assertIsFunction } from "../../plainTypes/checks"
 import { assertIsNode } from "../node"
 import { getChildrenNodes } from "./getChildrenNodes"
-import { disposeOnce } from "../../utils/disposeOnce"
+import { disposeOnce } from "../../utils/disposable"
 import { AnyTypedNodeType, getNodeTypeAndKey } from "../nodeTypeKey/nodeTypeKey"
 import { NodeForNodeType } from "../nodeTypeKey/NodeForNodeType"
 

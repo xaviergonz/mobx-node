@@ -3,7 +3,7 @@ import { IComputedValue, action, computed } from "mobx"
 import { MarkOptional } from "ts-essentials"
 import { failure } from "../../error/failure"
 import { getGlobalConfig } from "../../globalConfig"
-import { disposeOnce } from "../../utils/disposeOnce"
+import { disposeOnce, makeDisposable } from "../../utils/disposable"
 import { assertIsNode, node } from "../node"
 import { volatileProp } from "../volatileProp"
 import { BaseNodeType } from "./BaseNodeType"
@@ -334,7 +334,7 @@ function addNodeTypeExtensionMethods<TNode extends object>(
     return nodeTypeObj as any
   }
 
-  nodeTypeObj.setters = (...properties) => {
+  nodeTypeObj.settersFor = (...properties) => {
     const result = nodeTypeObj as any
 
     for (const prop of properties) {
@@ -427,9 +427,9 @@ function typedNodeType<TNode extends NodeWithAnyType = never>(
 
     events.on("init", actionCallback)
 
-    return () => {
+    return makeDisposable(() => {
       events.off("init", actionCallback)
-    }
+    })
   }
 
   nodeTypeObj._initNode = (node: TNode) => {

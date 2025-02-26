@@ -93,7 +93,7 @@ export type BaseNodeType<TNode extends object, TKey extends keyof TNode | never,
    * @param properties - Names of properties to create setters for
    * @returns The same NodeType with added setter methods
    */
-  setters<K extends keyof TNode & string>(
+  settersFor<K extends keyof TNode & string>(
     ...properties: readonly K[]
   ): BaseNodeType<
     TNode,

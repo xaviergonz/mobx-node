@@ -1,4 +1,4 @@
-import { Dispose } from "../../utils/disposeOnce"
+import { DisposableDispose } from "../../utils/disposable"
 import { BaseNodeType } from "./BaseNodeType"
 import { NodeWithAnyType, NodeTypeKey } from "./nodeTypeKey"
 
@@ -40,7 +40,7 @@ export type BaseTypedNodeType<
      * @param callback - Function to execute when a node is initialized
      * @returns Dispose function to remove the listener
      */
-    onInit(callback: (node: TNode) => void): Dispose
+    onInit(callback: (node: TNode) => void): DisposableDispose
 
     /**
      * @internal

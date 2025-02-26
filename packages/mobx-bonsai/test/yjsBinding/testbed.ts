@@ -1,7 +1,8 @@
 import * as Y from "yjs"
 import { YjsValue, applyPlainArrayToYArray, applyPlainObjectToYMap, bindYjsToNode } from "../../src"
+import { Dispose } from "../../src/utils/disposable"
 
-const disposers: (() => void)[] = []
+const disposers: Dispose[] = []
 
 export function createObjectTestbed<T extends Record<string, any>>(initialData: T) {
   const yjsDoc = new Y.Doc()

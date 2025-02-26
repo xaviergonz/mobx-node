@@ -414,7 +414,7 @@ it("should support getters, computeds, volatiles and actions for untyped nodes o
 
 test("node type with setters", () => {
   type Book = { title: string; author: string; pageCount: number }
-  const tBook = nodeType<Book>().setters("title", "author", "pageCount")
+  const tBook = nodeType<Book>().settersFor("title", "author", "pageCount")
 
   const book = tBook({
     title: "1984",
@@ -437,7 +437,7 @@ test("node type setters work with readonly arrays", () => {
     todos: string[]
   }
 
-  const tTodoList = nodeType<TodoList>().setters("name", "todos")
+  const tTodoList = nodeType<TodoList>().settersFor("name", "todos")
 
   const todoList = tTodoList({
     name: "Shopping List",
