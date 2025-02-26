@@ -18,11 +18,11 @@ import { getParent } from "./tree/getParent"
 import { Dispose, disposeOnce } from "../utils/disposeOnce"
 import {
   getNodeTypeAndKey,
-  KeyedNodeType,
   nodeTypeKey,
   NodeWithAnyType,
   tryRegisterNodeByTypeAndKey,
-} from "./nodeTypeKey"
+} from "./nodeTypeKey/nodeTypeKey"
+import { KeyedNodeType } from "./nodeTypeKey/KeyedNodeType"
 import { reconcileData } from "./reconcileData"
 
 type ParentNode = {

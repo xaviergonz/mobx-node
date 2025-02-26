@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid/non-secure"
-import { NodeKeyValue } from "../nodeTypeKey"
+import { NodeKeyValue } from "../nodeTypeKey/nodeTypeKey"
 
 /**
  * Node key generator function.

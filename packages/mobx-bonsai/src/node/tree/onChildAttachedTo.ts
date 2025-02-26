@@ -3,7 +3,8 @@ import { assertIsFunction } from "../../plainTypes/checks"
 import { assertIsNode } from "../node"
 import { getChildrenNodes } from "./getChildrenNodes"
 import { disposeOnce } from "../../utils/disposeOnce"
-import { AnyTypedNodeType, getNodeTypeAndKey, NodeForNodeType } from "../nodeTypeKey"
+import { AnyTypedNodeType, getNodeTypeAndKey } from "../nodeTypeKey/nodeTypeKey"
+import { NodeForNodeType } from "../nodeTypeKey/NodeForNodeType"
 
 export type OnChildAttachedToDisposer = (runDetachDisposers: boolean) => void
 export type OnChildAttachedToParams<TChildNodeType, TChild> = {

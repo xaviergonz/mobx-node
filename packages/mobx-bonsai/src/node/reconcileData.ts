@@ -4,7 +4,7 @@ import { isNode } from "./node"
 import { getParentPath } from "./tree/getParentPath"
 import { isChildOfParent } from "./tree/isChildOfParent"
 import { failure } from "../error/failure"
-import { getNodeTypeAndKey } from "./nodeTypeKey"
+import { getNodeTypeAndKey } from "./nodeTypeKey/nodeTypeKey"
 
 function detachIfNeeded(newValue: any, oldValue: any, reconciliationRoot: object) {
   // edge case for when we are swapping nodes around the tree

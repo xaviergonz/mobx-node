@@ -1,6 +1,36 @@
 // mobx-bonsai core
 export { MobxBonsaiError } from "./error/MobxBonsaiError"
 
+// node/nodeTypeKey
+export type {
+  BaseNodeType,
+  ComputedEntry,
+  ComputedFnWithOptions,
+  VolatileAccessors,
+} from "./node/nodeTypeKey/BaseNodeType"
+export type { BaseTypedNodeType } from "./node/nodeTypeKey/BaseTypedNodeType"
+export type { KeyedNodeType } from "./node/nodeTypeKey/KeyedNodeType"
+export type { NodeForNodeType } from "./node/nodeTypeKey/NodeForNodeType"
+export {
+  findNodeTypeById,
+  getNodeTypeAndKey,
+  getNodeTypeId,
+  nodeType,
+  nodeTypeKey,
+} from "./node/nodeTypeKey/nodeTypeKey"
+export type {
+  AnyNodeType,
+  AnyTypedNodeType,
+  AnyUntypedNodeType,
+  NodeKeyValue,
+  NodeTypeValue,
+  NodeWithAnyType,
+  TNode,
+} from "./node/nodeTypeKey/nodeTypeKey"
+export type { TypedNodeType } from "./node/nodeTypeKey/TypedNodeType"
+export type { UntypedNodeType } from "./node/nodeTypeKey/UntypedNodeType"
+
+// node/tree
 export { findChildren } from "./node/tree/findChildren"
 export { findParent } from "./node/tree/findParent"
 export { findParentPath } from "./node/tree/findParentPath"
@@ -24,10 +54,12 @@ export { resolvePath } from "./node/tree/resolvePath"
 export type { RootPath } from "./node/tree/RootPath"
 export { walkTree, WalkTreeMode } from "./node/tree/walkTree"
 
+// node/snapshot
 export { applySnapshot } from "./node/snapshot/applySnapshot"
 export { getSnapshot } from "./node/snapshot/getSnapshot"
 export { onSnapshot } from "./node/snapshot/onSnapshot"
 
+// node
 export { clone } from "./node/clone"
 export { computedProp } from "./node/computedProp"
 export type { ComputedPropFn } from "./node/computedProp"
@@ -41,37 +73,14 @@ export type {
   NodeChange,
   NodeChangeListener,
 } from "./node/node"
-export {
-  findNodeTypeById,
-  getNodeTypeAndKey,
-  getNodeTypeId,
-  nodeType,
-  nodeTypeKey,
-} from "./node/nodeTypeKey"
-export type {
-  AnyNodeType,
-  AnyTypedNodeType,
-  AnyUntypedNodeType,
-  BaseNodeType,
-  BaseTypedNodeType,
-  ComputedEntry,
-  ComputedFnWithOptions,
-  KeyedNodeType,
-  NodeForNodeType,
-  NodeKeyValue,
-  NodeTypeValue,
-  NodeWithAnyType,
-  TNode,
-  TypedNodeType,
-  UntypedNodeType,
-  VolatileAccessors,
-} from "./node/nodeTypeKey"
 export type { NodeKeyGenerator } from "./node/utils/nodeKeyGenerator"
 export { volatileProp } from "./node/volatileProp"
 export type { VolatileProp } from "./node/volatileProp"
 
+// plainTypes
 export type { Primitive } from "./plainTypes/types"
 
+// utils
 export { asMap } from "./utils/asMap"
 export { asSet } from "./utils/asSet"
 export { deepEquals } from "./utils/deepEquals"
