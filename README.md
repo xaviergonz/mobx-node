@@ -25,7 +25,9 @@
   </a>
 </p>
 
-> ### Full documentation can be found on the [Wiki](https://github.com/xaviergonz/mobx-bonsai/wiki)
+> ### Full documentation can be found on the site:
+>
+> ## [mobx-bonsai.js.org](https://mobx-bonsai.js.org)
 
 ## Introduction
 

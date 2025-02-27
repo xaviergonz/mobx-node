@@ -18,7 +18,7 @@
   "bugs": {
     "url": "https://github.com/xaviergonz/mobx-bonsai/issues"
   },
-  "homepage": "https://github.com/xaviergonz/mobx-bonsai/wiki",
+  "homepage": "https://mobx-bonsai.js.org",
   "license": "MIT",
   "author": "Javier González Garcés",
   "source": "./src/index.ts",
@@ -43,14 +43,7 @@
   "types": "./dist/types/index.d.ts",
   "typings": "./dist/types/index.d.ts",
   "sideEffects": false,
-  "files": [
-    "src",
-    "dist",
-    "LICENSE",
-    "CHANGELOG.md",
-    "README.md",
-    "logo.png"
-  ],
+  "files": ["src", "dist", "LICENSE", "CHANGELOG.md", "README.md", "logo.png"],
   "scripts": {
     "quick-build": "tsc",
     "quick-build-tests": "tsc -p test",
