@@ -1,6 +1,4 @@
 /**
- * @internal
- *
  * Utility type that adds a parameter to the beginning of a function's parameter list.
  *
  * This type is used to transform methods that operate on a node into methods that

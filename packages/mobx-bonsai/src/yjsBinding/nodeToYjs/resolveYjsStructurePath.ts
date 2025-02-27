@@ -3,9 +3,6 @@ import { failure } from "../../error/failure"
 import { assertIsYjsStructure } from "../yjsTypes/checks"
 import { YjsStructure } from "../yjsTypes/types"
 
-/**
- * @internal
- */
 export function resolveYjsStructurePath(
   yjsObject: YjsStructure,
   path: readonly (string | number)[]

@@ -1,9 +1,6 @@
 import { computedProp } from "../computedProp"
 import { assertIsNode, getNodeData } from "../node"
 
-/**
- * @internal
- */
 export function getChildrenNodesWithTargetSet(node: object, targetSet: Set<object>): void {
   getShallowChildren(node).forEach((child) => {
     targetSet.add(child)

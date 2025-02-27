@@ -7,9 +7,6 @@ const mobx6 = {
   ],
 }
 
-/**
- * @internal
- */
 export function getMobxVersion(): number {
   if (mobx6.makeObservable!) {
     return 6

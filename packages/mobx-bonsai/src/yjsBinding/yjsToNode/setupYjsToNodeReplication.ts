@@ -23,9 +23,6 @@ function yjsToPlainValue(v: YjsValue): unknown {
   throw failure(`unsupported Y.js value type: ${v}`)
 }
 
-/**
- * @internal
- */
 export function setupYjsToNodeReplication({
   node,
   yjsObject,

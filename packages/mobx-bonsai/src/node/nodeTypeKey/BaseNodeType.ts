@@ -103,8 +103,6 @@ export type BaseNodeType<TNode extends object, TKey extends keyof TNode | never,
 } & TOther
 
 /**
- * @internal
- *
  * Configuration for a computed property with options
  *
  * @template T - Return type of the computed value
@@ -115,8 +113,6 @@ export type ComputedFnWithOptions<T> = { get: () => T } & Omit<
 >
 
 /**
- * @internal
- *
  * Computed property definition that can be a function or configuration object
  *
  * @template T - Return type of the computed value
@@ -124,8 +120,6 @@ export type ComputedFnWithOptions<T> = { get: () => T } & Omit<
 export type ComputedEntry<T> = (() => T) | ComputedFnWithOptions<T>
 
 /**
- * @internal
- *
  * Generates accessor methods for volatile properties
  *
  * @template T - Record of volatile property getter functions

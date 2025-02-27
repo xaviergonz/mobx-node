@@ -40,10 +40,6 @@ export type BaseTypedNodeType<
      */
     onInit(callback: (node: TNode) => void): DisposableDispose
 
-    /**
-     * @internal
-     * @param node - Node to initialize
-     */
     _initNode(node: TNode): void
   }
 >

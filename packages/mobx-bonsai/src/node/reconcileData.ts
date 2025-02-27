@@ -35,9 +35,6 @@ function setIfDifferent(target: any, key: PropertyKey, value: unknown) {
   }
 }
 
-/**
- * @internal
- */
 export function reconcileData<T>(oldValue: any, newValue: T, reconciliationRoot: object): T {
   if (isPrimitive(newValue) || isPrimitive(oldValue)) {
     // no reconciliation possible

@@ -41,17 +41,11 @@ type NodeData = {
   childrenObjects: ObservableSet<object>
 }
 
-/**
- * @internal
- */
 export function getNodeData(node: object): NodeData {
   assertIsNode(node, "node")
   return nodes.get(node)!
 }
 
-/**
- * @internal
- */
 export function reportNodeParentObserved(node: object): void {
   const data = getNodeData(node)
   if (!data.parentAtom) {
@@ -137,9 +131,6 @@ export function onDeepChange(node: object, listener: NodeChangeListener): Dispos
 
 let detachDuplicatedNodes = 0
 
-/**
- * @internal
- */
 export const runDetachingDuplicatedNodes = (fn: () => void) => {
   detachDuplicatedNodes++
   try {

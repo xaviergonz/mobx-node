@@ -84,7 +84,6 @@ const finalizationRegistry = new FinalizationRegistry(
 )
 
 /**
- * @internal
  * Attempts to register a node in the type/key registry
  *
  * @param node - The node to register
@@ -210,7 +209,6 @@ export function nodeType<TNode extends object = never>(
 }
 
 /**
- * @internal
  * Adds extension methods (volatile, actions, getters, computeds) to a node type object
  *
  * @param nodeTypeObj - The node type object to extend

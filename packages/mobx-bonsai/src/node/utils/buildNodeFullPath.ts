@@ -1,8 +1,5 @@
 import { getParentPath } from "../tree/getParentPath"
 
-/**
- * @internal
- */
 export function buildNodeFullPath(node: object | undefined, subPath?: string): string[] {
   const fullPath: string[] = []
 

@@ -7,9 +7,6 @@ import { getParentPath } from "../tree/getParentPath"
 const snapshots = new WeakMap<object, object>()
 const snapshotAtoms = new WeakMap<object, IAtom>()
 
-/**
- * @internal
- */
 export const invalidateSnapshotTreeToRoot = action((node: object): void => {
   assertIsNode(node, "node")
 

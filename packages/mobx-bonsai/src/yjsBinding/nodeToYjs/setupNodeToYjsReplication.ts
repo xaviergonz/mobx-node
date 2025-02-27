@@ -7,9 +7,6 @@ import { buildNodeFullPath } from "../../node/utils/buildNodeFullPath"
 import { onDeepChange, NodeChange } from "../../node/node"
 import { YjsStructure } from "../yjsTypes/types"
 
-/**
- * @internal
- */
 export function setupNodeToYjsReplication({
   node,
   yjsDoc,
