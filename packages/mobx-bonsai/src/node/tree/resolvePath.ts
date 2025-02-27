@@ -6,7 +6,7 @@ const unresolved = { resolved: false } as const
 /**
  * Tries to resolve a path from an object.
  *
- * @typeparam T Returned value type.
+ * @template T Returned value type.
  * @param pathRootNode Node that serves as path root.
  * @param path Path as an string or number array.
  * @returns An object with `{ resolved: true, value: T }` or `{ resolved: false }`.

@@ -9,8 +9,8 @@ import { RootPath } from "./RootPath"
  *
  * Note that this function will throw if the passed object is not a node.
  *
- * @typeparam T Root object type.
- * @param value Target object.
+ * @template T Root object type.
+ * @param node Target object.
  * @returns
  */
 export function getRootPath<T extends object>(node: object): RootPath<T> {

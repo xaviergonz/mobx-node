@@ -8,7 +8,7 @@ import { reconcileData } from "../reconcileData"
 /**
  * Applies a full snapshot over an node, reconciling it with the current contents of the object.
  *
- * @typeparam T Object type.
+ * @template T Object type.
  * @param node Target node.
  * @param snapshot Snapshot to apply.
  */

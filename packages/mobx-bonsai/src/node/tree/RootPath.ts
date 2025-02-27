@@ -3,7 +3,7 @@ import { Path } from "./pathTypes"
 /**
  * Path from an object to its root.
  *
- * @typeparam T Root object type.
+ * @template T Root object type.
  */
 export interface RootPath<T extends object> {
   /**

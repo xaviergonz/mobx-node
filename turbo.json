@@ -1,6 +1,10 @@
 {
   "$schema": "https://turborepo.org/schema.json",
   "tasks": {
+    "mobx-bonsai#build-docs": {
+      "dependsOn": ["build"],
+      "outputs": ["api-docs/**", "../../apps/site/copy-to-build/api/**"]
+    },
     "mobx-bonsai#build": {
       "dependsOn": [],
       "outputs": ["dist/**"]
@@ -14,6 +18,20 @@
       "dependsOn": [],
       "outputs": [],
       "env": ["MOBX-VERSION"]
+    },
+    "site#build": {
+      "dependsOn": ["mobx-bonsai#build", "mobx-bonsai#build-docs"],
+      "outputs": ["build/**"]
+    },
+    "site#serve": {
+      "cache": false,
+      "dependsOn": ["build"],
+      "outputs": []
+    },
+    "site#start": {
+      "cache": false,
+      "dependsOn": ["mobx-bonsai#build", "mobx-bonsai#build-docs"],
+      "outputs": []
     }
   }
 }

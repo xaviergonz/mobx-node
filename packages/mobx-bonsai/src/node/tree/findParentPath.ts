@@ -11,7 +11,7 @@ import { WritablePath } from "./pathTypes"
  * path to get from the parent to the child.
  * If none is found it will return undefined.
  *
- * @typeparam T Parent object type.
+ * @template T Parent object type.
  * @param child Target node.
  * @param predicate Function that will be run for every parent of the target node, from immediate parent to the root.
  * @param maxDepth Max depth, or 0 for infinite.

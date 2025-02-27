@@ -134,7 +134,7 @@ const mapCache = new WeakMap<Record<string, any>, Map<string, any>>()
  *
  * The input must be a plain object or an observable object.
  *
- * @typeparam V The type of the values in the object.
+ * @template V The type of the values in the object.
  * @param data The plain or observable object to wrap as a Map.
  * @returns A Map-like view of the object.
  */

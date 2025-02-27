@@ -1,6 +1,7 @@
 import { reaction } from "mobx"
 import { getSnapshot } from "./getSnapshot"
 import { assertIsNode } from "../node"
+import { DisposableDispose, makeDisposable } from "../../utils/disposable"
 
 /**
  * Listener function for onSnapshot.
@@ -8,14 +9,9 @@ import { assertIsNode } from "../node"
 export type OnSnapshotListener<T> = (sn: T, prevSn: T) => void
 
 /**
- * Disposer function for onSnapshot.
- */
-export type OnSnapshotDisposer = () => void
-
-/**
  * Adds a reaction that will trigger every time an snapshot changes.
  *
- * @typeparam T Node type.
+ * @template T Node type.
  * @param nodeOrFn Node to get the snapshot from or a function to get it.
  * @param listener Function that will be triggered when the snapshot changes.
  * @returns A disposer.
@@ -23,7 +19,7 @@ export type OnSnapshotDisposer = () => void
 export function onSnapshot<T extends object>(
   nodeOrFn: T | (() => T),
   listener: OnSnapshotListener<T>
-): OnSnapshotDisposer {
+): DisposableDispose {
   const nodeFn = typeof nodeOrFn === "function" ? (nodeOrFn as () => T) : () => nodeOrFn
 
   const node = nodeFn()
@@ -31,7 +27,7 @@ export function onSnapshot<T extends object>(
 
   let currentSnapshot: T = getSnapshot(node)
 
-  return reaction(
+  const disposeReaction = reaction(
     () => getSnapshot(nodeFn()),
     (newSnapshot) => {
       const prevSn = currentSnapshot
@@ -39,4 +35,6 @@ export function onSnapshot<T extends object>(
       listener(newSnapshot, prevSn)
     }
   )
+
+  return makeDisposable(disposeReaction)
 }

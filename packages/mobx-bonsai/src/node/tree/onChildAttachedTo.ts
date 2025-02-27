@@ -7,12 +7,26 @@ import { AnyTypedNodeType, getNodeTypeAndKey } from "../nodeTypeKey/nodeTypeKey"
 import { NodeForNodeType } from "../nodeTypeKey/NodeForNodeType"
 
 /**
- * @internal
+ * Represents a disposer function to clean up resources after a child node is attached to a parent.
+ *
+ * @param runDetachDisposers - When true, detach disposers for the child node will be executed during disposal.
  */
 export type OnChildAttachedToDisposer = (runDetachDisposers: boolean) => void
 
 /**
- * @internal
+ * Parameters for the onChildAttachedTo function.
+ *
+ * @template TChildNodeType - The type of the node to watch for.
+ * @template TChild - The type of the child node that will be attached.
+ *
+ * @property target - A function that returns the target object to watch for child attachments.
+ * @property childNodeType - The type of node to watch for when being attached.
+ * @property onChildAttached - Callback executed when a child is attached.
+ *   Should return either a cleanup function or void.
+ * @property - If true, watches for children attached at any level of the tree. If false, only
+ *   watches for direct children. Defaults to false.
+ * @property - If true, the callback will be executed for all matching children that are already
+ *   attached. Defaults to false.
  */
 export type OnChildAttachedToParams<TChildNodeType, TChild> = {
   target: () => object

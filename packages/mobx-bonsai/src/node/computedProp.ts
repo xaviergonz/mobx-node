@@ -2,8 +2,6 @@ import { computed, IComputedValue, IComputedValueOptions } from "mobx"
 import { isObservablePlainStructure } from "../plainTypes/checks"
 
 /**
- * @internal
- *
  * Represents a function used to compute derived values based on an object's state.
  *
  * @template T - The type of the object that this function computes values for.

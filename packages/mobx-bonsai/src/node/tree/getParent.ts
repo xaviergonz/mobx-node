@@ -5,10 +5,10 @@ import { getParentPath } from "./getParentPath"
  *
  * Note that this function will throw if the passed object is not a node.
  *
- * @typeparam TParent Parent object type.
+ * @template TParent Parent object type.
  * @param node Node to get the parent path from.
  * @returns
  */
-export function getParent<TParent extends object>(value: object): TParent | undefined {
-  return getParentPath(value)?.parent as TParent | undefined
+export function getParent<TParent extends object>(node: object): TParent | undefined {
+  return getParentPath(node)?.parent as TParent | undefined
 }

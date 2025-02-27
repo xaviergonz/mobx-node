@@ -15,7 +15,7 @@ import { ParentPath } from "./ParentPath"
  *
  * Note that this function will throw if the passed object is not a node.
  *
- * @typeparam TParent Parent object type.
+ * @template TParent Parent object type.
  * @param node Node to get the parent path from.
  * @returns Parent path or undefined if there's no parent.
  */

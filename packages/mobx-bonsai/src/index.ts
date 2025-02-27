@@ -2,6 +2,8 @@
 export { MobxBonsaiError } from "./error/MobxBonsaiError"
 
 // node/nodeTypeKey
+export type { BaseNodeType } from "./node/nodeTypeKey/BaseNodeType"
+export type { BaseTypedNodeType } from "./node/nodeTypeKey/BaseTypedNodeType"
 export type { KeyedNodeType } from "./node/nodeTypeKey/KeyedNodeType"
 export type { NodeForNodeType } from "./node/nodeTypeKey/NodeForNodeType"
 export {
@@ -15,6 +17,7 @@ export type {
   AnyNodeType,
   AnyTypedNodeType,
   AnyUntypedNodeType,
+  NodeTypeKey,
   NodeKeyValue,
   NodeTypeValue,
   NodeWithAnyType,
@@ -47,6 +50,7 @@ export { walkTree, WalkTreeMode } from "./node/tree/walkTree"
 export { applySnapshot } from "./node/snapshot/applySnapshot"
 export { getSnapshot } from "./node/snapshot/getSnapshot"
 export { onSnapshot } from "./node/snapshot/onSnapshot"
+export type { OnSnapshotListener } from "./node/snapshot/onSnapshot"
 
 // node
 export { clone } from "./node/clone"

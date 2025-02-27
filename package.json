@@ -5,13 +5,19 @@
   "license": "MIT",
   "scripts": {
     "lib:build": "turbo run mobx-bonsai#build",
+    "lib:build-docs": "turbo run mobx-bonsai#build-docs",
     "lib:test": "turbo run mobx-bonsai#test",
     "lib:test:ci": "turbo run mobx-bonsai#test:ci",
+    "site:start": "turbo run site#start",
+    "site:build": "turbo run site#build",
+    "site:serve": "turbo run site#serve",
+    "build-netlify": "yarn site:build",
+    "netlify-dev": "yarn build-netlify && netlify dev",
     "lint": "biome lint"
   },
   "workspaces": [
     "packages/*",
-    "apps/benchmark"
+    "apps/*"
   ],
   "dependencies": {
     "mobx": "^6.13.6",
@@ -20,6 +26,7 @@
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "globals": "^15.15.0",
+    "netlify-cli": "^18.0.4",
     "turbo": "^2.4.2",
     "typescript": "^5.7.3"
   },

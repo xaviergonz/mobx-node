@@ -32,8 +32,8 @@ export type VolatileProp<TTarget extends object, TValue> = readonly [
  * Note: Volatile props for unique nodes (nodes with a same type and key) will be shared, since they are
  * actually always the same instance.
  *
- * @typeparam TTarget The type of the target object.
- * @typeparam TValue The type of the volatile property's value.
+ * @template TTarget The type of the target object.
+ * @template TValue The type of the volatile property's value.
  * @param defaultValueGen A function that returns the default value for the property.
  * @returns A tuple where the first element is the getter function, the second is the setter function and
  * the third is the reset function to set a default value again.

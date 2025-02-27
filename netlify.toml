@@ -1,0 +1,13 @@
+redirects = [
+  {from = "/public/api/*", to = "/public/api/:splat"},
+  {from = "/*", to = "/", status = 200}
+]
+
+[build]
+  command = "yarn build-netlify"
+  publish = "apps/site/build"
+  environment = { NODE_VERSION = "22.10.0", YARN_VERSION = "4.6.0" }
+
+[dev]
+  publish = "apps/site/build"
+  port = 3333

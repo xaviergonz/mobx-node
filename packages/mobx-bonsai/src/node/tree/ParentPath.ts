@@ -3,7 +3,7 @@ import { PathElement } from "./pathTypes"
 /**
  * Path from an object to its immediate parent.
  *
- * @typeparam T Parent object type.
+ * @template T Parent object type.
  */
 export interface ParentPath<T extends object> {
   /**

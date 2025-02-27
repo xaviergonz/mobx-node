@@ -6,7 +6,7 @@ import { findParentPath } from "./findParentPath"
  * If the predicate is matched it will return the found node.
  * If none is found it will return undefined.
  *
- * @typeparam T Parent node type.
+ * @template T Parent node type.
  * @param child Target node.
  * @param predicate Function that will be run for every parent of the target node, from immediate parent to the root.
  * @param maxDepth Max depth, or 0 for infinite.

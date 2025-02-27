@@ -13,7 +13,7 @@
   <a aria-label="License" href="./LICENSE">
     <img src="https://img.shields.io/npm/l/mobx-bonsai.svg?style=for-the-badge&labelColor=333" />
   </a>
-  <a aria-label="Types" href="./packages/lib/tsconfig.json">
+  <a aria-label="Types" href="./packages/mobx-bonsai/tsconfig.json">
     <img src="https://img.shields.io/npm/types/mobx-bonsai.svg?style=for-the-badge&logo=typescript&labelColor=333" />
   </a>
   <br />

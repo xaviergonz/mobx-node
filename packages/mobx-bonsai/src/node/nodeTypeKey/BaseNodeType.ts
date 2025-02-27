@@ -2,8 +2,6 @@ import { IComputedValueOptions } from "mobx"
 import { PrependArgument } from "../../utils/PrependArgument"
 
 /**
- * @internal
- *
  * Base node type definition with core functionality
  *
  * @template TNode - Node structure that adheres to this type
