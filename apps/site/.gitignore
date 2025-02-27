@@ -1,0 +1,7 @@
+*.log
+.cache-loader
+.docusaurus
+/build
+/node_modules
+/static/api
+/copy-to-build

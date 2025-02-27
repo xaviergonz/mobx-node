@@ -1,0 +1,260 @@
+---
+title: Nodes
+slug: /nodes
+---
+
+This guide introduces the basics of using `mobx-bonsai` to create observable nodes that form a tree structure.
+
+# `node`
+
+**Nodes are plain observable objects/arrays** that have been enhanced to support tree-traversal, snapshots and other super-powers. To create a node:
+
+```ts
+import { node } from 'mobx-bonsai';
+
+interface Todo {
+  done: boolean
+  text: string
+}
+
+interface TodoAppState {
+  todoList: Todo[]
+}
+
+// Create a new node with initial data
+const todoAppState = node<TodoAppState>({ todoList: [] });
+```
+
+Note that:
+
+- Nodes must be kept data-only. Interact with pure functions and actions rather than embedded methods.
+- A node that is already part of a tree cannot be reused in another tree or another section of the same tree. To move an object, first remove it from its current location or clone it using the `clone` function.
+
+**Nodes compose a tree.**
+Add child nodes to parent nodes to build your state tree. Any plain structure (object/array) that gets added to an existing node is automatically transformed into a node as well, and you can use MobX actions to set them:
+
+```ts
+import { action } from 'mobx';
+
+const addTodo = action((todoAppState: TodoAppState, todo: Todo) => {
+  todoAppState.push(todo)
+})
+```
+
+# Typed Nodes
+
+Mobx-Bonsai supports the concept of typed nodes. These are object nodes that have a same value for the `$$type` (exported as `nodeType`) property. Thanks to this property these nodes:
+
+- Can use an `onInit` life-cycle hook
+- Can have a designated 'key' property to make them unique nodes (see the next section).
+
+To create a new node type and a node of that type:
+
+```ts
+import { nodeType, TNode } from 'mobx-bonsai';
+
+type Todo = TNode<"todo", {
+  done: boolean
+  text: string
+}>
+
+const tTodo = nodeType<Todo>("todo"); // nodeKey AKA $$type is "todo"
+
+// same as node({ [nodeType]: "todo", done: true, text: "buy milk" })
+const todoNode = tTodo({ done: true, text: "buy milk" })
+
+// same as { [nodeType]: "todo", done: true, text: "buy milk" }
+const todoSnapshot = tTodo.snapshot({ done: true, text: "buy milk" })
+```
+
+`onInit` can be useful for example to run initializations such as migrations.
+To hook to their initialization phase:
+
+```ts
+tTodo.onInit(todo => {
+  // ...
+})
+```
+
+Other node type members are:
+
+- `typeId`: The type as passed to the `nodeType` initializer.
+- `key`: Key property configured for that type (see Unique Nodes below).
+
+You may also use the following related functions:
+
+- `getNodeTypeAndKey` to get the node type and key of a node, if any.
+- `findNodeTypeById` to find a node type by its type ID.
+
+## Unique Nodes
+
+Typed nodes can be extended into unique nodes. These are typed nodes that also have a designated 'key' property that serves as a unique identifier for that type and that only allow one instance with that ID alive at any time.
+
+When the `node` function encounters a plain object with a type and a key, it first checks if a node with the same type and key already exists. If it does, the existing node is reconciled with the new data, and the existing node is returned. This ensures that only one instance of a node with a given type and key exists at any time.
+
+This is useful for managing entities with unique identifiers, such as users, products, or documents. By using unique nodes, you can ensure that you always have a single source of truth for each entity, and that changes to one instance of the entity are automatically reflected in all other references to that entity.
+
+Not only that, but any computed and volatile properties attached to it are kept as long as the node is alive, even if new data is reconciled. Also, since the references are kept stable they are ideal to keep around safely for example in UI state.
+
+Note: If you use the typed creation methods (tName(...) / tName.snapshot(...)) and omit the key property then one will be auto generated for you.
+
+Here's an example of how to use unique nodes:
+
+```ts
+import { node, nodeType, nodeKey, TNode, nodeType } from 'mobx-bonsai'
+import { runInAction } from 'mobx'
+
+type User = TNode<'user', {
+  id: string
+  name: string
+}>
+
+const tUser = nodeType<User>('user').with({ key: 'id' })
+
+// Create a unique node for user with ID "u1"
+const user1 = tUser({
+  id: 'u1',
+  name: 'Alice',
+})
+
+// Later, create or update a user with the same ID
+const user1Updated = tUser({
+  id: 'u1',
+  name: 'Alice Cooper',
+})
+
+// They are the same instance
+// user1 === user1Updated is true
+
+// Changes to one are reflected in the other
+runInAction(() => {
+  user1.name = 'Alice Cooper Updated'
+})
+// user1Updated.name is "Alice Cooper Updated"
+```
+
+You may also use the following node type methods:
+
+- `getKey` to extract they key of a node.
+- `findByKey` to find a unique node of that type with that key.
+
+# `computedProp`
+
+**Use `computedProp` to use computed values associated with a node.**
+While declaring actions that affect the observable data tree is easy (see for example `addçtodo` in the example above), using computed values might not seem as straightforward. While in "classical" MobX you'd generate the computed values as a getter for the object, that's not a possibility here (since nodes should only contain data). In order to overcome this limitation this library offers a function called `computedProp`, which allows you to declare functional getters, this is, getters that take the object as argument.
+
+In other words, where you would usually have this in "classical" MobX:
+
+```ts
+import { observable } from 'mobx';
+
+const myName = observable({
+  firstName: "John",
+  lastName: "Doe",
+  get fullName() {
+    return `${this.firstName} ${this.lastName}`
+  }
+})
+
+const fullName = myName.fullName
+```
+
+you can now use this for the observable objects:
+
+```ts
+import { computedProp } from 'mobx-bonsai';
+
+type Name = { firstName: string, lastName: string }
+
+const getFullName = computedProp((name: Name) => {
+  return `${name.firstName} ${name.lastName}`
+})
+
+const fullName = getFullName(myName)
+```
+
+Note: When a computed prop getter is used over a plain object/array it will just run. That way you can know you will get a result no matter if you run it over a node or not.
+
+# `volatileProp`
+
+**Use `volatileProp` to associate volatile state to nodes.**
+The `volatileProp` function provides a way to associate volatile state with nodes. Volatile state is stored separately from the node's serializable data; it is only maintained while the node instance is alive and is not included in snapshots.
+
+**Volatile State:** This is state that “lives” on the node instance for its lifetime but is not persisted or captured by snapshots. It is ideal for representing transient or UI-specific information that should be reset between sessions.
+
+Note that volatile state is specially useful when used over unique nodes, since you can be sure it won't be reset for example when the nodes get moved around by external agents (e.g bindings).
+
+The signature is as follows:
+
+```ts
+function volatileProp<TTarget extends object, TValue>(
+  defaultValueGen: () => TValue,
+): [
+  getter: (target: TTarget) => TValue,
+  setter: (target: TTarget, value: TValue) => void,
+  reset: (target: TTarget) => void,
+]
+```
+
+- **defaultValueGen:**
+  A function that returns the default value for the volatile property.
+
+Below is an example that demonstrates how to define a node and use `volatileProp` to manage its volatile state:
+
+```ts
+import { volatileProp } from 'mobx-bonsai';
+
+const imageElement = node<ImageElement>({
+  // ... serializable information for the node
+});
+
+const [isSelected, setIsSelected, resetIsSelected] = volatileProp<ImageElement, boolean>(() => false);
+```
+
+When building applications using observable trees, nodes often carry transient state (volatile properties) used to manage UI interactions or temporary settings. For example, consider a list where each item has an `isSelected` volatile property. If an item is removed from the list while selected, its transient state (i.e., `isSelected: true`) may persist. Later, if this item is reattached or restored (for example, through an undo operation), it might erroneously appear as selected. This could lead to inconsistencies in the user interface and unexpected behaviors.
+
+A pattern that might helping avoid this is the following:
+
+```ts
+onChildAttachedTo({
+  () => rootStore,
+  childNodeType: undefined, // or pass a particular node type
+  onChildAttached: (child) => {
+    return () => {
+      resetIsSelected(node)
+    }
+  },
+  deep: true,
+  fireForCurrentChildren: true,
+})
+```
+
+This pattern ensures volatile state is reset when an item is detached from the root store, and thus:
+
+- It prevents stale UI states from affecting reattached nodes.
+- It eliminates errors from lingering transient settings, ensuring a fresh state when nodes are reinserted.
+- It helps maintain expected behavior throughout the lifecycle of nodes in your tree, especially in dynamic lists or collections.
+
+# `clone`
+
+Use it to deeply clone a node before copying it into another part of the tree. If you are moving the node then consider removing it from the tree first before adding it back.
+
+Note that, when cloning, all node keys are replaced with new unique keys. You can customize the key generation by providing your own node key generator as the second argument to the clone function.
+
+# `asMap`
+
+The `asMap` function converts a plain object, an observable object or an object node into a `Map<string, value>` view that can be used to interact with the object as if it were a Map.
+
+# `asSet`
+
+The `asSet` function converts a plain array, an observable array or an array node into a Set-like view that can be used to interact with the array as if it were a Set. Note that since the backing store **for plain arrays** is an array some operations will be slower than with a real set or asSet with an observable array, namely:
+
+| Operation | Set / asSet (observable array) | asSet (plain array) |
+|-----------|--------------------------------|---------------------|
+| add       | O(1)                           | O(n)                |
+| delete    | O(1)                           | O(n)                |
+| has       | O(1)                           | O(n)                |
+| clear     | O(n)                           | O(n)                |
+| iteration | O(n)                           | O(n)                |
+
+If speed is paramount and your values are strings consider using `asMap` with a record that saves true when the value exists and delete when it does not.

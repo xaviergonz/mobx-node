@@ -69,11 +69,22 @@ export function setupYjsToNodeReplication({
                 switch (change.action) {
                   case "add":
                   case "update":
-                    set(mobxObject, key, yjsToPlainValue(yjsMap.get(key)))
+                    {
+                      // we have to check because sometimes yjs sends
+                      // an update event for something already there
+                      const yjsValue = yjsToPlainValue(yjsMap.get(key))
+                      if ((mobxObject as any)[key] !== yjsValue) {
+                        set(mobxObject, key, yjsValue)
+                      }
+                    }
                     break
 
                   case "delete":
-                    remove(mobxObject, key)
+                    // we have to check because sometimes yjs sends
+                    // an update event for something already there
+                    if ((mobxObject as any)[key] !== undefined) {
+                      remove(mobxObject, key)
+                    }
                     break
 
                   default:

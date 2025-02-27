@@ -39,7 +39,8 @@ export function convertPlainToYjsValue(v: any): YjsValue {
  * Applies a plain array to a Y.Array, using the convertPlainToYjsValue to convert the values.
  */
 export const applyPlainArrayToYArray = action((dest: Y.Array<any>, source: readonly any[]) => {
-  dest.push(source.map(convertPlainToYjsValue))
+  const yjsVals = source.map(convertPlainToYjsValue)
+  dest.push(yjsVals)
 })
 
 /**
@@ -48,7 +49,8 @@ export const applyPlainArrayToYArray = action((dest: Y.Array<any>, source: reado
 export const applyPlainObjectToYMap = action(
   (dest: Y.Map<any>, source: Readonly<Record<string, any>>) => {
     Object.entries(source).forEach(([k, v]) => {
-      dest.set(k, convertPlainToYjsValue(v))
+      const yjsVal = convertPlainToYjsValue(v)
+      dest.set(k, yjsVal)
     })
   }
 )

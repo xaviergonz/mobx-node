@@ -1,0 +1,221 @@
+---
+title: Tree-Like Structure
+slug: /tree-like-structure
+---
+
+# Overview
+
+`mobx-bonsai`'s structure is based on a tree-like structure, where each node can be one of:
+
+- An (observable) plain object.
+- An (observable) array.
+- A primitive value (`string`, `boolean`, `number`, `null`, `undefined`).
+
+Since the structure is a tree, this means these tree rules apply:
+
+1. A non-primitive (object) node can have zero or one parent.
+2. A non-primitive (object) node can have zero to infinite children.
+3. From rule 1 and 2 we can extract that a same non-primitve node can only be in a single tree and only once.
+4. Primitive nodes are always copied by value (as usual in JavaScript), so none of the rules above apply.
+
+# How objects are transformed into nodes
+
+An object/array is turned into a tree node under the following circumstances:
+
+- You call `node` upon them.
+- As soon as they become children of another tree node.
+
+Bear in mind that this means that, unless the object being attached to another node is already observable or a node, its reference will change, this is:
+
+```
+const todo: Todo = {...};
+todoAppState.todoList.push(todo);
+// the last item of todoList will be converted to a node and therefore it WON'T be the same as todo
+```
+
+This is not really exclusive to this library, but that's how MobX deep observables work really.
+
+To check if a non-primitive has been turned into a tree node you can use `isNode(value: unknown): boolean`.
+
+To turn a non-primitive into a tree node you can use `node` over it. If the object is already a tree node or an observable object then the same object will be returned.
+
+# Traversal methods
+
+When a non-primitive value is turned into a tree node it gains access to certain methods that allow traversing the data tree:
+
+## `getParentPath`
+
+```ts
+getParentPath<T extends object>(value: object): ParentPath<T> | undefined
+```
+
+Returns the parent of the target plus the path from the parent to the target, or `undefined` if it has no parent.
+
+## `getParent`
+
+```ts
+getParent<T extends object>(value: object): T | undefined
+```
+
+Returns the parent object of the target object, or `undefined` if there's no parent.
+
+## `getParentToChildPath`
+
+```ts
+getParentToChildPath(fromParent: object, toChild: object): Path | undefined
+```
+
+Gets the path to get from a parent to a given child.
+Returns an empty array if the child is actually the given parent or `undefined` if the child is not a child of the parent.
+
+## `getRootPath`
+
+```ts
+getRootPath<T extends object>(value: object): RootPath<T>
+```
+
+Returns the root of the target, the path from the root to get to the target and the list of objects from root (included) until target (included).
+
+## `getRoot`
+
+```ts
+getRoot<T extends object>(value: object): T
+```
+
+Returns the root of the target object, or itself if the target is a root.
+
+## `isRoot`
+
+```ts
+isRoot(value: object): boolean
+```
+
+Returns `true` if a given object is a root object.
+
+## `isChildOfParent`
+
+```ts
+isChildOfParent(child: object, parent: object): boolean
+```
+
+Returns `true` if the target is a "child" of the tree of the given "parent" object.
+
+## `isParentOfChild`
+
+```ts
+isParentOfChild(parent: object, child: object): boolean
+```
+
+Returns `true` if the target is a "parent" that has in its tree the given "child" object.
+
+## `resolvePath`
+
+```ts
+resolvePath<T extends object>(pathRootObject: object, path: Path): { resolved: true; value: T } | { resolved: false }
+```
+
+Resolves a path from an object, returning an object with `{ resolved: true, value: T }` or `{ resolved: false }`.
+
+## `findParent`
+
+```ts
+findParent<T extends object>(child: object, predicate: (parent: object) => boolean, maxDepth = 0): T | undefined
+```
+
+Iterates through all the parents (from the nearest until the root) until one of them matches the given predicate.
+If the predicate is matched it will return the found node.
+If none is found it will return `undefined`.
+A max depth of 0 is infinite, but another one can be given.
+
+## `findParentPath`
+
+```ts
+findParentPath<T extends object>(child: object, predicate: (parent: object) => boolean, maxDepth = 0): FoundParentPath<T> | undefined
+```
+
+Iterates through all the parents (from the nearest until the root) until one of them matches the given predicate.
+If the predicate is matched it will return the found node and the path from the parent to the child.
+If none is found it will return `undefined`.
+A max depth of 0 is infinite, but another one can be given.
+
+## `findChildren`
+
+```ts
+findChildren<T extends object>(root: object, predicate: (node: object) => boolean, options?: { deep?: boolean }): ReadonlySet<T>
+```
+
+Iterates through all children and collects them in a set if the given predicate matches.
+
+Pass the options object with the `deep` option (defaults to `false`) set to `true` to get the children deeply or `false` to get them shallowly.
+
+## `getChildrenObjects`
+
+```ts
+getChildrenObjects(node: object, options?: { deep?: boolean }): ReadonlySet<object>
+```
+
+Returns a set with all the children objects (this is, excluding primitives) of an object.
+
+Pass the options object with the `deep` option (defaults to `false`) set to `true` to get the children deeply or `false` to get them shallowly.
+
+## `walkTree`
+
+```ts
+walkTree<T = void>(target: object, predicate: (node: object) => T | undefined, mode: WalkTreeMode): T | undefined
+```
+
+Walks a tree, running the predicate function for each node.
+If the predicate function returns something other than `undefined` then the walk will be stopped and the function will return the returned value.
+
+The mode can be one of:
+
+- `WalkTreeMode.ParentFirst` - The walk will be done parent (roots) first, then children.
+- `WalkTreeMode.ChildrenFirst` - The walk will be done children (leaves) first, then parents.
+
+# Utility methods
+
+
+## `onChildAttachedTo`
+
+```ts
+export function onChildAttachedTo<T>(params: {
+  target: () => object
+  childNodeType: NodeType | readonly NodeType[] | undefined
+  onChildAttached: (child: T) => (() => void) | void
+  deep?: boolean
+  fireForCurrentChildren?: boolean
+}): (runDetachDisposers: boolean) => void
+```
+
+Runs a callback every time a new object is attached to a given node.
+The callback can optionally return a disposer which will be run when the child is detached.
+
+`childNodeType` is a node type indicating the kind of typed children nodes to track, an array to track multiple node types, or `undefined` to track all children.
+
+The optional `options` parameter accepts an object with the following options:
+
+- `deep: boolean` (default: `false`) - `true` if the callback should be run for all children deeply or `false` if it it should only run for shallow children.
+- `fireForCurrentChildren: boolean` (default: `true`) - `true` if the callback should be immediately called for currently attached children, `false` if only for future attachments.
+
+Returns a disposer, which has a boolean parameter which should be `true` if pending detachment callbacks should be run, or `false` otherwise.
+
+## `deepEquals`
+
+```ts
+deepEquals(a: any, b: any): boolean
+```
+
+Deeply compares two values.
+
+Supported values are:
+
+- Primitives
+- Boxed observables
+- Objects, observable objects
+- Arrays, observable arrays
+- Typed arrays
+- Maps, observable maps
+- Sets, observable sets
+- Tree nodes (optimized by using snapshot comparison internally)
+
+Note that in the case of models the result will be false if their model IDs are different.
