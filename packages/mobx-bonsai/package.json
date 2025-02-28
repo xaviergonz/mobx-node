@@ -1,6 +1,6 @@
 {
   "name": "mobx-bonsai",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "A fast lightweight alternative to MobX-State-Tree + Y.js two-way binding",
   "keywords": [
     "mobx",
