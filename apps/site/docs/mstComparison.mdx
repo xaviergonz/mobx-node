@@ -10,6 +10,8 @@ import { RedXIcon } from "@site/src/components/RedXIcon"
 This library is very much like `mobx-state-tree`/`mobx-keystone` and takes lots of ideas from them, so the transition
 should be fairly simple. There are some trade-offs though, as shown in the following chart:
 
+## Feature Comparison
+
 | Feature                                   | `mobx-bonsai`                                | `mobx-state-tree`                  | `mobx-keystone`                  |
 | ----------------------------------------- | -------------------------------------------- | ---------------------------------- | -------------------------------- |
 | Fast and low memory usage                 | <CheckIcon/>                                 | <RedXIcon/>                        | <RedXIcon/>                      |
@@ -32,6 +34,8 @@ should be fairly simple. There are some trade-offs though, as shown in the follo
 | Redux compatibility layer                 | 🟠 Not yet                                   | <CheckIcon/>                       | <CheckIcon/>                     |
 | Y.js binding                              | <CheckIcon/>                                 | <RedXIcon/>                        | <CheckIcon/>                     |
 
+## Feature Notes
+
 1. Support for self references / cross references / no need for late types, no need for casting,
    etc. It just uses Typescript to define your models.
 2. Simplified is an understatement, because these types of cast just don't even exist in `mobx-bonsai`.
@@ -41,13 +45,13 @@ should be fairly simple. There are some trade-offs though, as shown in the follo
 5. `asMap` and `asSet` wrappers are offered to be able to manipulate objects as if they were maps and arrays as if they were sets.
 6. The `Y.js` binding has an undo manager though, so if you use that binding that should be covered.
 
-# TypeScript improvements
+## TypeScript Improvements
 
 `mobx-state-tree` has some limitations when it comes to TypeScript typings, which are not problems at all with `mobx-bonsai` since it just uses plain Typescript types.
 
 Also, self-recursive or cross-referenced models are impossible (or at least very hard) to properly type in `mobx-state-tree`, but, again, they are no problem with `mobx-bonsai`.
 
-## Simpler instance / snapshot type usage
+### Simpler Instance / Snapshot Type Usage
 
 Another area of improvement is the simplification of the usage of snapshot vs. instance types. In `mobx-state-tree` it is possible to assign snapshots to properties, as well as actual instances, but the actual type of properties are instances, which leads to confusing casts and constructs such as:
 
@@ -84,7 +88,7 @@ const RootStore = types
 
 In `mobx-bonsai`, since "models" are always just data structures, you just don't have that problem - there's always only one type for all operations, and snapshots are exactly the same type as the node.
 
-## Less confusion between this/self usages - use of standard computed decorators
+### Less Confusion Between this/self Usages
 
 Usually in `mobx-state-tree` code from a previous "chunk" (actions, views) has to be accessed using `self`, while code in the same "chunk" has to be accessed using `this` to get proper typings:
 
@@ -111,7 +115,7 @@ const Todo = types
 
 In `mobx-bonsai`, since it uses functions for actions/getters/computed/volatiles etc the problem does not apply (no this/self anywhere).
 
-# Simplified model life-cycle
+## Simplified Model Life-cycle
 
 `mobx-state-tree` has a couple of life-cycle hooks (`afterCreate`, `afterAttach`, `beforeDetach`, `beforeCreate`) that might or might not trigger when you think they should due to the lazy initialization of nodes.
 
@@ -129,7 +133,7 @@ const createTodo = (todo: Partial<Todo>): Todo {
 }
 ```
 
-# Speed comparison
+## Speed Comparison
 
 Here's a benchmark between `mobx-bonsai` and `mobx-state-tree` with type checking disabled.
 

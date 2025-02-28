@@ -3,7 +3,7 @@ title: Snapshots
 slug: /snapshots
 ---
 
-# Overview
+## Overview
 
 Snapshots are immutable, structurally shared, representations of tree nodes (models and their children).
 
@@ -34,9 +34,9 @@ This means, as mentioned before, that snapshots generation is automatically opti
 
 Note: Never change the contents of a snapshot object returned by `getSnapshot` directly, clone it first! If you do weird things might happen.
 
-# Getting the snapshot of an instance
+## Snapshot Functions
 
-## `getSnapshot`
+### `getSnapshot`
 
 The function `getSnapshot` creates a deep, immutable copy of a node in the observable data tree. This snapshot provides a plain JavaScript representation of the state at the time of calling, ensuring that further changes to the observable do not affect the snapshot.
 
@@ -62,7 +62,7 @@ const firstTodoSnapshot = getSnapshot(todoAppState.todoList[0]);
 
 This produces an immutable copy of the todo item.
 
-## `onSnapshot`
+### `onSnapshot`
 
 Since that is a very common pattern, `mobx-bonsai` offers an `onSnapshot` function that will call a listener with the new snapshot and the previous snapshot every time it changes.
 
@@ -74,7 +74,7 @@ const disposer = onSnapshot(todo, (newSnapshot, previousSnapshot) => {
 
 In both cases the returned disposer function can be called to cancel the effect.
 
-## `applySnapshot`
+### `applySnapshot`
 
 The function `applySnapshot` applies an immutable snapshot to a tree node. It reconciles the current state with the provided snapshot while enforcing:
 

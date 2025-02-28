@@ -3,7 +3,7 @@ title: Tree-Like Structure
 slug: /tree-like-structure
 ---
 
-# Overview
+## Overview
 
 `mobx-bonsai`'s structure is based on a tree-like structure, where each node can be one of:
 
@@ -18,7 +18,7 @@ Since the structure is a tree, this means these tree rules apply:
 3. From rule 1 and 2 we can extract that a same non-primitve node can only be in a single tree and only once.
 4. Primitive nodes are always copied by value (as usual in JavaScript), so none of the rules above apply.
 
-# How objects are transformed into nodes
+## Node Transformation
 
 An object/array is turned into a tree node under the following circumstances:
 
@@ -39,11 +39,11 @@ To check if a non-primitive has been turned into a tree node you can use `isNode
 
 To turn a non-primitive into a tree node you can use `node` over it. If the object is already a tree node or an observable object then the same object will be returned.
 
-# Traversal methods
+## Traversal Methods
 
 When a non-primitive value is turned into a tree node it gains access to certain methods that allow traversing the data tree:
 
-## `getParentPath`
+### `getParentPath`
 
 ```ts
 getParentPath<T extends object>(value: object): ParentPath<T> | undefined
@@ -51,7 +51,7 @@ getParentPath<T extends object>(value: object): ParentPath<T> | undefined
 
 Returns the parent of the target plus the path from the parent to the target, or `undefined` if it has no parent.
 
-## `getParent`
+### `getParent`
 
 ```ts
 getParent<T extends object>(value: object): T | undefined
@@ -59,7 +59,7 @@ getParent<T extends object>(value: object): T | undefined
 
 Returns the parent object of the target object, or `undefined` if there's no parent.
 
-## `getParentToChildPath`
+### `getParentToChildPath`
 
 ```ts
 getParentToChildPath(fromParent: object, toChild: object): Path | undefined
@@ -68,7 +68,7 @@ getParentToChildPath(fromParent: object, toChild: object): Path | undefined
 Gets the path to get from a parent to a given child.
 Returns an empty array if the child is actually the given parent or `undefined` if the child is not a child of the parent.
 
-## `getRootPath`
+### `getRootPath`
 
 ```ts
 getRootPath<T extends object>(value: object): RootPath<T>
@@ -76,7 +76,7 @@ getRootPath<T extends object>(value: object): RootPath<T>
 
 Returns the root of the target, the path from the root to get to the target and the list of objects from root (included) until target (included).
 
-## `getRoot`
+### `getRoot`
 
 ```ts
 getRoot<T extends object>(value: object): T
@@ -84,7 +84,7 @@ getRoot<T extends object>(value: object): T
 
 Returns the root of the target object, or itself if the target is a root.
 
-## `isRoot`
+### `isRoot`
 
 ```ts
 isRoot(value: object): boolean
@@ -92,7 +92,7 @@ isRoot(value: object): boolean
 
 Returns `true` if a given object is a root object.
 
-## `isChildOfParent`
+### `isChildOfParent`
 
 ```ts
 isChildOfParent(child: object, parent: object): boolean
@@ -100,7 +100,7 @@ isChildOfParent(child: object, parent: object): boolean
 
 Returns `true` if the target is a "child" of the tree of the given "parent" object.
 
-## `isParentOfChild`
+### `isParentOfChild`
 
 ```ts
 isParentOfChild(parent: object, child: object): boolean
@@ -108,7 +108,7 @@ isParentOfChild(parent: object, child: object): boolean
 
 Returns `true` if the target is a "parent" that has in its tree the given "child" object.
 
-## `resolvePath`
+### `resolvePath`
 
 ```ts
 resolvePath<T extends object>(pathRootObject: object, path: Path): { resolved: true; value: T } | { resolved: false }
@@ -116,7 +116,7 @@ resolvePath<T extends object>(pathRootObject: object, path: Path): { resolved: t
 
 Resolves a path from an object, returning an object with `{ resolved: true, value: T }` or `{ resolved: false }`.
 
-## `findParent`
+### `findParent`
 
 ```ts
 findParent<T extends object>(child: object, predicate: (parent: object) => boolean, maxDepth = 0): T | undefined
@@ -127,7 +127,7 @@ If the predicate is matched it will return the found node.
 If none is found it will return `undefined`.
 A max depth of 0 is infinite, but another one can be given.
 
-## `findParentPath`
+### `findParentPath`
 
 ```ts
 findParentPath<T extends object>(child: object, predicate: (parent: object) => boolean, maxDepth = 0): FoundParentPath<T> | undefined
@@ -138,7 +138,7 @@ If the predicate is matched it will return the found node and the path from the 
 If none is found it will return `undefined`.
 A max depth of 0 is infinite, but another one can be given.
 
-## `findChildren`
+### `findChildren`
 
 ```ts
 findChildren<T extends object>(root: object, predicate: (node: object) => boolean, options?: { deep?: boolean }): ReadonlySet<T>
@@ -148,7 +148,7 @@ Iterates through all children and collects them in a set if the given predicate 
 
 Pass the options object with the `deep` option (defaults to `false`) set to `true` to get the children deeply or `false` to get them shallowly.
 
-## `getChildrenObjects`
+### `getChildrenObjects`
 
 ```ts
 getChildrenObjects(node: object, options?: { deep?: boolean }): ReadonlySet<object>
@@ -158,7 +158,7 @@ Returns a set with all the children objects (this is, excluding primitives) of a
 
 Pass the options object with the `deep` option (defaults to `false`) set to `true` to get the children deeply or `false` to get them shallowly.
 
-## `walkTree`
+### `walkTree`
 
 ```ts
 walkTree<T = void>(target: object, predicate: (node: object) => T | undefined, mode: WalkTreeMode): T | undefined
@@ -172,10 +172,9 @@ The mode can be one of:
 - `WalkTreeMode.ParentFirst` - The walk will be done parent (roots) first, then children.
 - `WalkTreeMode.ChildrenFirst` - The walk will be done children (leaves) first, then parents.
 
-# Utility methods
+## Utility Methods
 
-
-## `onChildAttachedTo`
+### `onChildAttachedTo`
 
 ```ts
 export function onChildAttachedTo<T>(params: {
@@ -199,7 +198,7 @@ The optional `options` parameter accepts an object with the following options:
 
 Returns a disposer, which has a boolean parameter which should be `true` if pending detachment callbacks should be run, or `false` otherwise.
 
-## `deepEquals`
+### `deepEquals`
 
 ```ts
 deepEquals(a: any, b: any): boolean

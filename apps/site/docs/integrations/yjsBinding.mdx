@@ -3,7 +3,7 @@ title: Y.js Binding
 slug: /integrations/yjs-binding
 ---
 
-# Overview
+## Overview
 
 `mobx-bonsai` includes a binding with `Y.js` that creates a node that stays in sync with a `Y.js` state in both directions.
 
@@ -63,6 +63,8 @@ will also result in a new todo getting added to `todoAppState.todoList` after th
 
 And of course, since this is a `mobx-bonsai` enhanced MobX observable in the end, you can use reaction, autorun, when, computed, getParent, getSnapshot...
 
+### Working with Initial State
+
 **What if I don't have an intial `Y.js` state yet?**
 
 You can create one like this:
@@ -76,13 +78,17 @@ applyPlainObjectToYMap(
 )
 ```
 
+### Binding Limitations
+
 **`Y.js` binding limits**:
 
 - Changes in the MobX observable are replicated to `Y.js` only after the outermost MobX action has completed. Therefore, avoid executing any `Y.js` transactions until MobX actions finish.
 - `Y.js` changes are merged into the MobX observable only after all `Y.js` transactions have concluded. Consequently, do not initiate MobX actions that modify the bound object during an ongoing `Y.js` transaction.
 
 
-# `getYjsObjectForNode`
+## Utility Functions
+
+### `getYjsObjectForNode`
 
 The `getYjsObjectForNode` function returned by the bind function resolves a `Y.js` structure corresponding to a given node within a bound tree. This is useful when you need to map a node back to its `Y.js` counterpart.
 
