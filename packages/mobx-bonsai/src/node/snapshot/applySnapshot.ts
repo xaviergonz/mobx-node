@@ -2,7 +2,7 @@ import { action, isObservableObject } from "mobx"
 import { failure } from "../../error/failure"
 import { assertIsObject, isArray, isMap, isPlainObject, isSet } from "../../plainTypes/checks"
 import { assertIsNode } from "../node"
-import { getNodeTypeAndKey, nodeTypeKey } from "../nodeTypeKey/nodeTypeKey"
+import { getNodeTypeAndKey, nodeTypeKey } from "../nodeTypeKey/nodeType"
 import { reconcileData } from "../reconcileData"
 
 /**

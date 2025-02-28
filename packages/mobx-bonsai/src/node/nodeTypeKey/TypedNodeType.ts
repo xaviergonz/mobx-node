@@ -1,5 +1,5 @@
 import { BaseTypedNodeType } from "./BaseTypedNodeType"
-import { NodeWithAnyType, NodeTypeKey } from "./nodeTypeKey"
+import { NodeWithAnyType, NodeTypeKey } from "./nodeType"
 import { KeyedNodeType } from "./KeyedNodeType"
 
 /**

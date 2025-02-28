@@ -21,7 +21,7 @@ import {
   nodeTypeKey,
   NodeWithAnyType,
   tryRegisterNodeByTypeAndKey,
-} from "./nodeTypeKey/nodeTypeKey"
+} from "./nodeTypeKey/nodeType"
 import { KeyedNodeType } from "./nodeTypeKey/KeyedNodeType"
 import { reconcileData } from "./reconcileData"
 

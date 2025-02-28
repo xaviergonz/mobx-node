@@ -2,7 +2,7 @@ import { failure } from "../error/failure"
 import { getGlobalConfig } from "../globalConfig"
 import { isPlainObject, isPrimitive } from "../plainTypes/checks"
 import { node } from "./node"
-import { getNodeTypeAndKey } from "./nodeTypeKey/nodeTypeKey"
+import { getNodeTypeAndKey } from "./nodeTypeKey/nodeType"
 import { getSnapshot } from "./snapshot/getSnapshot"
 
 function deepSubstituteNodeKeys<T>(value: T): T {

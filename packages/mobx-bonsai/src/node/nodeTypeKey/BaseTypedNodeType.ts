@@ -1,6 +1,6 @@
 import { DisposableDispose } from "../../utils/disposable"
 import { BaseNodeType } from "./BaseNodeType"
-import { NodeWithAnyType, NodeTypeKey } from "./nodeTypeKey"
+import { NodeWithAnyType, NodeTypeKey } from "./nodeType"
 
 /**
  * Represents a node type with associated lifecycle and behavior

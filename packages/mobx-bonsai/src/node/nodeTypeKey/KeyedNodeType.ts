@@ -1,5 +1,5 @@
 import { BaseTypedNodeType } from "./BaseTypedNodeType"
-import { NodeKeyValue, NodeWithAnyType } from "./nodeTypeKey"
+import { NodeKeyValue, NodeWithAnyType } from "./nodeType"
 
 /**
  * Node type that uses a specific property as a unique key for each node

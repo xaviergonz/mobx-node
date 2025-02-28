@@ -12,7 +12,7 @@ export {
   getNodeTypeId,
   nodeType,
   nodeTypeKey,
-} from "./node/nodeTypeKey/nodeTypeKey"
+} from "./node/nodeTypeKey/nodeType"
 export type {
   AnyNodeType,
   AnyTypedNodeType,
@@ -22,7 +22,7 @@ export type {
   NodeTypeValue,
   NodeWithAnyType,
   TNode,
-} from "./node/nodeTypeKey/nodeTypeKey"
+} from "./node/nodeTypeKey/nodeType"
 export type { TypedNodeType } from "./node/nodeTypeKey/TypedNodeType"
 export type { UntypedNodeType } from "./node/nodeTypeKey/UntypedNodeType"
 

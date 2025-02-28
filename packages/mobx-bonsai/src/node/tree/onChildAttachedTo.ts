@@ -3,7 +3,7 @@ import { assertIsFunction } from "../../plainTypes/checks"
 import { assertIsNode } from "../node"
 import { getChildrenNodes } from "./getChildrenNodes"
 import { disposeOnce } from "../../utils/disposable"
-import { AnyTypedNodeType, getNodeTypeAndKey } from "../nodeTypeKey/nodeTypeKey"
+import { AnyTypedNodeType, getNodeTypeAndKey } from "../nodeTypeKey/nodeType"
 import { NodeForNodeType } from "../nodeTypeKey/NodeForNodeType"
 
 /**

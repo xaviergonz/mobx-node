@@ -8,7 +8,7 @@ import { walkTree, WalkTreeMode } from "../node/tree/walkTree"
 import { Dispose, disposeOnce } from "../utils/disposable"
 import { getParentToChildPath } from "../node/tree/getParentToChildPath"
 import { resolveYjsStructurePath } from "./nodeToYjs/resolveYjsStructurePath"
-import { getNodeTypeAndKey, NodeWithAnyType } from "../node/nodeTypeKey/nodeTypeKey"
+import { getNodeTypeAndKey, NodeWithAnyType } from "../node/nodeTypeKey/nodeType"
 
 /**
  * Creates a node that is bound to a Y.js data structure.
