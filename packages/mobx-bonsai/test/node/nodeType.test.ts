@@ -431,9 +431,15 @@ test("generic node type", () => {
     data: T
   }
 
-  const TObj = nodeType<Obj<number>>().defaults({
-    data: () => 0,
-  })
+  const TObj = nodeType<Obj<number>>()
+    .defaults({
+      data: () => 0,
+    })
+    .actions((t) => ({
+      setData(data: number) {
+        t.data = data
+      },
+    }))
 
   const genericNode = TObj({ data: 100 })
   expect(genericNode.data).toBe(100)
@@ -446,9 +452,15 @@ test("generic node type factory", () => {
   }
 
   const createTObj = <T>() =>
-    nodeType<Obj<T>>().defaults({
-      else: () => "hello",
-    })
+    nodeType<Obj<T>>()
+      .defaults({
+        else: () => "hello",
+      })
+      .actions((t) => ({
+        setData(data: T) {
+          t.data = data
+        },
+      }))
 
   const TObj = createTObj<number>()
 
