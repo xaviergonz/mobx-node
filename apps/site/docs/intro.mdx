@@ -32,20 +32,35 @@ slug: /
 
 ## Overview
 
-A fast lightweight alternative to `mobx-state-tree` that combines the simplicity of plain data with the power of MobX reactivity. Unlike `mobx-state-tree`, tree nodes in `mobx-bonsai` are always plain data objects with no embedded methods, getters, or setters. Instead, all interactions are managed via external functions—getters and MobX actions like embracing a more functional approach, thus improving performance and memory usage. Your application state remains a simple, observable plain object. Instead of modifying the nodes directly with object methods, you work with pure functions that inspect or update the state, ensuring clarity and reproducibility.
+A fast lightweight alternative to `mobx-state-tree` that combines the simplicity of plain data with the power of MobX reactivity. Unlike `mobx-state-tree`, tree nodes in `mobx-bonsai` are always plain data objects with no embedded methods, getters, or setters. Instead, all interactions are managed via external functions—embracing a more functional approach that improves performance and memory usage.
 
 ## Key Features
 
-By using `mobx-bonsai`, you get:
+- **Lightweight and Fast**: Optimized for performance with significantly lower memory usage compared to similar libraries and - up to 3-9x faster than MobX-State-Tree.
 
-- **Lightweight and fast:** Optimized for performance while consuming less memory.
-- **Functional accessors:** Interaction is achieved through pure functions, keeping state manipulation decoupled from the data structure.
-- **Immutable snapshots:** Effortlessly capture a stable state of your tree at any point.
-- **MobX Integration:** Since `mobx-bonsai` uses MobX behind the scenes, it integrates seamlessly with [`mobx`](https://mobx.js.org) and [`mobx-react`](https://github.com/mobxjs/mobx-react).
-- **Seamless Y.js bindings:** Two-way binding between `Y.js` state trees and `mobx-bonsai` reactive trees included.
+- **Plain Data First**: Your application state remains simple observable objects and arrays without class-based overhead — work with your data using a functional approach.
+
+- **Superior TypeScript Support**: Enjoy first-class TypeScript integration with proper type inference and no need for complex type helpers or casting.
+
+- **Node Type System**: Define reusable node types with built-in defaults, actions, getters, and computed values—all while maintaining a clean separation between data and behavior.
+
+- **Tree Traversal**: Easily navigate and manipulate your state tree with powerful traversal methods like getParent, getRoot, and findChildren.
+
+- **Immutable Snapshots**: Generate optimized immutable snapshots of your state for time-travel debugging, serialization, or rendering optimization.
+
+- **Reactive Patterns**: Full compatibility with MobX reactions, computeds, and actions for building reactive applications.
+
+- **Y.js Integration**: Built-in two-way binding with Y.js for real-time collaboration, offline-first capabilities, and conflict-free data synchronization.
 
 ## Installation
 
-> `npm install mobx-bonsai`
+```bash
+# Using npm
+npm install mobx-bonsai
 
-> `yarn add mobx-bonsai`
+# Using yarn
+yarn add mobx-bonsai
+
+# Using pnpm
+pnpm add mobx-bonsai
+```
