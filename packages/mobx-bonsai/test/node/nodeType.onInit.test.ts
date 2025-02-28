@@ -1,5 +1,34 @@
 import { runInAction } from "mobx"
-import { node, onDeepChange, nodeType, TNode, getNodeTypeId, NodeTypeValue } from "../../src"
+import {
+  node,
+  onDeepChange,
+  nodeType,
+  TNode,
+  getNodeTypeId,
+  NodeTypeValue,
+  onInit,
+} from "../../src"
+
+test("chainable onInit and standaloneOnInit", () => {
+  let chainableCalled = false
+  let standaloneCalled = false
+
+  type Test = TNode<"test", { val: number }>
+
+  const TTest = nodeType<Test>("test").onInit((n) => {
+    expect(n.val).toBe(6)
+    chainableCalled = true
+  })
+
+  onInit(TTest, (n: Test) => {
+    standaloneCalled = true
+    expect(n.val).toBe(6)
+  })
+
+  TTest({ val: 6 })
+  expect(chainableCalled).toBe(true)
+  expect(standaloneCalled).toBe(true)
+})
 
 test("should call children onNodeInit callbacks before parent", () => {
   const callOrder: NodeTypeValue[] = []
@@ -8,14 +37,11 @@ test("should call children onNodeInit callbacks before parent", () => {
 
   type ParentNode = TNode<"parent", { children?: ChildNode[] }>
 
-  using tParent = nodeType<ParentNode>("parent")
-
-  const dispose1 = tParent.onInit((node) => {
+  using tParent = nodeType<ParentNode>("parent").onInit((node) => {
     callOrder.push(getNodeTypeId(node)!)
   })
 
-  using tChild = nodeType<ChildNode>("child")
-  const dispose2 = tChild.onInit((node) => {
+  using tChild = nodeType<ChildNode>("child").onInit((node) => {
     callOrder.push(getNodeTypeId(node)!)
   })
 
@@ -24,18 +50,13 @@ test("should call children onNodeInit callbacks before parent", () => {
   })
 
   expect(callOrder).toStrictEqual(["child", "parent"])
-
-  dispose1()
-  dispose2()
 })
 
 test("should pick up property changes during initialization for deep observation", () => {
   const events: unknown[] = []
 
   type T1 = TNode<"1", { value: number }>
-  using t1 = nodeType<T1>("1")
-
-  const dispose = t1.onInit((node) => {
+  using t1 = nodeType<T1>("1").onInit((node) => {
     events.push("init")
     node.value++
   })
@@ -61,7 +82,7 @@ test("should pick up property changes during initialization for deep observation
   "init",
   {
     "change": {
-      "debugObjectName": "ObservableObject@7",
+      "debugObjectName": "ObservableObject@9",
       "name": "child",
       "newValue": {
         "$$type": "1",
@@ -80,8 +101,6 @@ test("should pick up property changes during initialization for deep observation
 ]
 `)
   expect(root.child!.value).toBe(2)
-
-  dispose()
 })
 
 it("should use onNodeInit for migrations", () => {
@@ -96,8 +115,7 @@ it("should use onNodeInit for migrations", () => {
     done: boolean
   }
 
-  using tTodo = nodeType<Todo>("todo")
-  const dispose = tTodo.onInit((todo: OldTodo | Todo) => {
+  using tTodo = nodeType<Todo>("todo").onInit((todo: OldTodo | Todo) => {
     if (!("done" in todo)) {
       ;(todo as Todo).done = false
     }
@@ -106,6 +124,4 @@ it("should use onNodeInit for migrations", () => {
   const todo = tTodo({ text: "Buy milk" } as any)
 
   expect(todo.done).toBe(false)
-
-  dispose()
 })

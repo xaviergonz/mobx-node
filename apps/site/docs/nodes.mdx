@@ -284,6 +284,30 @@ But not when:
 - Using the generic `node()` function
 - Updating properties on an existing node
 
+### `.onInit(callback)`
+
+You can register initialization callbacks directly on a node type using the chainable onInit method. This callback is invoked when the node is created and returns the node type instance so that other methods can be chained:
+
+```ts
+import { nodeType } from 'mobx-bonsai';
+
+const TTypedTodo = nodeType<TypedTodo>("todo")
+  .onInit(node => {
+    // perform initialization logic
+  });
+```
+
+Note: For nodes created with the plain `node()` function, you can attach an initialization callback using the standalone onInit function. This allows you to perform setup on existing node instances:
+
+```ts
+import { node, onInit } from 'mobx-bonsai';
+
+const todo = node({ text: 'Buy milk' });
+onInit(todo, node => {
+  // perform initialization logic
+});
+```
+
 ### Using Node Types with Arrays
 
 Node types work with arrays too:

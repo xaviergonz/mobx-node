@@ -36,10 +36,12 @@ export type BaseTypedNodeType<
      * Registers a callback to run when nodes of this type are initialized
      *
      * @param callback - Function to execute when a node is initialized
-     * @returns Dispose function to remove the listener
+     *
+     * @returns The same node type with the added initialization callback
      */
-    onInit(callback: (node: TNode) => void): DisposableDispose
+    onInit(callback: (node: TNode) => void): BaseTypedNodeType<TNode, TKey, TOther>
 
     _initNode(node: TNode): void
+    _addOnInit(callback: (node: TNode) => void): DisposableDispose
   }
 >

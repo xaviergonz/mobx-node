@@ -461,7 +461,7 @@ function typedNodeType<TNode extends NodeWithAnyType = never>(
     nodeTypeObj.unregister!()
   }
 
-  nodeTypeObj.onInit = (callback) => {
+  nodeTypeObj._addOnInit = (callback) => {
     const actionCallback = action(callback)
 
     events.on("init", actionCallback)
@@ -469,6 +469,11 @@ function typedNodeType<TNode extends NodeWithAnyType = never>(
     return makeDisposable(() => {
       events.off("init", actionCallback)
     })
+  }
+
+  nodeTypeObj.onInit = (callback) => {
+    nodeTypeObj._addOnInit!(callback)
+    return nodeTypeObj as any
   }
 
   nodeTypeObj._initNode = (node: TNode) => {
@@ -480,6 +485,23 @@ function typedNodeType<TNode extends NodeWithAnyType = never>(
   registeredNodeTypes.set(type, nodeTypeObj as AnyTypedNodeType)
 
   return nodeTypeObj as TypedNodeType<TNode>
+}
+
+/**
+ * Registers a callback function to be invoked after a node of the specified type is initialized.
+ *
+ * @template TNode - The type of the node that extends NodeWithAnyType
+ *
+ * @param nodeType - The typed node type to attach the initialization callback to
+ * @param callback - Function to be called with the newly initialized node
+ *
+ * @returns A disposer function that can be called to unregister the callback
+ */
+export function onInit<TNode extends NodeWithAnyType>(
+  nodeType: TypedNodeType<TNode>,
+  callback: (node: TNode) => void
+) {
+  return nodeType._addOnInit(callback)
 }
 
 function untypedNodeType<TNode extends object = never>(): UntypedNodeType<TNode> {

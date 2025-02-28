@@ -12,6 +12,7 @@ export {
   getNodeTypeId,
   nodeType,
   nodeTypeKey,
+  onInit,
 } from "./node/nodeTypeKey/nodeType"
 export type {
   AnyNodeType,
