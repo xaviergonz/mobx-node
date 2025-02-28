@@ -54,11 +54,15 @@ Use untyped node types when you don't need a type identifier. These are simpler 
 ```ts
 import { nodeType } from 'mobx-bonsai';
 
-// Create an untyped node type
-const TTodo = nodeType<Todo>();
+// Create an untyped node type with defaults
+const TTodo = nodeType<Todo>()
+  .defaults({
+    done: () => false
+  });
 
-// Create a todo node
-const myTodo = TTodo({ done: false, text: 'Buy milk' });
+// Create a todo node, omitting the 'done' property since it has a default
+const myTodo = TTodo({ text: 'Buy milk' });
+// myTodo.done will be false
 ```
 
 #### Typed Node Types
@@ -243,6 +247,42 @@ TTypedTodo.onInit(todo => {
   }
 });
 ```
+
+#### `.defaults(defaultGenerators)`
+
+Define default values for properties when they are undefined or omitted:
+
+```ts
+const TTodo = nodeType<Todo>()
+  .defaults({
+    done: () => false,
+  });
+
+// You can omit properties with defaults when creating nodes
+const todo = TTodo({ text: "Buy milk" });
+console.log(todo.done); // false
+
+// Explicit values override defaults
+const importantTodo = TTodo({
+  text: "Call mom",
+  done: true,
+});
+console.log(importantTodo.true); // true
+
+// Defaults are also applied when using snapshot
+const todoSnapshot = TTodo.snapshot({ text: "Clean house" });
+// todoSnapshot.done will be false
+```
+
+Default generators are only called when a property is missing. The return type of each generator must match the property type in your node's interface.
+
+Note that defaults are applied when:
+- Creating nodes with the nodeType factory (e.g., `TTodo({ text: "example" })`)
+- Creating snapshots with the nodeType's snapshot function (e.g., `TTodo.snapshot({ text: "example" })`)
+
+But not when:
+- Using the generic `node()` function
+- Updating properties on an existing node
 
 ### Using Node Types with Arrays
 

@@ -11,7 +11,12 @@ export type Todo = TNode<
   }
 >
 
-export const TTodo = nodeType<Todo>(todoType).withKey("id").settersFor("done", "text")
+export const TTodo = nodeType<Todo>(todoType)
+  .withKey("id")
+  .defaults({
+    done: () => false,
+  })
+  .settersFor("done", "text")
 
 const todoListType = "todoSample/TodoList"
 
@@ -45,8 +50,8 @@ export function createDefaultTodoList(): TodoList {
     todos: [
       // we could just use the objects here directly, but then we'd need to
       // generate the ids and add the [nodeType] property ourselves
-      TTodo({ text: "make mobx-bonsai awesome!", done: false }),
-      TTodo({ text: "spread the word", done: false }),
+      TTodo({ text: "make mobx-bonsai awesome!" }),
+      TTodo({ text: "spread the word" }),
       TTodo({ text: "buy some milk", done: true }),
     ],
   })

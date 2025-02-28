@@ -1,3 +1,4 @@
+import { MarkOptional } from "ts-essentials"
 import { IComputedValueOptions } from "mobx"
 import { PrependArgument } from "../../utils/PrependArgument"
 
@@ -5,10 +6,21 @@ import { PrependArgument } from "../../utils/PrependArgument"
  * Base node type definition with core functionality
  *
  * @template TNode - Node structure that adheres to this type
- * @template TKey - Key field in the node structure (if any)
+ * @template TOptional - Optional keys in the node structure
  * @template TOther - Additional properties and methods
  */
-export type BaseNodeType<TNode extends object, TKey extends keyof TNode | never, TOther> = {
+export type BaseNodeType<TNode extends object, TOptional extends keyof TNode, TOther> = {
+  /**
+   * Node constructor.
+   * Requires all keys from TNode except those in TOptional (which may be omitted).
+   */
+  (data: MarkOptional<TNode, TOptional>): TNode
+
+  /**
+   * Returns a snapshot based on the provided data.
+   */
+  snapshot(data: MarkOptional<TNode, TOptional>): TNode
+
   /**
    * Adds volatile state properties to nodes of this type
    *
@@ -20,7 +32,7 @@ export type BaseNodeType<TNode extends object, TKey extends keyof TNode | never,
    */
   volatile<TVolatiles extends Record<string, () => any>>(
     volatile: TVolatiles
-  ): BaseNodeType<TNode, TKey, TOther & VolatileAccessors<TVolatiles, TNode>>
+  ): BaseNodeType<TNode, TOptional, TOther & VolatileAccessors<TVolatiles, TNode>>
 
   /**
    * Registers action methods for nodes of this type
@@ -36,7 +48,7 @@ export type BaseNodeType<TNode extends object, TKey extends keyof TNode | never,
     actions: (n: TNode) => TActions
   ): BaseNodeType<
     TNode,
-    TKey,
+    TOptional,
     TOther & {
       [k in keyof TActions]: PrependArgument<TActions[k], TNode>
     }
@@ -55,7 +67,7 @@ export type BaseNodeType<TNode extends object, TKey extends keyof TNode | never,
     getters: (n: TNode) => TGetters
   ): BaseNodeType<
     TNode,
-    TKey,
+    TOptional,
     TOther & {
       [k in keyof TGetters]: PrependArgument<TGetters[k], TNode>
     }
@@ -75,7 +87,7 @@ export type BaseNodeType<TNode extends object, TKey extends keyof TNode | never,
     computeds: (n: TNode) => TComputeds
   ): BaseNodeType<
     TNode,
-    TKey,
+    TOptional,
     TOther & {
       [k in keyof TComputeds]: TComputeds[k] extends () => any
         ? PrependArgument<TComputeds[k], TNode>
@@ -95,11 +107,26 @@ export type BaseNodeType<TNode extends object, TKey extends keyof TNode | never,
     ...properties: readonly K[]
   ): BaseNodeType<
     TNode,
-    TKey,
+    TOptional,
     TOther & {
       [P in K as `set${Capitalize<P>}`]: (node: TNode, value: Readonly<TNode[P]>) => void
     }
   >
+
+  /**
+   * Define default values for keys in TOptional.
+   * When omitted, those properties are filled with the results of these generators.
+   *
+   * @template TGen - Record of default value generators
+   */
+  defaults<TGen extends { [K in keyof TNode]?: () => TNode[K] }>(
+    defaultGenerators: TGen
+  ): BaseNodeType<TNode, TOptional | (keyof TGen & keyof TNode), TOther>
+
+  /**
+   * Default generators defined so far.
+   */
+  defaultGenerators?: { [K in keyof TNode]?: () => TNode[K] }
 } & TOther
 
 /**

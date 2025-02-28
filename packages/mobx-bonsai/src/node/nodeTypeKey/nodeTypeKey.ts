@@ -1,6 +1,5 @@
 import mitt from "mitt"
 import { IComputedValue, action, computed } from "mobx"
-import { MarkOptional } from "ts-essentials"
 import { failure } from "../../error/failure"
 import { getGlobalConfig } from "../../globalConfig"
 import { disposeOnce, makeDisposable } from "../../utils/disposable"
@@ -346,6 +345,37 @@ function addNodeTypeExtensionMethods<TNode extends object>(
 
     return nodeTypeObj as any
   }
+
+  nodeTypeObj.defaults = (defaultGenerators) => {
+    nodeTypeObj.defaultGenerators = {
+      ...nodeTypeObj.defaultGenerators,
+      ...defaultGenerators,
+    }
+
+    return nodeTypeObj as any
+  }
+}
+
+function applyDefaultGenerators<T>(
+  data: T,
+  defaultGenerators: { [k in keyof T]?: () => unknown } | undefined
+): T {
+  if (!defaultGenerators) {
+    return data
+  }
+
+  if (typeof data !== "object" || data === null) {
+    throw failure(`data must be an object`)
+  }
+
+  const copy = { ...data }
+
+  for (const [key, gen] of Object.entries(defaultGenerators)) {
+    if ((copy as any)[key] === undefined) {
+      ;(copy as any)[key] = (gen as () => unknown)()
+    }
+  }
+  return copy
 }
 
 function typedNodeType<TNode extends NodeWithAnyType = never>(
@@ -359,24 +389,31 @@ function typedNodeType<TNode extends NodeWithAnyType = never>(
     init: TNode
   }>()
 
-  const snapshot = (data: MarkOptional<TNode, NodeTypeKey>) => {
-    const sn = {
-      ...data,
-      [nodeTypeKey]: type,
-    } as TNode
+  const snapshot = (data: any) => {
+    // apply defaults if provided
+    let sn: any = applyDefaultGenerators(data as TNode, nodeTypeObj.defaultGenerators)
+
+    if (data === sn) {
+      sn = {
+        ...data,
+        [nodeTypeKey]: type,
+      }
+    } else {
+      sn[nodeTypeKey] = type
+    }
 
     // generate key if missing
     if (keyedNodeTypeObj.key !== undefined) {
       const key = keyedNodeTypeObj.getKey(sn)
       if (key === undefined) {
-        ;(sn as any)[keyedNodeTypeObj.key] = getGlobalConfig().keyGenerator()
+        sn[keyedNodeTypeObj.key] = getGlobalConfig().keyGenerator()
       }
     }
 
     return sn
   }
 
-  const nodeTypeObj: Partial<TypedNodeType<TNode>> = (data: MarkOptional<TNode, NodeTypeKey>) => {
+  const nodeTypeObj: Partial<TypedNodeType<TNode>> = (data: any) => {
     return node(snapshot(data)) as TNode
   }
   const keyedNodeTypeObj = nodeTypeObj as unknown as KeyedNodeType<TNode, keyof TNode>
@@ -409,6 +446,10 @@ function typedNodeType<TNode extends NodeWithAnyType = never>(
       return ref?.deref() as TNode | undefined
     }
 
+    keyedNodeTypeObj.defaults({
+      [key]: () => getGlobalConfig().keyGenerator(),
+    } as any)
+
     return keyedNodeTypeObj as any
   }
 
@@ -434,7 +475,7 @@ function typedNodeType<TNode extends NodeWithAnyType = never>(
     events.emit("init", node)
   }
 
-  addNodeTypeExtensionMethods(nodeTypeObj)
+  addNodeTypeExtensionMethods(nodeTypeObj as any)
 
   registeredNodeTypes.set(type, nodeTypeObj as AnyTypedNodeType)
 
@@ -442,13 +483,13 @@ function typedNodeType<TNode extends NodeWithAnyType = never>(
 }
 
 function untypedNodeType<TNode extends object = never>(): UntypedNodeType<TNode> {
-  const snapshot = (data: TNode) => data
+  const snapshot = (data: any) => applyDefaultGenerators(data, nodeTypeObj.defaultGenerators)
 
-  const nodeTypeObj: Partial<UntypedNodeType<TNode>> = (data: TNode) => node(snapshot(data))
+  const nodeTypeObj: Partial<UntypedNodeType<TNode>> = (data: any) => node(snapshot(data))
 
   nodeTypeObj.snapshot = snapshot
 
-  addNodeTypeExtensionMethods(nodeTypeObj)
+  addNodeTypeExtensionMethods(nodeTypeObj as any)
 
   return nodeTypeObj as UntypedNodeType<TNode>
 }
