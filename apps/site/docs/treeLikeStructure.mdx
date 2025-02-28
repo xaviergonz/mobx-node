@@ -177,9 +177,15 @@ The mode can be one of:
 ### `onChildAttachedTo`
 
 ```ts
-export function onChildAttachedTo<T>(params: {
+export function onChildAttachedTo<T extends object = object>({
+  target,
+  childNodeType,
+  onChildAttached,
+  deep,
+  fireForCurrentChildren,
+}: {
   target: () => object
-  childNodeType: NodeType | readonly NodeType[] | undefined
+  childNodeType: AnyTypedNodeType | readonly AnyTypedNodeType[] | undefined
   onChildAttached: (child: T) => (() => void) | void
   deep?: boolean
   fireForCurrentChildren?: boolean
@@ -187,16 +193,40 @@ export function onChildAttachedTo<T>(params: {
 ```
 
 Runs a callback every time a new object is attached to a given node.
-The callback can optionally return a disposer which will be run when the child is detached.
+The callback can optionally return a disposer function which will be run when the child is detached.
 
-`childNodeType` is a node type indicating the kind of typed children nodes to track, an array to track multiple node types, or `undefined` to track all children.
+Parameters:
+- `target`: Function that returns the node whose children should be tracked.
+- `childNodeType`: The node type (or array of types) for which the callback should be invoked, or `undefined` if it should be invoked for all node types.
+- `onChildAttached`: Callback called when a child is attached to the target node. Can return a cleanup function to run when the child is detached.
+- `deep`: (default: `false`) When `true`, watches for children attached at any level of the tree. When `false`, only watches for direct children.
+- `fireForCurrentChildren`: (default: `true`) When `true`, the callback will be immediately executed for all matching children that are already attached.
 
-The optional `options` parameter accepts an object with the following options:
+Returns a disposer function that accepts a boolean parameter:
+- When called with `true`, all pending detach disposers for children that had the attach event fired will be executed.
+- When called with `false`, the tracking stops but doesn't run detach disposers.
 
-- `deep: boolean` (default: `false`) - `true` if the callback should be run for all children deeply or `false` if it it should only run for shallow children.
-- `fireForCurrentChildren: boolean` (default: `true`) - `true` if the callback should be immediately called for currently attached children, `false` if only for future attachments.
+Example:
 
-Returns a disposer, which has a boolean parameter which should be `true` if pending detachment callbacks should be run, or `false` otherwise.
+```ts
+const disposer = onChildAttachedTo({
+  target: () => todoListNode,
+  childNodeType: TTodo, // Only run for todo nodes
+  onChildAttached: (todoNode) => {
+    console.log(`Todo "${todoNode.text}" was added!`);
+
+    // Optional: Return a cleanup function
+    return () => {
+      console.log(`Todo "${todoNode.text}" was removed!`);
+    };
+  },
+  deep: false, // Only watch direct children
+  fireForCurrentChildren: true // Run for existing todos
+});
+
+// Later, to clean up and run all detach disposers:
+disposer(true);
+```
 
 ### `deepEquals`
 
