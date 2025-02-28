@@ -23,6 +23,9 @@ const todoListType = "todoSample/TodoList"
 export type TodoList = TNode<typeof todoListType, { todos: Todo[] }>
 
 export const TTodoList = nodeType<TodoList>(todoListType)
+  .defaults({
+    todos: () => [],
+  })
   .getters((todoList) => ({
     getPending() {
       return todoList.todos.filter((t) => !t.done)
