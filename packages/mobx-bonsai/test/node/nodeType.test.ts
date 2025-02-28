@@ -425,3 +425,33 @@ test("node type defaults with complex objects", () => {
   expect(contact.address).toEqual({ street: "", city: "", zip: "" })
   expect(isNode(contact.address)).toBe(true)
 })
+
+test("generic node type", () => {
+  interface Obj<T> {
+    data: T
+  }
+
+  const TObj = nodeType<Obj<number>>().defaults({
+    data: () => 0,
+  })
+
+  const genericNode = TObj({ data: 100 })
+  expect(genericNode.data).toBe(100)
+})
+
+test("generic node type factory", () => {
+  interface Obj<T> {
+    data: T
+    else: string
+  }
+
+  const createTObj = <T>() =>
+    nodeType<Obj<T>>().defaults({
+      else: () => "hello",
+    })
+
+  const TObj = createTObj<number>()
+
+  const genericNode = TObj({ data: 100 })
+  expect(genericNode.data).toBe(100)
+})
