@@ -391,6 +391,28 @@ The function returns the node type object if found, or `undefined` if no node ty
 
 Both functions work together to provide a robust runtime type system that complements TypeScript's static type checking, allowing your application to make decisions based on node types and handle nodes generically while still maintaining type safety.
 
+## Customizing the Key Generator Function
+
+The default key generator is tuned for performance and works as follows:
+
+```ts
+const baseLocalId = nanoid()
+let localId = 0
+function generateModelId() {
+  return localId.toString(36) + "-" + baseLocalId
+}
+```
+
+Every key generated in a session gets a unique prefix (from an incrementing counter in base 36) while sharing the same suffix (the base from nanoid). This design implies that within a session, keys are unique in their first part, but the suffix remains constant.
+
+You can override this behavior by supplying a custom key generator function via the global configuration:
+
+```ts
+setGlobalConfig({
+  keyGenerator: myKeyGeneratorFunction,
+})
+```
+
 ## Computed Properties
 
 ### Using `computedProp`
@@ -580,7 +602,7 @@ This pattern ensures volatile state is reset when an item is detached from the r
 
 Use it to deeply clone a node before copying it into another part of the tree. If you are moving the node then consider removing it from the tree first before adding it back.
 
-Note that, when cloning, all node keys are replaced with new unique keys. You can customize the key generation by providing your own node key generator as the second argument to the clone function.
+Note that, when cloning, all node keys are replaced with new unique keys.
 
 ### `asMap`
 
