@@ -5,7 +5,7 @@ slug: /nodes
 
 This guide introduces the basics of using `mobx-bonsai` to create observable nodes that form a tree structure.
 
-# `node`
+## Creating Nodes with `node`
 
 **Nodes are plain observable objects/arrays** that have been enhanced to support tree-traversal, snapshots and other super-powers. To create a node:
 
@@ -41,109 +41,348 @@ const addTodo = action((todoAppState: TodoAppState, todo: Todo) => {
 })
 ```
 
-# Typed Nodes
+## Node Types
 
-Mobx-Bonsai supports the concept of typed nodes. These are object nodes that have a same value for the `$$type` (exported as `nodeType`) property. Thanks to this property these nodes:
+### Creating Node Types
 
-- Can use an `onInit` life-cycle hook
-- Can have a designated 'key' property to make them unique nodes (see the next section).
+The `nodeType` function creates node factories with enhanced functionality. Node types can be either untyped or typed:
 
-To create a new node type and a node of that type:
+#### Untyped Node Types
+
+Use untyped node types when you don't need a type identifier. These are simpler but don't support some features like unique nodes:
+
+```ts
+import { nodeType } from 'mobx-bonsai';
+
+// Create an untyped node type
+const TTodo = nodeType<Todo>();
+
+// Create a todo node
+const myTodo = TTodo({ done: false, text: 'Buy milk' });
+```
+
+#### Typed Node Types
+
+Typed node types store a type identifier in the `$$type` property. This enables lifecycle hooks, unique node identification, and more robust type checking:
 
 ```ts
 import { nodeType, TNode } from 'mobx-bonsai';
 
-type Todo = TNode<"todo", {
+// Define a typed node interface
+type TypedTodo = TNode<"todo", {
   done: boolean
   text: string
-}>
+}>;
+// Equivalent to { $$type: "todo", done: boolean, text: string }
 
-const tTodo = nodeType<Todo>("todo"); // nodeKey AKA $$type is "todo"
+// Create a typed node type
+const TTypedTodo = nodeType<TypedTodo>("todo");
 
-// same as node({ [nodeType]: "todo", done: true, text: "buy milk" })
-const todoNode = tTodo({ done: true, text: "buy milk" })
+// Create a typed node
+const todoNode = TTypedTodo({ done: true, text: 'Buy milk' });
+// Equivalent to: node({ $$type: "todo", done: true, text: 'Buy milk' })
 
-// same as { [nodeType]: "todo", done: true, text: "buy milk" }
-const todoSnapshot = tTodo.snapshot({ done: true, text: "buy milk" })
+// Create a snapshot without instantiating the node
+const todoSnapshot = TTypedTodo.snapshot({ done: true, text: 'Buy milk' });
 ```
 
-`onInit` can be useful for example to run initializations such as migrations.
-To hook to their initialization phase:
+Typed nodes enable these additional features:
+- Lifecycle hooks like `onInit` for initialization or migrations
+- Ability to become unique nodes with identity
+- Type discrimination in runtime code
+
+### Node Type Extensions
+
+Both typed and untyped node types can be extended with additional functionality:
+
+#### `.withKey(keyProperty)` - Creating Unique Nodes
+
+For typed nodes only, this transforms a regular node type into a unique node type. Each instance with the same type and key value will be reconciled to a single instance:
 
 ```ts
-tTodo.onInit(todo => {
-  // ...
-})
-```
-
-Other node type members are:
-
-- `typeId`: The type as passed to the `nodeType` initializer.
-- `key`: Key property configured for that type (see Unique Nodes below).
-
-You may also use the following related functions:
-
-- `getNodeTypeAndKey` to get the node type and key of a node, if any.
-- `findNodeTypeById` to find a node type by its type ID.
-
-## Unique Nodes
-
-Typed nodes can be extended into unique nodes. These are typed nodes that also have a designated 'key' property that serves as a unique identifier for that type and that only allow one instance with that ID alive at any time.
-
-When the `node` function encounters a plain object with a type and a key, it first checks if a node with the same type and key already exists. If it does, the existing node is reconciled with the new data, and the existing node is returned. This ensures that only one instance of a node with a given type and key exists at any time.
-
-This is useful for managing entities with unique identifiers, such as users, products, or documents. By using unique nodes, you can ensure that you always have a single source of truth for each entity, and that changes to one instance of the entity are automatically reflected in all other references to that entity.
-
-Not only that, but any computed and volatile properties attached to it are kept as long as the node is alive, even if new data is reconciled. Also, since the references are kept stable they are ideal to keep around safely for example in UI state.
-
-Note: If you use the typed creation methods (tName(...) / tName.snapshot(...)) and omit the key property then one will be auto generated for you.
-
-Here's an example of how to use unique nodes:
-
-```ts
-import { node, nodeType, nodeKey, TNode, nodeType } from 'mobx-bonsai'
-import { runInAction } from 'mobx'
-
-type User = TNode<'user', {
+type TypedTodo = TNode<'todo', {
   id: string
-  name: string
+  text: string
+  done: boolean
 }>
 
-const tUser = nodeType<User>('user').with({ key: 'id' })
+// Create a unique node type with 'id' as the key property
+const TTypedTodo = nodeType<TypedTodo>('todo').withKey('id');
 
-// Create a unique node for user with ID "u1"
-const user1 = tUser({
-  id: 'u1',
-  name: 'Alice',
-})
+// Create a unique node
+const todo1 = TTypedTodo({
+  id: 't1',
+  text: 'Buy milk',
+  done: false
+});
 
-// Later, create or update a user with the same ID
-const user1Updated = tUser({
-  id: 'u1',
-  name: 'Alice Cooper',
-})
+// Later, create or update a todo with the same ID
+const todo1Updated = TTypedTodo({
+  id: 't1',
+  text: 'Buy milk and eggs',
+  done: false
+});
 
 // They are the same instance
-// user1 === user1Updated is true
-
-// Changes to one are reflected in the other
-runInAction(() => {
-  user1.name = 'Alice Cooper Updated'
-})
-// user1Updated.name is "Alice Cooper Updated"
+// todo1 === todo1Updated is true
 ```
 
-You may also use the following node type methods:
+Notable features of unique nodes:
+- The key property will be auto-generated if missing
+- References to the same entity remain stable across your application
+- Computed values and volatile state persist across reconciliations
+- You can find instances by key using `TUser.findByKey("u1")`
 
-- `getKey` to extract they key of a node.
-- `findByKey` to find a unique node of that type with that key.
+#### `.getters(getterDefinitions)`
 
-# `computedProp`
+Add getter functions that can take parameters:
 
-**Use `computedProp` to use computed values associated with a node.**
-While declaring actions that affect the observable data tree is easy (see for example `addçtodo` in the example above), using computed values might not seem as straightforward. While in "classical" MobX you'd generate the computed values as a getter for the object, that's not a possibility here (since nodes should only contain data). In order to overcome this limitation this library offers a function called `computedProp`, which allows you to declare functional getters, this is, getters that take the object as argument.
+```ts
+const TList = nodeType<List>()
+  .getters((list) => ({
+    getItemAtIndex(index: number) {
+      return list.items[index];
+    },
+    findItemById(id: string) {
+      return list.items.find(item => item.id === id);
+    }
+  }));
 
-In other words, where you would usually have this in "classical" MobX:
+// Use the getters
+const item = TList.getItemAtIndex(list, 0);
+```
+
+#### `.computeds(computedDefinitions)`
+
+Add computed properties that are cached when observed:
+
+```ts
+const TTypedTodo = nodeType<TypedTodo>()
+  .computeds((todo) => ({
+    formattedText() {
+      return `${todo.done ? '✓' : '○'} ${todo.text}`;
+    },
+    displayText: {
+      get() {
+        return todo.done ? `Completed: ${todo.text}` : `Todo: ${todo.text}`;
+      },
+      equals: (a, b) => a === b, // Optional equality function
+    }
+  }));
+
+// Access computed properties
+const formattedText = TTypedTodo.getFormattedText(todo);
+```
+
+#### `.actions(actionDefinitions)`
+
+Add actions that modify nodes:
+
+```ts
+const TTodoList = nodeType<TodoList>()
+  .actions((list) => ({
+    addTodo(text: string) {
+      list.todos.push(TTypedTodo({ text, done: false }));
+    },
+    removeTodo(id: string) {
+      const index = list.todos.findIndex(todo => todo.id === id);
+      if (index >= 0) {
+        list.todos.splice(index, 1);
+      }
+    }
+  }));
+
+// Use actions
+TTodoList.addTodo(todoList, "Buy milk");
+```
+
+#### `.settersFor(...properties)`
+
+Generate setter functions for properties:
+
+```ts
+const TTodo = nodeType<Todo>()
+  .settersFor("text", "done");
+
+// Use generated setters
+TTodo.setText(todo, "Buy groceries");
+TTodo.setDone(todo, true);
+```
+
+#### `.volatile(volatileProps)`
+
+Add non-serialized state to nodes:
+
+```ts
+const TTodo = nodeType<Todo>()
+  .volatile({
+    isSelected: () => false,
+    editMode: () => false,
+  });
+
+// Access and modify volatile properties
+const isSelected = TTodo.getIsSelected(todo);
+TTodo.setIsSelected(todo, true);
+TTodo.resetIsSelected(todo); // Reset to default
+```
+
+#### `.onInit(callback)`
+
+For typed nodes, register a callback that runs when nodes are created:
+
+```ts
+const TTypedTodo = nodeType<TypedTodo>("todo");
+
+// Run initialization when nodes are created
+TTypedTodo.onInit(todo => {
+  console.log(`Todo created with ID: ${todo.id}`);
+
+  // You can perform initialization or migration logic here
+  if (!todo.createdAt) {
+    todo.createdAt = new Date();
+  }
+});
+```
+
+### Using Node Types with Arrays
+
+Node types work with arrays too:
+
+```ts
+const TTodoList = nodeType<Todo[]>()
+  .computeds((list) => ({
+    completedCount() {
+      return list.filter(todo => todo.done).length;
+    }
+  }))
+  .actions((list) => ({
+    removeCompleted() {
+      for (let i = list.length - 1; i >= 0; i--) {
+        if (list[i].done) list.splice(i, 1);
+      }
+    }
+  }));
+
+const todoList = TTodoList([]);
+const completed = TTodoList.getCompletedCount(todoList);
+TTodoList.removeCompleted(todoList);
+```
+
+### Other Node Type Utilities
+
+Node types in `mobx-bonsai` come with several utility functions that help you work with typed nodes at runtime:
+
+#### `getNodeTypeAndKey(node)`
+
+This function retrieves both the node type object and key value from a node instance:
+
+```ts
+const TTypedTodo = nodeType<TypedTodo>('todo').withKey('id');
+const todo = TTypedTodo({ id: 't1', text: 'Buy milk', done: false });
+
+const { type, key } = getNodeTypeAndKey(todo);
+// type: TTypedTodo node type object (contains methods like findByKey, etc.)
+// key: 't1'
+```
+
+This function is useful when:
+
+- You need to identify what type of node you're working with at runtime
+- You need to extract the unique key from a node without knowing its structure
+- You're processing nodes generically, but need type-specific behavior
+
+The function returns an object with two properties:
+- `type`: The node type object associated with the node, which gives you access to all the methods defined on that node type
+- `key`: The key value for the node, or `undefined` if it's not a keyed node
+
+If the node has no type identifier (not a typed node), both properties will be `undefined`.
+
+#### `findNodeTypeById(typeId)`
+
+This function looks up a node type object by its type identifier:
+
+```ts
+const TTypedTodo = nodeType<TypedTodo>('todo').withKey('id');
+
+// Later in your code, retrieve the node type using its ID
+const retrievedTodoType = findNodeTypeById('todo');
+
+if (retrievedTodoType) {
+  // Use the retrieved node type to create or manipulate nodes
+  const newTodo = retrievedTodoType({ id: 'new', text: 'New task', done: false });
+
+  // Access methods on the node type
+  const existingTodo = retrievedTodoType.findByKey('existing-id');
+}
+```
+
+This function is particularly useful when:
+
+- Working with serialized data where you only have the type ID string
+- Building generic components that need to work with different node types
+- Implementing type-based registries or factories
+- Creating plugins or extensions that need to discover registered node types
+
+The function returns the node type object if found, or `undefined` if no node type is registered with the given ID.
+
+Both functions work together to provide a robust runtime type system that complements TypeScript's static type checking, allowing your application to make decisions based on node types and handle nodes generically while still maintaining type safety.
+
+## Computed Properties
+
+### Using `computedProp`
+
+**Use `computedProp` to create computed values associated with a node.**
+The `computedProp` function allows you to declare functional getters that receive the node as an argument, enabling a functional approach to computed properties.
+
+#### Relationship with `nodeType.computeds()`
+
+For most cases, the `nodeType.computeds()` method is preferred over direct use of `computedProp`:
+
+```ts
+// Preferred approach using nodeType.computeds()
+const TTypedTodo = nodeType<TypedTodo>()
+  .computeds((todo) => ({
+    formattedText() {
+      return `${todo.done ? '✓' : '○'} ${todo.text}`;
+    },
+    displayText() {
+      return todo.done ? `Completed: ${todo.text}` : `Todo: ${todo.text}`;
+    }
+  }));
+
+// Usage
+const formattedText = TTypedTodo.getFormattedText(todo);
+const displayText = TTypedTodo.getDisplayText(todo);
+```
+
+**Why `nodeType.computeds()` is preferred:**
+- Better organization by keeping all computed properties with their node type
+- Improved autocompletion
+
+**When to use `computedProp` directly:**
+- When you need a computed outside of a node type definition
+- For ad-hoc computations on arbitrary nodes
+- For simple one-off computed values
+- When working with legacy code not using the node type pattern
+
+#### Using `computedProp` directly
+
+Here's how to use `computedProp` for computing derived values from nodes:
+
+```ts
+import { computedProp } from 'mobx-bonsai';
+
+// Define a simple todo type
+type Todo = { text: string, done: boolean }
+
+const getFormattedText = computedProp((todo: Todo) => {
+  return `${todo.done ? '✓' : '○'} ${todo.text}`
+})
+
+const formattedText = getFormattedText(myTodo)
+```
+
+Unlike in traditional MobX where you'd use getters directly on objects:
 
 ```ts
 import { observable } from 'mobx';
@@ -159,30 +398,46 @@ const myName = observable({
 const fullName = myName.fullName
 ```
 
-you can now use this for the observable objects:
+With `mobx-bonsai`, nodes contain only data without methods or getters, so `computedProp` provides a way to create computed values as standalone functions.
 
-```ts
-import { computedProp } from 'mobx-bonsai';
+When a computed prop getter is used over a plain object/array (not a node), it will still work by running the computation without caching. This ensures you get a result regardless of whether you're using a node or a plain object.
 
-type Name = { firstName: string, lastName: string }
+## Volatile State
 
-const getFullName = computedProp((name: Name) => {
-  return `${name.firstName} ${name.lastName}`
-})
-
-const fullName = getFullName(myName)
-```
-
-Note: When a computed prop getter is used over a plain object/array it will just run. That way you can know you will get a result no matter if you run it over a node or not.
-
-# `volatileProp`
+### Using `volatileProp`
 
 **Use `volatileProp` to associate volatile state to nodes.**
 The `volatileProp` function provides a way to associate volatile state with nodes. Volatile state is stored separately from the node's serializable data; it is only maintained while the node instance is alive and is not included in snapshots.
 
-**Volatile State:** This is state that “lives” on the node instance for its lifetime but is not persisted or captured by snapshots. It is ideal for representing transient or UI-specific information that should be reset between sessions.
+#### Relationship with `nodeType.volatile()`
 
-Note that volatile state is specially useful when used over unique nodes, since you can be sure it won't be reset for example when the nodes get moved around by external agents (e.g bindings).
+For most cases, the `nodeType.volatile()` method is preferred over direct use of `volatileProp`:
+
+```ts
+// Preferred approach using nodeType.volatile()
+const TTypedTodo = nodeType<TypedTodo>()
+  .volatile({
+    isSelected: () => false,
+    editMode: () => false,
+  });
+
+// Usage
+const isSelected = TTypedTodo.getIsSelected(todo);
+TTypedTodo.setIsSelected(todo, true);
+TTypedTodo.resetIsSelected(todo);
+```
+
+**Why `nodeType.volatile()` is preferred:**
+- Provides better organization by keeping all node operations together
+- Automatically generates getter, setter, and reset functions
+- Makes code more maintainable by grouping related functionality
+
+**When to use `volatileProp` directly:**
+- When you need volatile state outside of a node type definition
+- For ad-hoc volatile properties on arbitrary nodes
+- In legacy code that doesn't use the node type pattern
+
+#### Using `volatileProp` directly
 
 The signature is as follows:
 
@@ -199,29 +454,49 @@ function volatileProp<TTarget extends object, TValue>(
 - **defaultValueGen:**
   A function that returns the default value for the volatile property.
 
-Below is an example that demonstrates how to define a node and use `volatileProp` to manage its volatile state:
+Below is an example that demonstrates how to define a node and use `volatileProp` directly:
 
 ```ts
-import { volatileProp } from 'mobx-bonsai';
+import { volatileProp, node } from 'mobx-bonsai';
+
+interface ImageElement {
+  src: string;
+  width: number;
+  height: number;
+}
 
 const imageElement = node<ImageElement>({
-  // ... serializable information for the node
+  src: "image.jpg",
+  width: 800,
+  height: 600
 });
 
+// Creating a volatile property directly
 const [isSelected, setIsSelected, resetIsSelected] = volatileProp<ImageElement, boolean>(() => false);
+
+// Usage
+const selected = isSelected(imageElement); // false
+setIsSelected(imageElement, true);
+const nowSelected = isSelected(imageElement); // true
+resetIsSelected(imageElement); // Reset to default value
 ```
 
-When building applications using observable trees, nodes often carry transient state (volatile properties) used to manage UI interactions or temporary settings. For example, consider a list where each item has an `isSelected` volatile property. If an item is removed from the list while selected, its transient state (i.e., `isSelected: true`) may persist. Later, if this item is reattached or restored (for example, through an undo operation), it might erroneously appear as selected. This could lead to inconsistencies in the user interface and unexpected behaviors.
+#### Resetting Volatile State
 
-A pattern that might helping avoid this is the following:
+When building applications using observable trees, nodes often carry transient state (volatile properties) used to manage UI interactions or temporary settings. If an item is removed from the list while selected, its transient state may persist. Later, if this item is reattached or restored (for example, through an undo operation), it might erroneously appear as selected.
+
+A pattern to help avoid this issue is to reset volatile state when nodes are detached:
 
 ```ts
 onChildAttachedTo({
-  () => rootStore,
+  target: () => rootStore,
   childNodeType: undefined, // or pass a particular node type
   onChildAttached: (child) => {
     return () => {
-      resetIsSelected(node)
+      // This runs when the child is detached
+      resetIsSelected(child);
+      // Or if using nodeType:
+      // TTypedTodo.resetIsSelected(child);
     }
   },
   deep: true,
@@ -231,21 +506,23 @@ onChildAttachedTo({
 
 This pattern ensures volatile state is reset when an item is detached from the root store, and thus:
 
-- It prevents stale UI states from affecting reattached nodes.
-- It eliminates errors from lingering transient settings, ensuring a fresh state when nodes are reinserted.
-- It helps maintain expected behavior throughout the lifecycle of nodes in your tree, especially in dynamic lists or collections.
+- It prevents stale UI states from affecting reattached nodes
+- It eliminates errors from lingering transient settings
+- It helps maintain expected behavior throughout the lifecycle of nodes in your tree
 
-# `clone`
+## Utility Functions
+
+### `clone`
 
 Use it to deeply clone a node before copying it into another part of the tree. If you are moving the node then consider removing it from the tree first before adding it back.
 
 Note that, when cloning, all node keys are replaced with new unique keys. You can customize the key generation by providing your own node key generator as the second argument to the clone function.
 
-# `asMap`
+### `asMap`
 
 The `asMap` function converts a plain object, an observable object or an object node into a `Map<string, value>` view that can be used to interact with the object as if it were a Map.
 
-# `asSet`
+### `asSet`
 
 The `asSet` function converts a plain array, an observable array or an array node into a Set-like view that can be used to interact with the array as if it were a Set. Note that since the backing store **for plain arrays** is an array some operations will be slower than with a real set or asSet with an observable array, namely:
 
